@@ -92,6 +92,13 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
 }
 /* Tout le contenu (hors menu) est affiché à 90 % de sa taille. */
 #contenu { min-width: 0; zoom: 0.9; }
+
+/* Ligne en haut de la page, sur toute la largeur, pour la détacher de la barre de titre
+   de la fenêtre (application installée) ou du navigateur. Elle reste visible au défilement. */
+body::before {
+  content: ""; position: fixed; z-index: 50; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--ink); pointer-events: none;
+}
 #barre-mobile { display: none; }
 #fond { display: none; }
 

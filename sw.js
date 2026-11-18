@@ -3,11 +3,11 @@
    Stratégie :
    - fichiers de l'application : le réseau d'abord, en revalidant auprès du serveur
      (cache: "no-cache") pour ne pas resservir la copie que le navigateur garde
-     10 minutes ; la copie en cache si le réseau ne répond pas ;
-   - polices Google : le cache d'abord, elles ne changent pas.
+     10 minutes ; la copie en cache si le réseau ne répond pas.
+   Les polices sont des fichiers du site comme les autres : rien n'est demandé à un tiers.
 
    Quand un outil est ajouté, ajouter sa page à FICHIERS et augmenter VERSION. */
-const VERSION = "mini-outils-v5";
+const VERSION = "mini-outils-v6";
 const FICHIERS = [
   "./",
   "index.html",
@@ -23,10 +23,16 @@ const FICHIERS = [
   "manifest.webmanifest",
   "icones/icone-192.png",
   "icones/icone-512.png",
-  "icones/structurre.svg"
+  "icones/structurre.svg",
+  "polices/instrument-serif-italique-latin-ext.woff2",
+  "polices/instrument-serif-italique-latin.woff2",
+  "polices/instrument-serif-latin-ext.woff2",
+  "polices/instrument-serif-latin.woff2",
+  "polices/inter-tight-latin-ext.woff2",
+  "polices/inter-tight-latin.woff2",
+  "polices/jetbrains-mono-latin-ext.woff2",
+  "polices/jetbrains-mono-latin.woff2"
 ];
-const POLICES = ["https://fonts.googleapis.com", "https://fonts.gstatic.com"];
-
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(FICHIERS)).then(() => self.skipWaiting()));
 });
@@ -43,17 +49,6 @@ self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET") return;
   const url = new URL(req.url);
-
-  if (POLICES.includes(url.origin)) {
-    e.respondWith(
-      caches.match(req).then((enCache) => enCache || fetch(req).then((rep) => {
-        const copie = rep.clone();
-        caches.open(VERSION).then((c) => c.put(req, copie));
-        return rep;
-      }))
-    );
-    return;
-  }
 
   if (url.origin !== self.location.origin) return;
 

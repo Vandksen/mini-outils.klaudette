@@ -11,7 +11,7 @@ window.MiniOutils = (function () {
   // dernier chiffre pour une retouche, chiffre du milieu pour un nouvel outil.
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
-  var VERSION = "1.2.5";
+  var VERSION = "1.3.0";
 
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [
@@ -559,8 +559,25 @@ window.MiniOutils = (function () {
     });
   }
 
+  // Pied de page commun : liens légaux et mention « Un projet STRUCTURRE », ajoutés
+  // après les indications propres à chaque page.
+  function pied() {
+    var c = document.querySelector(".site-footer .conteneur");
+    if (!c) return;
+    var bloc = document.createElement("div");
+    bloc.className = "pied-commun";
+    bloc.innerHTML =
+      '<nav class="legal" aria-label="Liens légaux">' +
+      '<a href="mentions-legales.html">Mentions légales</a>' +
+      '<a href="mentions-legales.html#donnees">Données personnelles</a></nav>' +
+      '<span class="projet">Un projet <a href="https://structurre.fr" target="_blank" rel="noopener">' +
+      '<img src="icones/structurre.svg" alt="" width="20" height="20">STRUCTURRE</a></span>';
+    c.appendChild(bloc);
+  }
+
   calendrier();
   menu();
+  pied();
   installation();
   icone();
   reinitialisation();

@@ -7,7 +7,7 @@
    - polices Google : le cache d'abord, elles ne changent pas.
 
    Quand un outil est ajouté, ajouter sa page à FICHIERS et augmenter VERSION. */
-const VERSION = "mini-outils-v3";
+const VERSION = "mini-outils-v4";
 const FICHIERS = [
   "./",
   "index.html",
@@ -16,11 +16,13 @@ const FICHIERS = [
   "rem-gerance.html",
   "extournes.html",
   "import-banque.html",
+  "mentions-legales.html",
   "commun.css",
   "commun.js",
   "manifest.webmanifest",
   "icones/icone-192.png",
-  "icones/icone-512.png"
+  "icones/icone-512.png",
+  "icones/structurre.svg"
 ];
 const POLICES = ["https://fonts.googleapis.com", "https://fonts.gstatic.com"];
 

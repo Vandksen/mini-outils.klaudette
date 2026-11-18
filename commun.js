@@ -11,7 +11,8 @@ window.MiniOutils = (function () {
   // dernier chiffre pour une retouche, chiffre du milieu pour un nouvel outil.
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
-  var VERSION = "1.3.0";
+  // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
+  var VERSION = "1.4.0";
 
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [
@@ -86,7 +87,7 @@ window.MiniOutils = (function () {
       '</div><div class="pied"><button id="installer" type="button">Installer l’application</button>' +
       '<span id="installer-info" role="status" hidden></span>' +
       '<span>Calcul dans votre navigateur</span><span>Rien n\'est envoyé</span>' +
-      '<span class="version">Version ' + VERSION + '</span></div>';
+      '<a class="version" href="versions.html" title="Suivi des versions">Version ' + VERSION + '</a></div>';
     // Repli du menu sur grand écran : il reste une bande avec le logo et les numéros.
     // Le choix est mémorisé dans le navigateur.
     var replier = $("replier");
@@ -569,7 +570,8 @@ window.MiniOutils = (function () {
     bloc.innerHTML =
       '<nav class="legal" aria-label="Liens légaux">' +
       '<a href="mentions-legales.html">Mentions légales</a>' +
-      '<a href="mentions-legales.html#donnees">Données personnelles</a></nav>' +
+      '<a href="mentions-legales.html#donnees">Données personnelles</a>' +
+      '<a href="versions.html">Suivi des versions</a></nav>' +
       '<span class="projet">Un projet <a href="https://structurre.fr" target="_blank" rel="noopener">' +
       '<img src="icones/structurre.svg" alt="" width="20" height="20">STRUCTURRE</a></span>';
     c.appendChild(bloc);

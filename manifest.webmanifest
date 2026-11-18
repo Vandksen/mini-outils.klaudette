@@ -1,0 +1,25 @@
+{
+  "name": "Mini-outils",
+  "short_name": "Mini-outils",
+  "description": "Générateurs d'écritures pour Cador : FNP, abonnement mensuel, rémunération gérance, extournes.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "./fnp.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F4EFE3",
+  "theme_color": "#1136DB",
+  "categories": ["productivity", "finance"],
+  "icons": [
+    { "src": "icones/icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icones/icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icones/icone-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Calcul de FNP", "url": "./fnp.html" },
+    { "name": "Abonnement mensuel", "url": "./abo-mensuel.html" },
+    { "name": "Rémunération gérance 64x", "url": "./rem-gerance.html" },
+    { "name": "Extournes", "url": "./extournes.html" }
+  ]
+}

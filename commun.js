@@ -438,6 +438,15 @@ window.MiniOutils = (function () {
     });
   }
 
+  // Application installable (PWA) : le service worker met les pages en cache pour un
+  // usage hors ligne. Il ne fonctionne que servi en https ou sur localhost, pas en
+  // ouvrant le fichier par double-clic.
+  if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw.js").catch(function () {});
+    });
+  }
+
   calendrier();
   menu();
   icone();

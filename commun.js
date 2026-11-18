@@ -493,9 +493,18 @@ window.MiniOutils = (function () {
     var bouton = document.createElement("button");
     bouton.type = "button";
     bouton.textContent = "Mettre à jour";
-    bouton.addEventListener("click", function () { location.reload(); });
+    bouton.addEventListener("click", rechargeFrais);
     b.appendChild(bouton);
     document.body.appendChild(b);
+  }
+  // Avant de recharger, on redemande au serveur la page, les styles et le script
+  // (cache: "reload"), pour que le navigateur n'assemble pas un nouveau script avec
+  // d'anciens styles gardés en mémoire : c'est ce qui donnait un bouton sans style.
+  function rechargeFrais() {
+    var fichiers = [location.href.split("#")[0], "commun.css", "commun.js", "manifest.webmanifest"];
+    Promise.all(fichiers.map(function (f) {
+      return fetch(f, { cache: "reload" }).catch(function () {});
+    })).then(function () { location.reload(); });
   }
   function verifieVersion() {
     if (!enLigne) return;
@@ -509,7 +518,7 @@ window.MiniOutils = (function () {
         // Un seul rechargement automatique par version, pour ne jamais boucler.
         if (!saisieEnCours && deja !== m[1]) {
           try { sessionStorage.setItem("mini-outils-maj", m[1]); } catch (e) {}
-          location.reload();
+          rechargeFrais();
         } else proposeMaj(m[1]);
       })
       .catch(function () {});

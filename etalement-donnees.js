@@ -1,4 +1,4 @@
-/* Mini-outils — table des comptes de l'outil « Étalement » (etalement.html).
+/* Mini-outils — table des comptes de l'outil « Cutter » (etalement.html).
    Reprise le 18/11/2026 de l'onglet « PCG » du classeur « Dashboard - Cutter ».
    libelles : libellé par défaut d'un compte, cherché sur ses 4 puis ses 3 premiers chiffres.
    contreparties : compte 4886 du cycle, cherché sur les 3 premiers chiffres du compte.

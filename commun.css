@@ -101,14 +101,15 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
   background: #1136DB url("images/fond-tempete.jpg") 78% 70% / 230% auto no-repeat;
   border: 1px solid rgba(248, 243, 230, .28);
 }
-/* Sur un écran peu haut, l'encart céderait sa place aux entrées du menu : on le masque. */
-@media (max-height: 1020px) {
+/* Les catégories du menu étant repliées d'office, l'encart tient presque toujours. Il ne
+   disparaît que sur un écran très peu haut, où il prendrait la place des entrées du menu. */
+@media (max-height: 960px) {
   /* Pas assez de hauteur pour un carré : l'encart garde sa largeur et devient un bandeau. */
   .encart { aspect-ratio: 16 / 9; padding: 12px; gap: 5px; }
   .encart strong { font-size: 15px; }
   .encart small { font-size: 11px; }
 }
-@media (max-height: 920px) { .encart-zone { display: none; } }
+@media (max-height: 840px) { .encart-zone { display: none; } }
 .encart::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8, 20, 110, .15) 0%, rgba(8, 20, 110, .82) 62%); }
 .encart strong, .encart small { position: relative; display: block; white-space: normal; }
 .encart strong { font-family: var(--sans); font-size: 17px; font-weight: 500; line-height: 1.15; letter-spacing: -0.02em; }

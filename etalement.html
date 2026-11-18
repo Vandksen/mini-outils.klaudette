@@ -7,7 +7,7 @@
 <meta name="description" content="Générateur d'écritures d'étalement d'une charge ou d'un produit sur plusieurs mois, avec les comptes 4886 et 4887 tenus par cycle, à coller dans ACDCompta.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icones/icone-180.png">
-<title>Étalement de charges et produits — Mini-outils</title>
+<title>Cutter : étalement de charges et produits — Mini-outils</title>
 <link rel="stylesheet" href="commun.css">
 </head>
 <body>
@@ -23,7 +23,7 @@
 <main>
   <div class="conteneur">
     <p class="eyebrow">Dashboard — charges et produits étalés</p>
-    <h1>Étalement de <em>charges et produits.</em></h1>
+    <h1><em>Cutter.</em></h1>
     <p class="lead"><strong>But de la page :</strong> répartir une charge ou un produit sur plusieurs mois, en passant par un compte 4886 ou 4887 propre à chaque cycle, pour que le résultat de chaque mois porte sa juste part.</p>
     <p class="lead">Renseignez la configuration. Les écritures sont générées aussitôt, prêtes à être copiées puis collées dans ACDCompta.</p>
 
@@ -53,7 +53,7 @@
           </div>
           <div class="champ">
             <label for="duree">Durée (mois)<span class="aide">Entre 1 et 120</span></label>
-            <input id="duree" type="number" min="1" max="120" step="1" value="24">
+            <input id="duree" type="number" min="1" max="120" step="1" value="12">
           </div>
           <div class="champ">
             <label for="montant">Montant à répartir</label>
@@ -119,10 +119,23 @@
           <p class="aide-bloc"><strong>Charge à recevoir :</strong> chaque mois, la quote-part est constatée avec le 4887 en contrepartie. La date de la facture est inutile.</p>
           <p class="aide-bloc"><strong>Produit :</strong> avec un compte de classe 7, les sens débit et crédit sont inversés.</p>
           <p class="aide-bloc"><strong>Code de l'étalement :</strong> repris en pièce et dans chaque libellé, il permet de retrouver et de lettrer l'étalement. Il change dès qu'un élément de la configuration change.</p>
-          <p class="aide-bloc">Le compte de contrepartie dépend du cycle du compte saisi. Ces comptes doivent exister dans le dossier, ainsi que leur équivalent en 4887 pour les charges à recevoir :</p>
+          <p class="aide-bloc">Le compte de contrepartie dépend du cycle du compte saisi. Ces comptes doivent exister dans le dossier, ainsi que leur équivalent en 4887 pour les charges à recevoir.</p>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">Créer les comptes du dossier</p>
+            <div class="actions">
+              <span class="etat" id="etatCycles" role="status"></span>
+              <button class="btn" id="copierCycles" type="button">Copier pour ACDCompta</button>
+            </div>
+          </div>
+          <p class="aide-bloc">Collée une fois dans le dossier, cette écriture équilibrée crée les comptes 4886 de chaque cycle avec leur libellé. Elle est datée du jour ; ses montants symboliques sont à extourner ou à supprimer ensuite.</p>
           <div class="cadre-table">
             <table>
-              <thead><tr><th>Compte</th><th>Cycle</th></tr></thead>
+              <thead>
+                <tr><th>Date</th><th>Pièce</th><th>Compte</th><th>Libellé</th><th class="droite">Débit</th><th class="droite">Crédit</th></tr>
+              </thead>
               <tbody id="cycles"></tbody>
             </table>
           </div>
@@ -150,8 +163,7 @@
   var ids = ["type", "dateFacture", "compte", "debut", "duree", "montant", "libelle", "finMois"];
   var RECUE = "Charge reçue à étaler";
 
-  // Numéro de jour d'un tableur (1 = 31/12/1899). Il sert au code de l'étalement, pour
-  // qu'il soit le même que celui du classeur d'origine.
+  // Numéro de jour d'un tableur (1 = 31/12/1899) : il entre dans le calcul du code.
   function numeroDeJour(d) {
     return Math.round((Date.UTC(d.a, d.m - 1, d.j) - Date.UTC(1899, 11, 30)) / 86400000);
   }
@@ -169,14 +181,12 @@
   function libelleRetenu(saisi, compte) {
     return saisi || T.libelles[compte.slice(0, 4)] || T.libelles[compte.slice(0, 3)] || "Charge à répartir";
   }
-  // Code de six lettres « AB-CD-EF », calculé à partir de toute la configuration.
+  // Code de six caractères, lettres majuscules et chiffres (« 7K2QF9 »), calculé à partir de
+  // toute la configuration : la même configuration redonne toujours le même code.
   function codeEtalement(v, facture, debut, centimes, libelle) {
     var t = [v.type, facture ? numeroDeJour(facture) : "", v.compte, numeroDeJour(debut), v.duree, centimes,
              libelle, v.finMois ? "TRUE" : "FALSE"].join("|");
-    var h = 7;
-    for (var i = 0; i < t.length; i++) h = (h * 131 + t.charCodeAt(i)) % 308915776;   // 26 puissance 6
-    var L = function (k) { return String.fromCharCode(65 + Math.floor(h / Math.pow(26, k)) % 26); };
-    return L(5) + L(4) + "-" + L(3) + L(2) + "-" + L(1) + L(0);
+    return M.code6(t);
   }
 
   function calcule() {
@@ -256,15 +266,42 @@
       : duree > 24 ? "OK - durée > 24 mois, à vérifier" : "OK";
   }
 
-  T.cycles.forEach(function (c) {
+  // Écriture qui crée les comptes de chaque cycle avec leur libellé, comme l'onglet
+  // « PCG-TDB » du classeur : 1,00 au débit de chaque compte, le dernier soldant le tout.
+  var jour = new Date();
+  var aujourdhui = M.dateFr({ a: jour.getFullYear(), m: jour.getMonth() + 1, j: jour.getDate() });
+  var ouverture = T.cycles.map(function (c, i) {
+    var dernier = i === T.cycles.length - 1;
+    return [aujourdhui, "PCG DASH", c[0], "DASH - Cycle " + c[1],
+            dernier ? "" : "1,00", dernier ? (T.cycles.length - 1) + ",00" : ""];
+  });
+  ouverture.forEach(function (ligne) {
     var tr = document.createElement("tr");
-    [[c[0], "compte"], ["DASH - Cycle " + c[1], "lib"]].forEach(function (x) {
+    ligne.forEach(function (valeur, i) {
       var td = document.createElement("td");
-      td.textContent = x[0];
-      td.className = x[1];
+      td.textContent = valeur;
+      td.className = ["", "", "compte", "lib", "droite", "droite"][i];
       tr.appendChild(td);
     });
     $("cycles").appendChild(tr);
+  });
+  $("copierCycles").addEventListener("click", function () {
+    var texte = ouverture.map(function (l) { return l.join("\t"); }).join("\r\n");
+    var etat = $("etatCycles");
+    var ok = function () { etat.textContent = ouverture.length + " lignes copiées"; };
+    var secours = function () {
+      var ta = document.createElement("textarea");
+      ta.value = texte;
+      ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      var reussi = false;
+      try { reussi = document.execCommand("copy"); } catch (e) { reussi = false; }
+      document.body.removeChild(ta);
+      if (reussi) ok(); else etat.textContent = "Copie impossible dans ce navigateur";
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(texte).then(ok, secours);
+    else secours();
   });
 
   M.brancher(ids, calcule);

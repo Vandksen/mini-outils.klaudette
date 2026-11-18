@@ -12,13 +12,13 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.10.0";
+  var VERSION = "1.10.1";
 
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [
     { fichier: "fnp.html", nom: "Calcul de FNP" },
     { fichier: "abo-mensuel.html", nom: "Abonnement mensuel" },
-    { fichier: "rem-gerance.html", nom: "Rémunération gérance 64x" },
+    { fichier: "rem-gerance.html", nom: "Rémunération gérance" },
     { fichier: "extournes.html", nom: "Extournes" },
     { fichier: "import-banque.html", nom: "Import banque" }
   ];
@@ -26,7 +26,7 @@ window.MiniOutils = (function () {
   // tenus par cycle. Pour y ajouter une page :
   // une ligne ici, de la même forme que dans OUTILS.
   var DASHBOARD = [
-    { fichier: "etalement.html", nom: "Étalement" }
+    { fichier: "etalement.html", nom: "Cutter" }
   ];
   // Catégorie « Référentiel » du menu : pages de consultation, lisibles aussi sur téléphone.
   // Pour y ajouter une page : une ligne ici, de la même forme que dans OUTILS.
@@ -96,14 +96,11 @@ window.MiniOutils = (function () {
     var nav = $("menu");
     if (!nav) return;
     var page = location.pathname.split("/").pop() || "index.html";
-    // Chaque catégorie du menu est un accordéon : son titre est un bouton qui replie ou
-    // déplie ses entrées. Les catégories repliées sont mémorisées sur le poste ; celle
-    // de la page affichée reste toujours dépliée.
-    var repliees = [];
-    try { repliees = JSON.parse(localStorage.getItem("mini-outils-rubriques-repliees")) || []; } catch (e) {}
-    if (!Array.isArray(repliees)) repliees = [];
+    // Chaque catégorie du menu est un accordéon : son titre est un bouton qui déplie ses
+    // entrées. Elles sont repliées d'office, sauf celle de la page affichée ; en déplier
+    // une replie les autres.
     var rubrique = function (cle, titre, contenu, classe) {
-      var ouverte = repliees.indexOf(cle) === -1 || contenu.indexOf('aria-current="page"') !== -1;
+      var ouverte = contenu.indexOf('aria-current="page"') !== -1;
       return '<h2' + (classe ? ' class="' + classe + '"' : '') + '><button type="button" class="rubrique" data-cle="' + cle +
              '" aria-expanded="' + ouverte + '" aria-controls="rubrique-' + cle + '"><span>' + titre + '</span>' + CHEVRON + '</button></h2>' +
              '<div class="groupe' + (classe ? ' ' + classe : '') + '" id="rubrique-' + cle + '"' + (ouverte ? '' : ' hidden') + '>' + contenu + '</div>';
@@ -147,17 +144,18 @@ window.MiniOutils = (function () {
       '<a class="version" href="versions.html" title="Suivi des versions">Version ' + VERSION + '</a></div>';
     // Le menu n'est plus repliable : on efface le choix qu'une ancienne version a pu mémoriser.
     try { localStorage.removeItem("mini-outils-menu-replie"); } catch (e) {}
+    // Les accordéons ne mémorisent plus rien non plus.
+    try { localStorage.removeItem("mini-outils-rubriques-repliees"); } catch (e) {}
 
     nav.addEventListener("click", function (e) {
       var b = e.target.closest(".rubrique");
       if (!b) return;
-      var cle = b.getAttribute("data-cle");
-      var ouverte = b.getAttribute("aria-expanded") !== "true";
-      b.setAttribute("aria-expanded", String(ouverte));
-      $("rubrique-" + cle).hidden = !ouverte;
-      repliees = repliees.filter(function (c) { return c !== cle; });
-      if (!ouverte) repliees.push(cle);
-      try { localStorage.setItem("mini-outils-rubriques-repliees", JSON.stringify(repliees)); } catch (err) {}
+      var ouvrir = b.getAttribute("aria-expanded") !== "true";
+      Array.prototype.forEach.call(nav.querySelectorAll(".rubrique"), function (autre) {
+        var ouverte = autre === b && ouvrir;
+        autre.setAttribute("aria-expanded", String(ouverte));
+        $("rubrique-" + autre.getAttribute("data-cle")).hidden = !ouverte;
+      });
     });
 
     var ouvrir = $("ouvrir"), fond = $("fond");
@@ -178,6 +176,13 @@ window.MiniOutils = (function () {
     return Math.round(parseFloat(s) * 100);
   }
   function deux(n) { return (n < 10 ? "0" : "") + n; }
+  // Code de pièce de six caractères, lettres majuscules et chiffres (« 7K2QF9 »), calculé
+  // à partir d'un texte : le même texte redonne toujours le même code.
+  function code6(texte) {
+    var h = 7;
+    for (var i = 0; i < texte.length; i++) h = (h * 131 + texte.charCodeAt(i)) % 2176782336;   // 36 puissance 6
+    return ("00000" + h.toString(36).toUpperCase()).slice(-6);
+  }
   // Format de collage : "1234,56" sans séparateur de milliers.
   function brut(c) {
     var signe = c < 0 ? "-" : "", a = Math.abs(c);
@@ -725,6 +730,6 @@ window.MiniOutils = (function () {
   reinitialisation();
   lienPage();
 
-  return { $: $, centimes: centimes, deux: deux, affiche: affiche, lireDate: lireDate,
+  return { $: $, centimes: centimes, deux: deux, code6: code6, affiche: affiche, lireDate: lireDate,
            decale: decale, dateFr: dateFr, copierTexte: copierTexte, verifieVersion: verifieVersion, rendre: rendre, texteACopier: texteACopier, brancher: brancher };
 })();

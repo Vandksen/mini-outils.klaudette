@@ -57,7 +57,7 @@
             <input id="montant" class="droite" type="text" inputmode="decimal" value="2000,00">
           </div>
           <div class="champ">
-            <label for="piece">Pièce rémunération<span class="aide">Facultatif</span></label>
+            <label for="piece">Pièce rémunération<span class="aide">Vide : code automatique de 6 caractères</span></label>
             <input id="piece" type="text">
           </div>
           <div class="champ">
@@ -173,8 +173,9 @@
     if (!blocage && provision && charges === 0) alertes.push("Renseignez le % de charges sociales : la provision n'est pas générée.");
 
     if (!blocage) {
-      // Le classeur met un espace dans la colonne pièce des lignes de rémunération.
-      var piece = v.piece || " ";
+      // Sans pièce saisie, un code de six caractères tiré de la configuration sert de pièce :
+      // il permet de retrouver et de lettrer les lignes de rémunération.
+      var piece = v.piece || M.code6(["gerance", v.date, v.mois, v.gerant, v.cptGerant, v.cptCharge, montant].join("|"));
       // Ordre identique au classeur : gérant (crédit), charge (débit), puis provision.
       var lignes = [
         { cpt: v.cptGerant, mnt: montant, debit: false, piece: piece, lib: "Rémunération gérance", nom: "le compte gérant" },

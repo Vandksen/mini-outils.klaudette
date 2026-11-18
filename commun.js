@@ -11,7 +11,7 @@ window.MiniOutils = (function () {
   // dernier chiffre pour une retouche, chiffre du milieu pour un nouvel outil.
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
-  var VERSION = "1.1.1";
+  var VERSION = "1.2.0";
 
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [
@@ -67,7 +67,8 @@ window.MiniOutils = (function () {
         return '<a class="entree" href="' + o.fichier + '"' + (o.fichier === page ? ' aria-current="page"' : '') +
                ' title="' + o.nom + '"><span class="num">' + deux(i + 1) + '</span><span class="lib">' + o.nom + '</span></a>';
       }).join("") +
-      '</div><div class="pied"><span>Calcul dans votre navigateur</span><span>Rien n\'est envoyé</span>' +
+      '</div><div class="pied"><button id="installer" type="button" hidden>Installer l’application</button>' +
+      '<span>Calcul dans votre navigateur</span><span>Rien n\'est envoyé</span>' +
       '<span class="version">Version ' + VERSION + '</span></div>';
     // Repli du menu sur grand écran : il reste une bande avec le logo et les numéros.
     // Le choix est mémorisé dans le navigateur.
@@ -501,8 +502,34 @@ window.MiniOutils = (function () {
     if (document.visibilityState === "visible") verifieVersion();
   });
 
+  // Bouton « Installer l'application » en bas du menu. Le navigateur signale quand
+  // l'installation est possible (événement beforeinstallprompt, Chrome et Edge) : le
+  // bouton n'apparaît qu'à ce moment-là, et disparaît une fois l'application installée.
+  var invite = null;
+  function montreInstaller() {
+    var b = $("installer");
+    if (b) b.hidden = !invite;
+  }
+  window.addEventListener("beforeinstallprompt", function (e) {
+    e.preventDefault(); // on garde l'invite pour la déclencher au clic
+    invite = e;
+    montreInstaller();
+  });
+  window.addEventListener("appinstalled", function () { invite = null; montreInstaller(); });
+  function installation() {
+    var b = $("installer");
+    if (!b) return;
+    montreInstaller();
+    b.addEventListener("click", function () {
+      if (!invite) return;
+      invite.prompt();
+      Promise.resolve(invite.userChoice).then(function () { invite = null; montreInstaller(); });
+    });
+  }
+
   calendrier();
   menu();
+  installation();
   icone();
   reinitialisation();
 

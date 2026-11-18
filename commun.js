@@ -7,6 +7,10 @@ window.MiniOutils = (function () {
   var ecritures = [];
   var milieu = [];
 
+  // Numéro de version affiché en bas du menu. À augmenter à chaque publication :
+  // dernier chiffre pour une retouche, chiffre du milieu pour un nouvel outil.
+  var VERSION = "1.1.0";
+
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [
     { fichier: "fnp.html", nom: "Calcul de FNP" },
@@ -61,7 +65,8 @@ window.MiniOutils = (function () {
         return '<a class="entree" href="' + o.fichier + '"' + (o.fichier === page ? ' aria-current="page"' : '') +
                ' title="' + o.nom + '"><span class="num">' + deux(i + 1) + '</span><span class="lib">' + o.nom + '</span></a>';
       }).join("") +
-      '</div><div class="pied"><span>Calcul dans votre navigateur</span><span>Rien n\'est envoyé</span></div>';
+      '</div><div class="pied"><span>Calcul dans votre navigateur</span><span>Rien n\'est envoyé</span>' +
+      '<span class="version">Version ' + VERSION + '</span></div>';
     // Repli du menu sur grand écran : il reste une bande avec le logo et les numéros.
     // Le choix est mémorisé dans le navigateur.
     var replier = $("replier");

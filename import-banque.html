@@ -58,7 +58,7 @@
 
         <section class="panel">
           <p class="eyebrow">02 — Relevé</p>
-          <p class="aide-bloc">Une ligne par opération, colonnes séparées par des tabulations : date, libellé, débit, crédit, puis le compte de contrepartie proposé (facultatif). Sans compte proposé, la contrepartie par défaut est utilisée.</p>
+          <p class="aide-bloc">Une ligne par opération, sur 4 colonnes séparées par des tabulations : date, libellé, débit, crédit. La contrepartie par défaut est utilisée ; une 5e colonne facultative peut porter un autre compte de contrepartie pour l'opération.</p>
           <textarea id="source" class="saisie" spellcheck="false" wrap="off" aria-label="Relevé à coller"></textarea>
         </section>
 
@@ -114,13 +114,13 @@
   var M = window.MiniOutils, $ = M.$;
   var ids = ["banque", "defaut", "sens", "prefixe", "source"];
 
-  // Exemple fictif de départ : date, libellé, débit, crédit, compte proposé.
+  // Exemple fictif de départ, sur 4 colonnes : date, libellé, débit, crédit.
   var TAB = String.fromCharCode(9), SAUT = String.fromCharCode(10);
   $("source").value = [
-    ["02/09/2026", "Prélèvement loyer", "1200,00", "", "613200"].join(TAB),
-    ["02/09/2026", "Virement client DUPONT", "", "3000,00", "411000"].join(TAB),
-    ["03/09/2026", "Frais bancaires", "12,50", "", "627000"].join(TAB),
-    ["05/09/2026", "Retrait espèces", "200,00", "", ""].join(TAB)
+    ["02/09/2026", "Prélèvement loyer", "1200,00", ""].join(TAB),
+    ["02/09/2026", "Virement client DUPONT", "", "3000,00"].join(TAB),
+    ["03/09/2026", "Frais bancaires", "12,50", ""].join(TAB),
+    ["05/09/2026", "Retrait espèces", "200,00", ""].join(TAB)
   ].join(SAUT);
 
   function calcule() {

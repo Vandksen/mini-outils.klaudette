@@ -1,12 +1,13 @@
 /* Mini-outils — service worker : rend l'application installable et utilisable hors ligne.
 
    Stratégie :
-   - fichiers de l'application : le réseau d'abord (on a toujours la dernière version
-     quand on est connecté), la copie en cache si le réseau ne répond pas ;
+   - fichiers de l'application : le réseau d'abord, en revalidant auprès du serveur
+     (cache: "no-cache") pour ne pas resservir la copie que le navigateur garde
+     10 minutes ; la copie en cache si le réseau ne répond pas ;
    - polices Google : le cache d'abord, elles ne changent pas.
 
    Quand un outil est ajouté, ajouter sa page à FICHIERS et augmenter VERSION. */
-const VERSION = "mini-outils-v2";
+const VERSION = "mini-outils-v3";
 const FICHIERS = [
   "./",
   "index.html",
@@ -54,7 +55,7 @@ self.addEventListener("fetch", (e) => {
   if (url.origin !== self.location.origin) return;
 
   e.respondWith(
-    fetch(req)
+    fetch(req.url, { cache: "no-cache" })
       .then((rep) => {
         if (rep.ok) {
           const copie = rep.clone();

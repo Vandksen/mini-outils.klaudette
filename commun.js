@@ -7,9 +7,11 @@ window.MiniOutils = (function () {
   var ecritures = [];
   var milieu = [];
 
-  // Numéro de version affiché en bas du menu. À augmenter à chaque publication :
+  // Numéro de version affiché en bas du menu. À augmenter à CHAQUE publication :
   // dernier chiffre pour une retouche, chiffre du milieu pour un nouvel outil.
-  var VERSION = "1.1.0";
+  // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
+  // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
+  var VERSION = "1.1.1";
 
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [
@@ -448,11 +450,56 @@ window.MiniOutils = (function () {
   // Application installable (PWA) : le service worker met les pages en cache pour un
   // usage hors ligne. Il ne fonctionne que servi en https ou sur localhost, pas en
   // ouvrant le fichier par double-clic.
-  if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+  var enLigne = /^https?:$/.test(location.protocol);
+  if ("serviceWorker" in navigator && enLigne) {
     window.addEventListener("load", function () {
-      navigator.serviceWorker.register("sw.js").catch(function () {});
+      navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(function (reg) {
+        document.addEventListener("visibilitychange", function () {
+          if (document.visibilityState === "visible") reg.update().catch(function () {});
+        });
+      }).catch(function () {});
     });
   }
+
+  // Mise à jour automatique : à l'ouverture et à chaque retour sur la page, on compare
+  // la version chargée à celle du serveur. Si elle a changé, la page se recharge seule,
+  // sauf si une saisie est en cours : dans ce cas un bandeau propose la mise à jour.
+  var saisieEnCours = false;
+  document.addEventListener("input", function () { saisieEnCours = true; }, true);
+  function proposeMaj(version) {
+    if (document.querySelector(".maj")) return;
+    var b = document.createElement("div");
+    b.className = "maj";
+    b.setAttribute("role", "status");
+    b.appendChild(document.createTextNode("Version " + version + " disponible"));
+    var bouton = document.createElement("button");
+    bouton.type = "button";
+    bouton.textContent = "Mettre à jour";
+    bouton.addEventListener("click", function () { location.reload(); });
+    b.appendChild(bouton);
+    document.body.appendChild(b);
+  }
+  function verifieVersion() {
+    if (!enLigne) return;
+    fetch("commun.js", { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.text() : ""; })
+      .then(function (texte) {
+        var m = /var VERSION = "([^"]+)"/.exec(texte);
+        if (!m || m[1] === VERSION) return;
+        var deja = null;
+        try { deja = sessionStorage.getItem("mini-outils-maj"); } catch (e) {}
+        // Un seul rechargement automatique par version, pour ne jamais boucler.
+        if (!saisieEnCours && deja !== m[1]) {
+          try { sessionStorage.setItem("mini-outils-maj", m[1]); } catch (e) {}
+          location.reload();
+        } else proposeMaj(m[1]);
+      })
+      .catch(function () {});
+  }
+  verifieVersion();
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") verifieVersion();
+  });
 
   calendrier();
   menu();
@@ -460,5 +507,5 @@ window.MiniOutils = (function () {
   reinitialisation();
 
   return { $: $, centimes: centimes, deux: deux, affiche: affiche, lireDate: lireDate,
-           decale: decale, dateFr: dateFr, copierTexte: copierTexte, rendre: rendre, texteACopier: texteACopier, brancher: brancher };
+           decale: decale, dateFr: dateFr, copierTexte: copierTexte, verifieVersion: verifieVersion, rendre: rendre, texteACopier: texteACopier, brancher: brancher };
 })();

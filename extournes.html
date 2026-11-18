@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Extournes — Mini-outils</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="commun.css">
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">Générateur d'écritures — contre-passation</p>
+    <h1>Écritures <em>d'extourne.</em></h1>
+    <p class="lead">Collez les écritures à extourner, telles que copiées depuis Cador. La page inverse débit et crédit, date le tout au jour choisi et préfixe les libellés.</p>
+
+    <div class="grille">
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">01 — Configuration</p>
+          <div class="champ">
+            <label for="date">Date de l'extourne</label>
+            <input id="date" type="date" value="2026-01-01">
+          </div>
+          <div class="champ">
+            <label for="prefixe">Préfixe du libellé<span class="aide">« Extourne - » si vide</span></label>
+            <input id="prefixe" type="text" placeholder="Extourne - " value="Extourne - ">
+          </div>
+          <div class="champ">
+            <label for="piece">Pièce<span class="aide">Facultatif</span></label>
+            <input id="piece" type="text">
+          </div>
+          <ul class="alertes" id="alertes"></ul>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">02 — Écritures d'origine</p>
+          <p class="aide-bloc">Une ligne par écriture, colonnes séparées par des tabulations : date, pièce, compte, libellé, deux colonnes ignorées, débit, crédit. Le format à 6 colonnes, sans les deux colonnes ignorées, est aussi accepté.</p>
+          <textarea id="source" class="saisie" spellcheck="false" wrap="off" aria-label="Écritures d'origine à coller"></textarea>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">03 — Vérification</p>
+          <div class="champ"><span class="etiquette">Lignes lues</span><span class="valeur droite" id="nbLues"></span></div>
+          <div class="champ"><span class="etiquette">Total débit</span><span class="valeur droite" id="totDebit"></span></div>
+          <div class="champ"><span class="etiquette">Total crédit</span><span class="valeur droite" id="totCredit"></span></div>
+          <div class="champ"><span class="etiquette">Équilibre</span><span class="valeur droite"><span id="equilibre"></span></span></div>
+          <div class="champ"><span class="etiquette">Lignes générées</span><span class="valeur droite" id="nbLignes"></span></div>
+        </section>
+      </div>
+
+      <section class="panel">
+        <div class="barre">
+          <p class="eyebrow">04 — Écritures d'extourne</p>
+          <div class="actions">
+            <span class="etat" id="etat" role="status"></span>
+            <button class="btn" id="copier" type="button">Copier pour Cador</button>
+          </div>
+        </div>
+        <div class="cadre-table">
+          <table>
+            <thead>
+              <tr>
+                <th>N°</th><th>Date</th><th>Pièce</th><th>Compte</th><th>Libellé</th>
+                <th class="droite">Débit</th><th class="droite">Crédit</th>
+              </tr>
+            </thead>
+            <tbody id="lignes"></tbody>
+          </table>
+        </div>
+        <div class="vide" id="vide" hidden></div>
+      </section>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Colonnes copiées : date · pièce · compte · libellé · vide · vide · débit · crédit</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var ids = ["date", "prefixe", "piece", "source"];
+
+  // Exemple fictif de départ : deux lignes de stock au format Cador à 8 colonnes.
+  var TAB = String.fromCharCode(9), SAUT = String.fromCharCode(10);
+  $("source").value = [
+    ["31/12/2025", "", "372000", "Stocks 31.12.2025", "", "Faux", "1000,00", "0,00"].join(TAB),
+    ["31/12/2025", "", "603720", "Stocks 31.12.2025", "", "Faux", "0,00", "1000,00"].join(TAB)
+  ].join(SAUT);
+
+  function calcule() {
+    var d = M.lireDate($("date").value);
+    // Le préfixe n'est pas rogné : l'espace final de « Extourne - » compte.
+    var prefixe = $("prefixe").value || "Extourne - ", piece = $("piece").value.trim();
+    $("date").classList.toggle("erreur", !d);
+
+    var alertes = [], ecritures = [], lues = 0;
+    var lignes = $("source").value.split(/\r?\n/);
+    lignes.forEach(function (ligne, i) {
+      if (!ligne.trim()) return;
+      var c = ligne.split("\t").map(function (x) { return x.trim(); });
+      // Ligne de titres recopiée avec les écritures : ignorée.
+      if (/^date$/i.test(c[0])) return;
+      lues++;
+      // Une dernière case vide (crédit) peut disparaître au collage : on la rétablit.
+      if (c.length === 7 || c.length === 5) c.push("");
+      // 8 colonnes ou plus : débit et crédit en 7e et 8e. 6 ou 7 colonnes : en 5e et 6e.
+      var iDebit = c.length >= 8 ? 6 : 4;
+      if (c.length < 6) {
+        alertes.push("Ligne " + (i + 1) + " ignorée : " + c.length + " colonne" + (c.length > 1 ? "s" : "") + " au lieu de 6 ou 8.");
+        return;
+      }
+      var debit = M.centimes(c[iDebit]), credit = M.centimes(c[iDebit + 1]);
+      if (isNaN(debit) || isNaN(credit)) {
+        alertes.push("Ligne " + (i + 1) + " ignorée : le débit ou le crédit n'est pas un nombre.");
+        return;
+      }
+      if (!c[2]) {
+        alertes.push("Ligne " + (i + 1) + " ignorée : compte manquant.");
+        return;
+      }
+      // Inversion : le crédit d'origine passe au débit, et inversement.
+      // Une case vide à l'origine reste vide, un 0,00 reste 0,00, comme dans le classeur.
+      ecritures.push({
+        date: d ? M.dateFr(d) : "",
+        piece: piece,
+        compte: c[2],
+        libelle: prefixe + c[3],
+        debit: c[iDebit + 1] === "" ? null : credit,
+        credit: c[iDebit] === "" ? null : debit,
+        debut: false
+      });
+    });
+
+    var blocage = "";
+    if (!d) { blocage = "Renseignez la date de l'extourne."; ecritures = []; }
+    else if (!lues) blocage = "Collez les écritures à extourner dans le cadre « Écritures d'origine ».";
+    else if (!ecritures.length) blocage = "Aucune ligne exploitable : vérifiez le format collé.";
+
+    $("nbLues").textContent = lues;
+    M.rendre(ecritures, blocage, alertes, true);
+  }
+
+  M.brancher(ids, calcule);
+})();
+</script>
+</body>
+</html>

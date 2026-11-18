@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Abonnement mensuel — Mini-outils</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="commun.css">
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">Générateur d'écritures — abonnements et loyers</p>
+    <h1>Abonnement <em>mensuel.</em></h1>
+    <p class="lead">Renseignez la configuration. Les écritures mensuelles sont générées aussitôt, prêtes à être copiées puis collées dans Cador.</p>
+
+    <div class="grille">
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">01 — Configuration</p>
+          <div class="champ">
+            <label for="sens">Sens</label>
+            <select id="sens">
+              <option value="charge">Charge (6x)</option>
+              <option value="produit">Produit (7x)</option>
+            </select>
+          </div>
+          <div class="champ">
+            <label for="date">Date de la 1re écriture</label>
+            <input id="date" type="date" value="2026-01-01">
+          </div>
+          <div class="champ">
+            <label for="mois">Nombre de mois<span class="aide">Entre 1 et 36</span></label>
+            <input id="mois" type="number" min="1" max="36" step="1" value="12">
+          </div>
+          <div class="champ">
+            <label for="piece">Pièce</label>
+            <input id="piece" type="text" placeholder="Bail" value="Bail">
+          </div>
+          <div class="champ">
+            <label for="tiers">Nom du tiers</label>
+            <input id="tiers" type="text" value="EXEMPLE">
+          </div>
+          <div class="champ">
+            <span class="etiquette">Compte tiers automatique</span>
+            <span class="valeur code" id="tiersAuto"></span>
+          </div>
+          <div class="champ">
+            <label for="tiersForce">Compte tiers forcé<span class="aide">Facultatif</span></label>
+            <input id="tiersForce" type="text">
+          </div>
+          <div class="champ">
+            <label for="libelle">Libellé</label>
+            <input id="libelle" type="text" value="Abonnement">
+          </div>
+          <div class="champ">
+            <label for="cptPrincipal">Compte principal</label>
+            <input id="cptPrincipal" type="text" inputmode="numeric" value="613400">
+          </div>
+          <div class="champ">
+            <label for="mntPrincipal">Montant HT principal</label>
+            <input id="mntPrincipal" class="droite" type="text" inputmode="decimal" value="100,00">
+          </div>
+          <div class="champ">
+            <label for="cptSecondaire">Compte secondaire<span class="aide">Charges locatives, provisions. Facultatif</span></label>
+            <input id="cptSecondaire" type="text" inputmode="numeric">
+          </div>
+          <div class="champ">
+            <label for="mntSecondaire">Montant HT secondaire</label>
+            <input id="mntSecondaire" class="droite" type="text" inputmode="decimal">
+          </div>
+          <div class="champ">
+            <label for="cptTva">Compte de TVA<span class="aide">Facultatif</span></label>
+            <input id="cptTva" type="text" inputmode="numeric" value="445600">
+          </div>
+          <div class="champ">
+            <label for="mntTva">Montant TVA</label>
+            <input id="mntTva" class="droite" type="text" inputmode="decimal" value="20,00">
+          </div>
+          <div class="champ total">
+            <span class="etiquette">Montant TTC</span>
+            <span class="valeur" id="ttc"></span>
+          </div>
+          <ul class="alertes" id="alertes"></ul>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">02 — Vérification</p>
+          <div class="champ"><span class="etiquette">Total débit</span><span class="valeur droite" id="totDebit"></span></div>
+          <div class="champ"><span class="etiquette">Total crédit</span><span class="valeur droite" id="totCredit"></span></div>
+          <div class="champ"><span class="etiquette">Équilibre</span><span class="valeur droite"><span id="equilibre"></span></span></div>
+          <div class="champ"><span class="etiquette">Lignes générées</span><span class="valeur droite" id="nbLignes"></span></div>
+        </section>
+      </div>
+
+      <section class="panel">
+        <div class="barre">
+          <p class="eyebrow">03 — Écritures</p>
+          <div class="actions">
+            <span class="etat" id="etat" role="status"></span>
+            <button class="btn" id="copier" type="button">Copier pour Cador</button>
+          </div>
+        </div>
+        <div class="cadre-table">
+          <table>
+            <thead>
+              <tr>
+                <th>N°</th><th>Date</th><th>Pièce</th><th>Compte</th><th>Libellé</th>
+                <th class="droite">Débit</th><th class="droite">Crédit</th>
+              </tr>
+            </thead>
+            <tbody id="lignes"></tbody>
+          </table>
+        </div>
+        <div class="vide" id="vide" hidden></div>
+      </section>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Colonnes copiées : date · pièce · compte · libellé · débit · crédit</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var ids = ["sens", "date", "mois", "piece", "tiers", "tiersForce", "libelle",
+             "cptPrincipal", "mntPrincipal", "cptSecondaire", "mntSecondaire", "cptTva", "mntTva"];
+
+  function compteAuto(sens, nom) {
+    var n = nom.toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Z0-9]/g, "");
+    return n ? (sens === "produit" ? "C" : "F") + n : "";
+  }
+
+  function calcule() {
+    var v = {};
+    ids.forEach(function (id) { v[id] = $(id).value.trim(); });
+    var alertes = [], ecritures = [];
+    v.piece = v.piece || "Bail"; // valeur du classeur si la case est laissée vide
+
+    var auto = compteAuto(v.sens, v.tiers);
+    $("tiersAuto").textContent = auto || "—";
+    var cptTiers = v.tiersForce || auto;
+
+    var mnt = {
+      principal: M.centimes(v.mntPrincipal),
+      secondaire: M.centimes(v.mntSecondaire),
+      tva: M.centimes(v.mntTva)
+    };
+    [["mntPrincipal", mnt.principal], ["mntSecondaire", mnt.secondaire], ["mntTva", mnt.tva]].forEach(function (p) {
+      $(p[0]).classList.toggle("erreur", isNaN(p[1]));
+    });
+    var montantsValides = !isNaN(mnt.principal) && !isNaN(mnt.secondaire) && !isNaN(mnt.tva);
+    var ttc = montantsValides ? mnt.principal + mnt.secondaire + mnt.tva : NaN;
+    $("ttc").textContent = montantsValides ? M.affiche(ttc) + " €" : "—";
+
+    var d = M.lireDate(v.date);
+    var nb = parseInt(v.mois, 10);
+    var moisValide = /^\d+$/.test(v.mois) && nb >= 1 && nb <= 36;
+    $("date").classList.toggle("erreur", !d);
+    $("mois").classList.toggle("erreur", !moisValide);
+
+    var blocage = "";
+    if (!d || !moisValide) blocage = "Renseignez la date et le nombre de mois (entre 1 et 36).";
+    else if (!montantsValides) blocage = "Un montant n'est pas un nombre valide.";
+
+    if (!blocage) {
+      // Ordre des lignes identique au classeur : tiers, principal, secondaire, TVA.
+      var lignes = [
+        { cpt: cptTiers, mnt: ttc, nom: "le compte tiers", tiers: true },
+        { cpt: v.cptPrincipal, mnt: mnt.principal, nom: "le compte principal" },
+        { cpt: v.cptSecondaire, mnt: mnt.secondaire, nom: "le compte secondaire", secondaire: true },
+        { cpt: v.cptTva, mnt: mnt.tva, nom: "le compte de TVA" }
+      ];
+      lignes.forEach(function (l) {
+        if (l.mnt !== 0 && !l.cpt) alertes.push("Un montant est saisi mais " + l.nom + " est vide : la ligne n'est pas générée.");
+      });
+      var libSecondaire = v.libelle.replace(/\bloyers?\b/gi, "Charges");
+      for (var k = 0; k < nb; k++) {
+        var dt = M.decale(d, k), premier = true;
+        lignes.forEach(function (l) {
+          if (l.mnt === 0 || !l.cpt) return;
+          // Charge : tiers au crédit, autres au débit. Produit : l'inverse.
+          var auDebit = (v.sens === "produit") ? !!l.tiers : !l.tiers;
+          ecritures.push({
+            date: M.dateFr(dt),
+            piece: v.piece,
+            compte: l.cpt,
+            libelle: v.tiers + " - " + (l.secondaire ? libSecondaire : v.libelle) + " " + dt.a + "." + M.deux(dt.m),
+            debit: auDebit ? l.mnt : null,
+            credit: auDebit ? null : l.mnt,
+            debut: premier
+          });
+          premier = false;
+        });
+      }
+      if (!ecritures.length) blocage = "Aucune ligne à générer : renseignez au moins un compte et un montant.";
+    }
+
+    M.rendre(ecritures, blocage, alertes);
+  }
+
+  M.brancher(ids, calcule);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calcul de FNP — Mini-outils</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="commun.css">
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">Factures non parvenues — prorata en jours</p>
+    <h1>Calcul de <em>FNP.</em></h1>
+    <p class="lead">Renseignez la période et le montant de la dernière facture disponible. La provision à la clôture et la note de compte sont calculées aussitôt.</p>
+
+    <div class="grille">
+
+      <section class="panel">
+        <p class="eyebrow">01 — Dernière facture disponible</p>
+        <div class="champ">
+          <label for="debut">Début de période</label>
+          <input id="debut" type="date" value="2025-07-01">
+        </div>
+        <div class="champ">
+          <label for="fin">Fin de période</label>
+          <input id="fin" type="date" value="2025-12-31">
+        </div>
+        <div class="champ">
+          <label for="montant">Montant de la facture</label>
+          <input id="montant" class="droite" type="text" inputmode="decimal" value="366,00">
+        </div>
+        <div class="champ">
+          <label for="cloture">Date de clôture</label>
+          <input id="cloture" type="date" value="2026-03-31">
+        </div>
+        <ul class="alertes" id="alertes"></ul>
+      </section>
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">02 — Provision à constater</p>
+          <p class="resultat" id="provision"></p>
+          <div class="champ"><span class="etiquette">Période facturée</span><span class="valeur droite" id="joursFacture"></span></div>
+          <div class="champ"><span class="etiquette">Période à provisionner</span><span class="valeur droite" id="joursProvision"></span></div>
+          <div class="champ"><span class="etiquette">Coût par jour</span><span class="valeur droite" id="parJour"></span></div>
+          <div class="champ"><span class="etiquette">Provision au centime</span><span class="valeur droite" id="provisionExacte"></span></div>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">03 — Note de compte</p>
+            <div class="actions">
+              <span class="etat" id="etat" role="status"></span>
+              <button class="btn" id="copier" type="button">Copier la note</button>
+            </div>
+          </div>
+          <p class="note" id="note"></p>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Provision = montant ÷ jours facturés × jours à provisionner</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var ids = ["debut", "fin", "montant", "cloture"];
+  var note = "";
+
+  function jour(d) { return Date.UTC(d.a, d.m - 1, d.j) / 86400000; }
+  function datePoints(d) { return M.deux(d.j) + "." + M.deux(d.m) + "." + d.a; }
+  function entier(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
+
+  function calcule() {
+    var debut = M.lireDate($("debut").value), fin = M.lireDate($("fin").value), cloture = M.lireDate($("cloture").value);
+    var montant = M.centimes($("montant").value);
+    $("debut").classList.toggle("erreur", !debut);
+    $("fin").classList.toggle("erreur", !fin);
+    $("cloture").classList.toggle("erreur", !cloture);
+    $("montant").classList.toggle("erreur", isNaN(montant));
+
+    var alertes = [];
+    var jFacture = debut && fin ? jour(fin) - jour(debut) : NaN;
+    var jProvision = fin && cloture ? jour(cloture) - jour(fin) : NaN;
+    if (!debut || !fin || !cloture) alertes.push("Renseignez les trois dates.");
+    else if (jFacture <= 0) alertes.push("La fin de période doit être postérieure au début.");
+    else if (jProvision < 0) alertes.push("La clôture est antérieure à la fin de la facture : il n'y a rien à provisionner.");
+    if (isNaN(montant)) alertes.push("Le montant n'est pas un nombre valide.");
+
+    $("joursFacture").textContent = isNaN(jFacture) ? "—" : entier(jFacture) + " jours";
+    $("joursProvision").textContent = isNaN(jProvision) ? "—" : entier(jProvision) + " jours";
+
+    var valide = !alertes.length;
+    note = "";
+    if (valide) {
+      // Comme le classeur : ROUND(montant / jours facturés × jours à provisionner ; 2).
+      var provision = Math.round(montant * jProvision / jFacture);
+      var arrondie = Math.round(provision / 100);
+      $("provision").textContent = entier(arrondie) + " €";
+      $("provisionExacte").textContent = M.affiche(provision) + " €";
+      $("parJour").textContent = (montant / 100 / jFacture).toFixed(4).replace(".", ",") + " €";
+      note = "Calcul de la facture non parvenue (FNP) : (" + M.affiche(montant) + " Euros / " + jFacture +
+             " jours x " + jProvision + " jours) soit " + jProvision + " jours du " + datePoints(fin) +
+             " au " + datePoints(cloture) + " pour une provision à constater de " + entier(arrondie) + " Euros";
+    } else {
+      $("provision").textContent = "—";
+      $("provisionExacte").textContent = "—";
+      $("parJour").textContent = "—";
+    }
+    $("note").textContent = note || "La note s'affichera une fois la configuration complète.";
+    $("copier").disabled = !note;
+    $("etat").textContent = "";
+
+    var ul = $("alertes");
+    ul.textContent = "";
+    alertes.forEach(function (a) {
+      var li = document.createElement("li");
+      li.textContent = a;
+      ul.appendChild(li);
+    });
+  }
+
+  ids.forEach(function (id) {
+    $(id).addEventListener("input", calcule);
+    $(id).addEventListener("change", calcule);
+  });
+  $("copier").addEventListener("click", function () { M.copierTexte(note, "Note copiée"); });
+  calcule();
+})();
+</script>
+</body>
+</html>

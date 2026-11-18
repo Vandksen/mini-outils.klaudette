@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rémunération gérance 64x — Mini-outils</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="commun.css">
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">Générateur d'écritures — comptes 64x</p>
+    <h1>Rémunération <em>gérance.</em></h1>
+    <p class="lead">Renseignez la configuration. Les écritures mensuelles de rémunération, et la provision de charges sociales si vous la cochez, sont prêtes à être collées dans Cador.</p>
+
+    <div class="grille">
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">01 — Configuration</p>
+          <div class="champ">
+            <label for="date">Date de la 1re écriture</label>
+            <input id="date" type="date" value="2026-01-01">
+          </div>
+          <div class="champ">
+            <label for="mois">Nombre de mois<span class="aide">12 si vide, 36 au plus</span></label>
+            <input id="mois" type="number" min="1" max="36" step="1" placeholder="12" value="12">
+          </div>
+          <div class="champ">
+            <label for="gerant">Nom du gérant</label>
+            <input id="gerant" type="text" value="DUPONT">
+          </div>
+          <div class="champ">
+            <label for="cptGerant">Compte gérant</label>
+            <input id="cptGerant" type="text" inputmode="numeric" value="455110">
+          </div>
+          <div class="champ">
+            <label for="cptCharge">Compte de charge</label>
+            <input id="cptCharge" type="text" inputmode="numeric" value="641100">
+          </div>
+          <div class="champ">
+            <label for="montant">Montant mensuel</label>
+            <input id="montant" class="droite" type="text" inputmode="decimal" value="2000,00">
+          </div>
+          <div class="champ">
+            <label for="piece">Pièce rémunération<span class="aide">Facultatif</span></label>
+            <input id="piece" type="text">
+          </div>
+          <div class="champ">
+            <label for="provision">Provisionner les charges</label>
+            <input id="provision" type="checkbox">
+          </div>
+          <div class="champ prov">
+            <label for="taux">% de charges sociales</label>
+            <input id="taux" class="droite" type="text" inputmode="decimal" value="45">
+          </div>
+          <div class="champ prov">
+            <label for="cptDette">Compte de dette sociale</label>
+            <input id="cptDette" type="text" inputmode="numeric" placeholder="438610" value="438610">
+          </div>
+          <div class="champ prov">
+            <label for="cptCotis">Compte de cotisations</label>
+            <input id="cptCotis" type="text" inputmode="numeric" placeholder="646900" value="646900">
+          </div>
+          <div class="champ prov">
+            <label for="pieceProv">Pièce provision</label>
+            <input id="pieceProv" type="text" placeholder="TDB" value="TDB">
+          </div>
+          <div class="champ total">
+            <span class="etiquette">Charges sociales par mois</span>
+            <span class="valeur" id="charges"></span>
+          </div>
+          <ul class="alertes" id="alertes"></ul>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">02 — Vérification</p>
+          <div class="champ"><span class="etiquette">Total débit</span><span class="valeur droite" id="totDebit"></span></div>
+          <div class="champ"><span class="etiquette">Total crédit</span><span class="valeur droite" id="totCredit"></span></div>
+          <div class="champ"><span class="etiquette">Équilibre</span><span class="valeur droite"><span id="equilibre"></span></span></div>
+          <div class="champ"><span class="etiquette">Lignes générées</span><span class="valeur droite" id="nbLignes"></span></div>
+        </section>
+      </div>
+
+      <section class="panel">
+        <div class="barre">
+          <p class="eyebrow">03 — Écritures</p>
+          <div class="actions">
+            <span class="etat" id="etat" role="status"></span>
+            <button class="btn" id="copier" type="button">Copier pour Cador</button>
+          </div>
+        </div>
+        <div class="cadre-table">
+          <table>
+            <thead>
+              <tr>
+                <th>N°</th><th>Date</th><th>Pièce</th><th>Compte</th><th>Libellé</th>
+                <th class="droite">Débit</th><th class="droite">Crédit</th>
+              </tr>
+            </thead>
+            <tbody id="lignes"></tbody>
+          </table>
+        </div>
+        <div class="vide" id="vide" hidden></div>
+      </section>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Colonnes copiées : date · pièce · compte · libellé · débit · crédit</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var ids = ["date", "mois", "gerant", "cptGerant", "cptCharge", "montant", "piece",
+             "provision", "taux", "cptDette", "cptCotis", "pieceProv"];
+
+  function calcule() {
+    var v = {};
+    ids.forEach(function (id) { v[id] = $(id).value.trim(); });
+    // Cases laissées vides : valeurs fixées dans le classeur.
+    v.mois = v.mois || "12";
+    v.cptDette = v.cptDette || "438610";
+    v.cptCotis = v.cptCotis || "646900";
+    v.pieceProv = v.pieceProv || "TDB";
+    var provision = $("provision").checked;
+    var alertes = [], ecritures = [];
+
+    // Les réglages de provision ne servent que si la case est cochée.
+    Array.prototype.forEach.call(document.querySelectorAll(".champ.prov"), function (c) { c.hidden = !provision; });
+
+    var montant = M.centimes(v.montant);
+    var taux = M.centimes(v.taux); // en centièmes de pour cent : 45 % -> 4500
+    $("montant").classList.toggle("erreur", isNaN(montant));
+    $("taux").classList.toggle("erreur", provision && isNaN(taux));
+    // Charges = arrondi au centime de montant × taux, comme ROUND(montant*taux;2).
+    var charges = (!isNaN(montant) && !isNaN(taux)) ? Math.round(montant * taux / 10000) : NaN;
+    $("charges").textContent = !provision ? "Non provisionnées" : (isNaN(charges) ? "—" : M.affiche(charges) + " €");
+
+    var d = M.lireDate(v.date);
+    var nb = parseInt(v.mois, 10);
+    var moisValide = /^\d+$/.test(v.mois) && nb >= 1 && nb <= 36;
+    $("date").classList.toggle("erreur", !d);
+    $("mois").classList.toggle("erreur", !moisValide);
+
+    var blocage = "";
+    if (!d || !moisValide) blocage = "Renseignez la date et le nombre de mois (entre 1 et 36).";
+    else if (isNaN(montant) || (provision && isNaN(charges))) blocage = "Le montant ou le pourcentage n'est pas un nombre valide.";
+    else if (montant === 0) blocage = "Renseignez le montant mensuel.";
+    if (!blocage && provision && charges === 0) alertes.push("Renseignez le % de charges sociales : la provision n'est pas générée.");
+
+    if (!blocage) {
+      // Le classeur met un espace dans la colonne pièce des lignes de rémunération.
+      var piece = v.piece || " ";
+      // Ordre identique au classeur : gérant (crédit), charge (débit), puis provision.
+      var lignes = [
+        { cpt: v.cptGerant, mnt: montant, debit: false, piece: piece, lib: "Rémunération gérance", nom: "le compte gérant" },
+        { cpt: v.cptCharge, mnt: montant, debit: true, piece: piece, lib: "Rémunération gérance", nom: "le compte de charge" }
+      ];
+      if (provision) {
+        lignes.push(
+          { cpt: v.cptDette, mnt: charges, debit: false, piece: v.pieceProv, lib: "Charges sociales gérance", nom: "le compte de dette sociale" },
+          { cpt: v.cptCotis, mnt: charges, debit: true, piece: v.pieceProv, lib: "Charges sociales gérance", nom: "le compte de cotisations" }
+        );
+      }
+      lignes.forEach(function (l) {
+        if (l.mnt !== 0 && !l.cpt) alertes.push("Renseignez " + l.nom + " : la ligne n'est pas générée.");
+      });
+      for (var k = 0; k < nb; k++) {
+        var dt = M.decale(d, k), premier = true;
+        lignes.forEach(function (l) {
+          if (l.mnt === 0 || !l.cpt) return;
+          ecritures.push({
+            date: M.dateFr(dt),
+            piece: l.piece,
+            compte: l.cpt,
+            libelle: v.gerant + " - " + l.lib + " " + M.deux(dt.m) + "." + dt.a,
+            debit: l.debit ? l.mnt : null,
+            credit: l.debit ? null : l.mnt,
+            debut: premier
+          });
+          premier = false;
+        });
+      }
+      if (!ecritures.length) blocage = "Aucune ligne à générer : renseignez les comptes.";
+    }
+
+    M.rendre(ecritures, blocage, alertes);
+  }
+
+  M.brancher(ids, calcule);
+})();
+</script>
+</body>
+</html>

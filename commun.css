@@ -156,6 +156,8 @@ h1 em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-
   padding: 24px 26px 26px;
 }
 .panel .eyebrow { margin-bottom: 8px; }
+/* Panneaux de saisie : même fond que les autres, avec une bordure bleue pour les distinguer. */
+.panel.panel-config { border: 1px solid var(--blue); }
 
 .champ {
   display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 14px; align-items: center;

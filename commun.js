@@ -5,14 +5,15 @@ window.MiniOutils = (function () {
   "use strict";
   var $ = function (id) { return document.getElementById(id); };
   var ecritures = [];
-  var huitColonnes = false;
+  var milieu = [];
 
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [
     { fichier: "fnp.html", nom: "Calcul de FNP" },
     { fichier: "abo-mensuel.html", nom: "Abonnement mensuel" },
     { fichier: "rem-gerance.html", nom: "Rémunération gérance 64x" },
-    { fichier: "extournes.html", nom: "Extournes" }
+    { fichier: "extournes.html", nom: "Extournes" },
+    { fichier: "import-banque.html", nom: "Import banque" }
   ];
   // Logo : clé plate dessinée sur une grille de 16 × 16 pixels, comme la cape de
   // capedinvisibilite.fr. "1" = couleur principale, "3" = ombre, "." = vide.
@@ -131,10 +132,11 @@ window.MiniOutils = (function () {
 
   // Affiche les écritures {date, piece, compte, libelle, debit, credit, debut}
   // (montants en centimes ou null), les totaux, l'équilibre et les alertes.
-  // huit = true : copie au format d'import Cador à 8 colonnes (deux colonnes vides avant le débit).
+  // huit : copie au format d'import Cador à 8 colonnes. true = deux colonnes vides avant
+  // le débit ; un tableau donne leur contenu, par exemple ["", "FAUX"].
   function rendre(liste, blocage, alertes, huit) {
     ecritures = liste;
-    huitColonnes = !!huit;
+    milieu = huit === true ? ["", ""] : (huit || []);
     alertes = alertes || [];
     var corps = $("lignes");
     corps.textContent = "";
@@ -182,7 +184,7 @@ window.MiniOutils = (function () {
   function texteACopier() {
     return ecritures.map(function (e) {
       return [e.date, e.piece, e.compte, e.libelle]
-        .concat(huitColonnes ? ["", ""] : [])
+        .concat(milieu)
         .concat([e.debit === null ? "" : brut(e.debit), e.credit === null ? "" : brut(e.credit)])
         .map(function (c) { return String(c).replace(/[\t\r\n]+/g, " "); })
         .join("\t");

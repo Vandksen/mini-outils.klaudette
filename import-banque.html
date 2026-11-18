@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1136DB">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/icone-180.png">
+<title>Import banque — Mini-outils</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="commun.css">
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">Générateur d'écritures — relevé de banque ou de caisse</p>
+    <h1>Import <em>banque.</em></h1>
+    <p class="lead"><strong>But de la page :</strong> transformer un relevé de banque ou de caisse en écritures comptables. Chaque opération du relevé donne deux lignes, l'une sur le compte de banque, l'autre sur le compte de contrepartie, avec un numéro de pièce construit à partir de la date.</p>
+    <p class="lead">Renseignez les paramètres, puis collez le relevé. Les écritures sont générées aussitôt, prêtes à être copiées puis collées dans Cador.</p>
+
+    <div class="grille">
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">01 — Paramètres</p>
+          <div class="champ">
+            <label for="banque">Compte de banque</label>
+            <input id="banque" type="text" inputmode="numeric" value="512000">
+          </div>
+          <div class="champ">
+            <label for="defaut">Contrepartie par défaut<span class="aide">471000 si vide</span></label>
+            <input id="defaut" type="text" inputmode="numeric" value="471000" placeholder="471000">
+          </div>
+          <div class="champ">
+            <label for="sens">Sens du relevé</label>
+            <select id="sens">
+              <option value="bancaire">Bancaire (Débit = sortie)</option>
+              <option value="blast">Blast (Débit = entrée)</option>
+            </select>
+          </div>
+          <div class="champ">
+            <label for="prefixe">Préfixe de pièce<span class="aide">BQ si vide</span></label>
+            <input id="prefixe" type="text" value="BQ" placeholder="BQ">
+          </div>
+          <ul class="alertes" id="alertes"></ul>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">02 — Relevé</p>
+          <p class="aide-bloc">Une ligne par opération, colonnes séparées par des tabulations : date, libellé, débit, crédit, puis le compte de contrepartie proposé (facultatif). Sans compte proposé, la contrepartie par défaut est utilisée.</p>
+          <textarea id="source" class="saisie" spellcheck="false" wrap="off" aria-label="Relevé à coller"></textarea>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">03 — Vérification</p>
+          <div class="champ"><span class="etiquette">Opérations lues</span><span class="valeur droite" id="nbLues"></span></div>
+          <div class="champ"><span class="etiquette">En contrepartie par défaut</span><span class="valeur droite" id="nbDefaut"></span></div>
+          <div class="champ"><span class="etiquette">Total débit</span><span class="valeur droite" id="totDebit"></span></div>
+          <div class="champ"><span class="etiquette">Total crédit</span><span class="valeur droite" id="totCredit"></span></div>
+          <div class="champ"><span class="etiquette">Équilibre</span><span class="valeur droite"><span id="equilibre"></span></span></div>
+          <div class="champ"><span class="etiquette">Lignes générées</span><span class="valeur droite" id="nbLignes"></span></div>
+        </section>
+      </div>
+
+      <section class="panel">
+        <div class="barre">
+          <p class="eyebrow">04 — Écritures</p>
+          <div class="actions">
+            <span class="etat" id="etat" role="status"></span>
+            <button class="btn" id="copier" type="button">Copier pour Cador</button>
+          </div>
+        </div>
+        <div class="cadre-table">
+          <table>
+            <thead>
+              <tr>
+                <th>N°</th><th>Date</th><th>Pièce</th><th>Compte</th><th>Libellé</th>
+                <th class="droite">Débit</th><th class="droite">Crédit</th>
+              </tr>
+            </thead>
+            <tbody id="lignes"></tbody>
+          </table>
+        </div>
+        <div class="vide" id="vide" hidden></div>
+      </section>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Colonnes copiées : date · pièce · compte · libellé · vide · FAUX · débit · crédit</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var ids = ["banque", "defaut", "sens", "prefixe", "source"];
+
+  // Exemple fictif de départ : date, libellé, débit, crédit, compte proposé.
+  var TAB = String.fromCharCode(9), SAUT = String.fromCharCode(10);
+  $("source").value = [
+    ["02/09/2026", "Prélèvement loyer", "1200,00", "", "613200"].join(TAB),
+    ["02/09/2026", "Virement client DUPONT", "", "3000,00", "411000"].join(TAB),
+    ["03/09/2026", "Frais bancaires", "12,50", "", "627000"].join(TAB),
+    ["05/09/2026", "Retrait espèces", "200,00", "", ""].join(TAB)
+  ].join(SAUT);
+
+  function calcule() {
+    var banque = $("banque").value.trim();
+    var defaut = $("defaut").value.trim() || "471000";
+    var prefixe = $("prefixe").value.trim() || "BQ";
+    var blast = $("sens").value === "blast";
+    $("banque").classList.toggle("erreur", !banque);
+
+    var alertes = [], ops = [], parDate = {}, ignorees = 0, nbDefaut = 0;
+    $("source").value.split(/\r?\n/).forEach(function (ligne, i) {
+      if (!ligne.trim()) return;
+      var c = ligne.split(TAB).map(function (x) { return x.trim(); });
+      var d = M.lireDate(c[0]);
+      // Comme dans le classeur, une ligne sans date valide (titres, totaux) est ignorée.
+      if (!d) { if (!/^date$/i.test(c[0])) ignorees++; return; }
+      var deb = M.centimes(c[2] || ""), cre = M.centimes(c[3] || "");
+      if (isNaN(deb) || isNaN(cre)) {
+        alertes.push("Ligne " + (i + 1) + " ignorée : le débit ou le crédit n'est pas un nombre.");
+        return;
+      }
+      // Numéro de pièce : préfixe + date AAMMJJ + rang de l'opération dans la journée.
+      var cle = d.a * 10000 + d.m * 100 + d.j;
+      parDate[cle] = (parDate[cle] || 0) + 1;
+      var piece = prefixe + String(d.a).slice(-2) + M.deux(d.m) + M.deux(d.j) + "-" + M.deux(parDate[cle]);
+      if (!c[4]) nbDefaut++;
+      ops.push({
+        cle: cle, date: M.dateFr(d), piece: piece, libelle: c[1] || "", contrepartie: c[4] || defaut,
+        // Bancaire : le débit du relevé est une sortie. Blast : c'est une entrée.
+        entree: blast ? deb : cre, sortie: blast ? cre : deb
+      });
+    });
+    if (ignorees) alertes.push(ignorees + " ligne" + (ignorees > 1 ? "s" : "") + " sans date valide ignorée" + (ignorees > 1 ? "s" : "") + ".");
+
+    // Tri par date puis par pièce ; pour chaque opération, la banque puis la contrepartie.
+    ops.sort(function (a, b) { return a.cle - b.cle || (a.piece < b.piece ? -1 : a.piece > b.piece ? 1 : 0); });
+    var ecritures = [];
+    ops.forEach(function (o) {
+      // Une entrée d'argent débite la banque, une sortie la crédite ; la contrepartie est inversée.
+      ecritures.push({ date: o.date, piece: o.piece, compte: banque, libelle: o.libelle, debit: o.entree, credit: o.sortie, debut: true });
+      ecritures.push({ date: o.date, piece: o.piece, compte: o.contrepartie, libelle: o.libelle, debit: o.sortie, credit: o.entree, debut: false });
+    });
+
+    var blocage = "";
+    if (!banque) { blocage = "Renseignez le compte de banque."; ecritures = []; }
+    else if (!ops.length) blocage = "Collez le relevé dans le cadre « Relevé ».";
+
+    $("nbLues").textContent = ops.length;
+    $("nbDefaut").textContent = nbDefaut;
+    M.rendre(ecritures, blocage, alertes, ["", "FAUX"]);
+  }
+
+  M.brancher(ids, calcule);
+})();
+</script>
+</body>
+</html>

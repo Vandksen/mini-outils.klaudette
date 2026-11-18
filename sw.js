@@ -6,7 +6,7 @@
    - polices Google : le cache d'abord, elles ne changent pas.
 
    Quand un outil est ajouté, ajouter sa page à FICHIERS et augmenter VERSION. */
-const VERSION = "mini-outils-v1";
+const VERSION = "mini-outils-v2";
 const FICHIERS = [
   "./",
   "index.html",
@@ -14,6 +14,7 @@ const FICHIERS = [
   "abo-mensuel.html",
   "rem-gerance.html",
   "extournes.html",
+  "import-banque.html",
   "commun.css",
   "commun.js",
   "manifest.webmanifest",

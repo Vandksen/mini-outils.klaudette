@@ -324,12 +324,13 @@ a.carte:hover { box-shadow: 0 24px 44px -24px rgba(17, 54, 219, .45), 0 2px 6px 
 .bandeau-bleu ul { margin: 0 0 6px; padding-left: 20px; max-width: 760px; }
 .bandeau-bleu li { margin: 0 0 4px; }
 
-/* Bandeau final de l'accueil : image de mer agitée reprise de capedinvisibilite.fr.
+/* Bandeau final de l'accueil : « Ships in Distress in a Storm » de Peter Monamy (1681-1749),
+   Tate T00807, image de Wikimedia Commons passée en camaïeu bleu, dans le style de capedinvisibilite.fr.
    Le voile bleu à gauche garde le texte lisible sur la partie sombre de l'image. */
 .final {
   position: relative; overflow: hidden; border-radius: 10px; min-height: 440px;
   display: flex; align-items: center; padding: 48px 44px;
-  background: #1136DB url("images/fond-contact.jpg") center right / cover no-repeat;
+  background: #1136DB url("images/fond-tempete.jpg") center 78% / cover no-repeat;
   color: var(--on-blue);
 }
 .final::before {

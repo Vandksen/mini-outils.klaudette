@@ -7,7 +7,7 @@
    Les polices sont des fichiers du site comme les autres : rien n'est demandé à un tiers.
 
    Quand un outil est ajouté, ajouter sa page à FICHIERS et augmenter VERSION. */
-const VERSION = "mini-outils-v8";
+const VERSION = "mini-outils-v9";
 const FICHIERS = [
   "./",
   "index.html",
@@ -25,7 +25,7 @@ const FICHIERS = [
   "icones/icone-192.png",
   "icones/icone-512.png",
   "icones/structurre.svg",
-  "images/fond-contact.jpg",
+  "images/fond-tempete.jpg",
   "polices/instrument-serif-italique-latin-ext.woff2",
   "polices/instrument-serif-italique-latin.woff2",
   "polices/instrument-serif-latin-ext.woff2",

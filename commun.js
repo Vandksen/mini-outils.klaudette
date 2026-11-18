@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.8.0";
+  var VERSION = "1.8.1";
 
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [
@@ -110,12 +110,13 @@ window.MiniOutils = (function () {
       '<a class="entree" href="versions.html"' + (page === "versions.html" ? ' aria-current="page"' : '') +
       ' title="Suivi des versions"><span class="num">' + ICONE_VERSIONS + '</span>' +
       '<span class="lib">Suivi des versions</span></a>' +
-      '</div><div class="pied">' +
-      // Encart slogan vers l'accueil ; inutile sur l'accueil lui-même, qui porte déjà ce bandeau.
+      '</div>' +
+      // Encart slogan vers l'accueil, au-dessus du trait qui sépare le bas du menu ;
+      // inutile sur l'accueil lui-même, qui porte déjà ce bandeau.
       (page === "index.html" ? '' :
-        '<a class="encart" href="index.html"><strong>Quand la période fiscale se déchaîne, <em>gardez le cap.</em></strong>' +
-        '<small>Laissez les écritures répétitives à Mini-outils-compta.fr</small></a>') +
-      '<button id="installer" type="button">Installer l’application</button>' +
+        '<div class="encart-zone"><a class="encart" href="index.html"><strong>Quand la période fiscale se déchaîne, <em>gardez le cap.</em></strong>' +
+        '<small>Laissez les écritures répétitives à Mini-outils-compta.fr</small></a></div>') +
+      '<div class="pied"><button id="installer" type="button">Installer l’application</button>' +
       '<span id="installer-info" role="status" hidden></span>' +
       '<span>Calcul dans votre navigateur</span><span>Rien n\'est envoyé</span>' +
       '<a class="version" href="versions.html" title="Suivi des versions">Version ' + VERSION + '</a></div>';

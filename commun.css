@@ -119,8 +119,11 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
   border-radius: 9999px; border: 1px solid rgba(248, 243, 230, .45); background: transparent; color: var(--on-blue);
   font-family: var(--sans); font-size: 14px; font-weight: 500; transition: background .15s, color .15s;
 }
+.icone-installer { vertical-align: -3px; margin-right: 8px; }
 #menu .pied #installer-info { white-space: normal; line-height: 1.5; margin: -4px 0 12px; color: var(--on-blue); }
 #installer:hover { background: var(--cream); color: var(--blue); border-color: var(--cream); }
+#menu .pied .domaine { display: block; color: var(--on-blue); letter-spacing: .04em; text-decoration: none; }
+#menu .pied .domaine:hover { text-decoration: underline; text-underline-offset: 3px; }
 #menu .pied .version { display: block; margin-top: 8px; color: var(--on-blue); letter-spacing: .04em; text-decoration: none; }
 #menu .pied .version:hover { text-decoration: underline; text-underline-offset: 3px; }
 /* Tout le contenu (hors menu) est affiché à 90 % de sa taille. */
@@ -132,6 +135,17 @@ body::before {
   content: ""; position: fixed; z-index: 50; top: 0; left: 0; right: 0; height: 1px;
   background: var(--ink); pointer-events: none;
 }
+/* Bouton « copier le lien de la page », en haut à droite du contenu. */
+#contenu { position: relative; }
+#copier-lien {
+  position: absolute; z-index: 4; top: 24px; right: 32px; display: flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; padding: 0; cursor: pointer; border-radius: 50%;
+  background: var(--paper); color: var(--blue); border: 1px solid rgba(17, 54, 219, .35);
+  transition: background .15s, color .15s, border-color .15s;
+}
+#copier-lien:hover { background: var(--chip); }
+#copier-lien:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+#copier-lien.fait { background: var(--blue); border-color: var(--blue); color: var(--on-blue); }
 #barre-mobile { display: none; }
 .mobile-info, .mobile-seul { display: none; }
 #fond { display: none; }
@@ -491,6 +505,7 @@ body.avec-filtres { grid-template-columns: 276px 300px minmax(0, 1fr); }
   }
   .conteneur { padding: 0 16px; }
   main { padding: 36px 0 48px; }
+  #copier-lien { top: 84px; right: 16px; }
 
   /* Téléphone : pages d'information seulement. Les outils disparaissent du menu,
      leurs pages affichent un message, et l'accueil ne propose pas de les ouvrir. */
@@ -501,6 +516,9 @@ body.avec-filtres { grid-template-columns: 276px 300px minmax(0, 1fr); }
   .mobile-seul { display: block; }
   a.carte { pointer-events: none; }
   .carte .suite { display: none; }
+  /* Une page de consultation reste ouvrable depuis un téléphone. */
+  a.carte.consultable { pointer-events: auto; }
+  .carte.consultable .suite { display: block; }
   .panel { padding: 20px 18px; }
   /* Téléphone : le second menu est un volet, comme le menu principal ; le bouton
      « Filtres » de la barre du haut l'ouvre. */

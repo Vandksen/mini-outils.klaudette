@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1136DB">
+<meta name="description" content="Générateur d'écritures d'étalement d'une charge ou d'un produit sur plusieurs mois, avec les comptes 4886 et 4887 tenus par cycle, à coller dans ACDCompta.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/icone-180.png">
+<title>Étalement de charges et produits — Mini-outils</title>
+<link rel="stylesheet" href="commun.css">
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">Dashboard — charges et produits étalés</p>
+    <h1>Étalement de <em>charges et produits.</em></h1>
+    <p class="lead"><strong>But de la page :</strong> répartir une charge ou un produit sur plusieurs mois, en passant par un compte 4886 ou 4887 propre à chaque cycle, pour que le résultat de chaque mois porte sa juste part.</p>
+    <p class="lead">Renseignez la configuration. Les écritures sont générées aussitôt, prêtes à être copiées puis collées dans ACDCompta.</p>
+
+    <div class="grille">
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">01 — Configuration</p>
+          <div class="champ">
+            <label for="type">Type</label>
+            <select id="type">
+              <option value="Charge reçue à étaler">Charge reçue à étaler</option>
+              <option value="Charge à recevoir">Charge à recevoir</option>
+            </select>
+          </div>
+          <div class="champ">
+            <label for="dateFacture">Date de la facture<span class="aide" id="aideFacture"></span></label>
+            <input id="dateFacture" type="date" value="2026-07-23">
+          </div>
+          <div class="champ">
+            <label for="compte">Compte de charge ou de produit<span class="aide">Classe 6 ou 7</span></label>
+            <input id="compte" type="text" inputmode="numeric" value="622600">
+          </div>
+          <div class="champ">
+            <label for="debut">Début de la répartition</label>
+            <input id="debut" type="date" value="2026-01-01">
+          </div>
+          <div class="champ">
+            <label for="duree">Durée (mois)<span class="aide">Entre 1 et 120</span></label>
+            <input id="duree" type="number" min="1" max="120" step="1" value="24">
+          </div>
+          <div class="champ">
+            <label for="montant">Montant à répartir</label>
+            <input id="montant" class="droite" type="text" inputmode="decimal" value="6000,00">
+          </div>
+          <div class="champ">
+            <label for="libelle">Libellé<span class="aide">Facultatif</span></label>
+            <input id="libelle" type="text" value="Assurance">
+          </div>
+          <div class="champ">
+            <label for="finMois">Dater en fin de mois</label>
+            <input id="finMois" type="checkbox">
+          </div>
+          <ul class="alertes" id="alertes"></ul>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">02 — Calculé automatiquement</p>
+          <div class="champ"><span class="etiquette">Compte de contrepartie</span><span class="valeur code droite" id="contrepartie"></span></div>
+          <div class="champ"><span class="etiquette">Libellé retenu</span><span class="valeur droite" id="libelleRetenu"></span></div>
+          <div class="champ"><span class="etiquette">Code de l'étalement</span><span class="valeur code droite" id="code"></span></div>
+          <div class="champ"><span class="etiquette">Part mensuelle</span><span class="valeur droite" id="mensualite"></span></div>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">03 — Contrôles</p>
+          <div class="champ"><span class="etiquette">Total débit</span><span class="valeur droite" id="totDebit"></span></div>
+          <div class="champ"><span class="etiquette">Total crédit</span><span class="valeur droite" id="totCredit"></span></div>
+          <div class="champ"><span class="etiquette">Équilibre</span><span class="valeur droite"><span id="equilibre"></span></span></div>
+          <div class="champ"><span class="etiquette">Cumul étalé</span><span class="valeur droite" id="cumul"></span></div>
+          <div class="champ"><span class="etiquette">Écart avec le montant</span><span class="valeur droite" id="ecart"></span></div>
+          <div class="champ"><span class="etiquette">Lignes générées</span><span class="valeur droite" id="nbLignes"></span></div>
+          <div class="champ"><span class="etiquette">Statut</span><span class="valeur droite" id="statut"></span></div>
+        </section>
+      </div>
+
+      <div class="colonne">
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">04 — Écritures</p>
+            <div class="actions">
+              <span class="etat" id="etat" role="status"></span>
+              <button class="btn" id="copier" type="button">Copier pour ACDCompta</button>
+            </div>
+          </div>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>N°</th><th>Date</th><th>Pièce</th><th>Compte</th><th>Libellé</th>
+                  <th class="droite">Débit</th><th class="droite">Crédit</th>
+                </tr>
+              </thead>
+              <tbody id="lignes"></tbody>
+            </table>
+          </div>
+          <div class="vide" id="vide" hidden></div>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">Mode d'emploi</p>
+          <p class="aide-bloc"><strong>Charge reçue à étaler :</strong> la facture est transférée en 4886 à sa date, puis reprise mois par mois.</p>
+          <p class="aide-bloc"><strong>Charge à recevoir :</strong> chaque mois, la quote-part est constatée avec le 4887 en contrepartie. La date de la facture est inutile.</p>
+          <p class="aide-bloc"><strong>Produit :</strong> avec un compte de classe 7, les sens débit et crédit sont inversés.</p>
+          <p class="aide-bloc"><strong>Code de l'étalement :</strong> repris en pièce et dans chaque libellé, il permet de retrouver et de lettrer l'étalement. Il change dès qu'un élément de la configuration change.</p>
+          <p class="aide-bloc">Le compte de contrepartie dépend du cycle du compte saisi. Ces comptes doivent exister dans le dossier, ainsi que leur équivalent en 4887 pour les charges à recevoir :</p>
+          <div class="cadre-table">
+            <table>
+              <thead><tr><th>Compte</th><th>Cycle</th></tr></thead>
+              <tbody id="cycles"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Colonnes copiées : date · pièce · compte · libellé · débit · crédit</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script src="etalement-donnees.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$, T = window.ETALEMENT;
+  var ids = ["type", "dateFacture", "compte", "debut", "duree", "montant", "libelle", "finMois"];
+  var RECUE = "Charge reçue à étaler";
+
+  // Numéro de jour d'un tableur (1 = 31/12/1899). Il sert au code de l'étalement, pour
+  // qu'il soit le même que celui du classeur d'origine.
+  function numeroDeJour(d) {
+    return Math.round((Date.UTC(d.a, d.m - 1, d.j) - Date.UTC(1899, 11, 30)) / 86400000);
+  }
+  function finDeMois(d) {
+    return { a: d.a, m: d.m, j: new Date(d.a, d.m, 0).getDate() };
+  }
+
+  // Compte 4886 du cycle, d'après les 3 premiers chiffres ; 4886K1 par défaut.
+  // Une charge à recevoir utilise le 4887 du même cycle.
+  function contrepartie(compte, type) {
+    var c = T.contreparties[compte.slice(0, 3)] || "4886K1";
+    return type === RECUE ? c : c.replace("4886", "4887");
+  }
+  // Libellé saisi, sinon celui du compte (4 puis 3 premiers chiffres).
+  function libelleRetenu(saisi, compte) {
+    return saisi || T.libelles[compte.slice(0, 4)] || T.libelles[compte.slice(0, 3)] || "Charge à répartir";
+  }
+  // Code de six lettres « AB-CD-EF », calculé à partir de toute la configuration.
+  function codeEtalement(v, facture, debut, centimes, libelle) {
+    var t = [v.type, facture ? numeroDeJour(facture) : "", v.compte, numeroDeJour(debut), v.duree, centimes,
+             libelle, v.finMois ? "TRUE" : "FALSE"].join("|");
+    var h = 7;
+    for (var i = 0; i < t.length; i++) h = (h * 131 + t.charCodeAt(i)) % 308915776;   // 26 puissance 6
+    var L = function (k) { return String.fromCharCode(65 + Math.floor(h / Math.pow(26, k)) % 26); };
+    return L(5) + L(4) + "-" + L(3) + L(2) + "-" + L(1) + L(0);
+  }
+
+  function calcule() {
+    var v = {};
+    ids.forEach(function (id) { v[id] = $(id).type === "checkbox" ? $(id).checked : $(id).value.trim(); });
+    var recue = v.type === RECUE;
+    $("aideFacture").textContent = recue ? "" : "Inutile pour une charge à recevoir";
+    $("dateFacture").disabled = !recue;
+
+    var facture = recue ? M.lireDate(v.dateFacture) : null;
+    var debut = M.lireDate(v.debut);
+    var duree = parseInt(v.duree, 10);
+    var dureeValide = /^\d+$/.test(v.duree) && duree >= 1 && duree <= 120;
+    var montant = M.centimes(v.montant);
+    var montantValide = !isNaN(montant) && v.montant !== "" && montant > 0;
+    var compteValide = /^[67]\d{5,8}$/.test(v.compte);
+
+    $("compte").classList.toggle("erreur", v.compte !== "" && !compteValide);
+    $("debut").classList.toggle("erreur", !debut);
+    $("duree").classList.toggle("erreur", !dureeValide);
+    $("montant").classList.toggle("erreur", v.montant !== "" && !montantValide);
+    $("dateFacture").classList.toggle("erreur", recue && !facture);
+
+    var alertes = [], ecritures = [], blocage = "";
+    if (!compteValide) blocage = v.compte === "" ? "Complétez la configuration." : "Le compte doit être un compte de classe 6 ou 7, de six chiffres au moins.";
+    else if (!debut || !dureeValide || !montantValide) blocage = "Complétez la configuration : date de début, durée entre 1 et 120 mois et montant.";
+    else if (recue && !facture) blocage = "Saisissez la date de la facture.";
+
+    var cp = compteValide ? contrepartie(v.compte, v.type) : "";
+    var lib = compteValide ? libelleRetenu(v.libelle, v.compte) : "";
+    $("contrepartie").textContent = cp || "—";
+    $("libelleRetenu").textContent = lib || "—";
+
+    var code = "", part = 0, derniere = 0, cumul = 0;
+    if (!blocage) {
+      code = codeEtalement(v, facture, debut, montant, lib);
+      part = Math.round(montant / duree);                 // en centimes, arrondi au plus proche
+      derniere = montant - part * (duree - 1);            // le dernier mois absorbe l'arrondi
+      var produit = v.compte.charAt(0) === "7";
+
+      if (recue) {
+        // Transfert de la facture vers le compte d'attente, à sa date.
+        var libTransfert = "Transfert - " + lib + " - " + code;
+        ecritures.push({ date: M.dateFr(facture), piece: code, compte: cp, libelle: libTransfert,
+                         debit: produit ? null : montant, credit: produit ? montant : null, debut: true });
+        ecritures.push({ date: M.dateFr(facture), piece: code, compte: v.compte, libelle: libTransfert,
+                         debit: produit ? montant : null, credit: produit ? null : montant });
+      }
+      for (var i = 1; i <= duree; i++) {
+        var d = M.decale(debut, i - 1);
+        if (v.finMois) d = finDeMois(d);
+        var mt = i === duree ? derniere : part;
+        var libMois = lib + " - " + d.a + "/" + M.deux(d.m) + " - " + code;
+        // Charge : contrepartie au crédit, charge au débit. Produit : l'inverse.
+        ecritures.push({ date: M.dateFr(d), piece: code, compte: cp, libelle: libMois,
+                         debit: produit ? mt : null, credit: produit ? null : mt, debut: true });
+        ecritures.push({ date: M.dateFr(d), piece: code, compte: v.compte, libelle: libMois,
+                         debit: produit ? null : mt, credit: produit ? mt : null });
+        cumul += mt;
+      }
+      if (part === 0) alertes.push("Le montant est trop petit pour cette durée : la part mensuelle est nulle.");
+      if (derniere !== part && duree > 1) alertes.push("Le dernier mois porte " + M.affiche(derniere) + " € pour absorber l'arrondi.");
+    }
+
+    $("code").textContent = code || "—";
+    $("mensualite").textContent = blocage ? "—" : M.affiche(part) + " €";
+    M.rendre(ecritures, blocage, alertes);
+
+    // Contrôles propres à l'étalement, en plus des totaux affichés par rendre().
+    var ecart = cumul - (montantValide ? montant : 0);
+    $("cumul").textContent = blocage ? "—" : M.affiche(cumul);
+    $("ecart").textContent = blocage ? "—" : M.affiche(ecart);
+    var equilibre = $("equilibre").textContent === "OK";
+    $("statut").textContent = blocage ? "—"
+      : !equilibre ? "Écriture déséquilibrée"
+      : ecart !== 0 ? "Écart de répartition"
+      : duree > 24 ? "OK - durée > 24 mois, à vérifier" : "OK";
+  }
+
+  T.cycles.forEach(function (c) {
+    var tr = document.createElement("tr");
+    [[c[0], "compte"], ["DASH - Cycle " + c[1], "lib"]].forEach(function (x) {
+      var td = document.createElement("td");
+      td.textContent = x[0];
+      td.className = x[1];
+      tr.appendChild(td);
+    });
+    $("cycles").appendChild(tr);
+  });
+
+  M.brancher(ids, calcule);
+})();
+</script>
+</body>
+</html>

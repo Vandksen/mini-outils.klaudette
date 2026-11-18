@@ -87,6 +87,21 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
   font-family: var(--mono); font-size: 11px; line-height: 2;
 }
 #menu .pied span { display: block; white-space: nowrap; }
+/* Encart slogan en bas du menu : carré à bords arrondis, sur l'image du bandeau d'accueil. */
+.encart {
+  position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; gap: 6px;
+  width: 168px; aspect-ratio: 1 / 1; margin: 0 0 14px; padding: 12px; border-radius: 14px; text-decoration: none; color: var(--on-blue);
+  background: #1136DB url("images/fond-tempete.jpg") 78% 70% / 230% auto no-repeat;
+  border: 1px solid rgba(248, 243, 230, .28); transition: border-color .15s, transform .15s;
+}
+/* Sur un écran peu haut, l'encart céderait sa place aux entrées du menu : on le masque. */
+@media (max-height: 880px) { .encart { display: none; } }
+.encart::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8, 20, 110, .15) 0%, rgba(8, 20, 110, .82) 62%); }
+.encart:hover { border-color: var(--on-blue); transform: translateY(-2px); }
+.encart strong, .encart small { position: relative; display: block; white-space: normal; }
+.encart strong { font-family: var(--sans); font-size: 15px; font-weight: 500; line-height: 1.15; letter-spacing: -0.02em; }
+.encart em { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 1.1em; letter-spacing: 0; }
+.encart small { font-family: var(--sans); font-size: 11px; line-height: 1.35; color: var(--on-blue-muted); }
 #installer {
   display: block; width: 100%; height: 36px; margin: 0 0 12px; padding: 0 14px; cursor: pointer;
   border-radius: 9999px; border: 1px solid rgba(248, 243, 230, .45); background: transparent; color: var(--on-blue);
@@ -356,6 +371,10 @@ a.carte:hover { box-shadow: 0 24px 44px -24px rgba(17, 54, 219, .45), 0 2px 6px 
 .prose .cadre-table { margin: 6px 0 14px; }
 .prose tbody td { font-family: var(--sans); font-size: 15px; white-space: normal; padding: 9px 16px 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
 .prose tbody td:last-child { font-family: var(--mono); font-size: 13px; white-space: nowrap; }
+.manifeste p, .manifeste li { font-size: 18px; }
+.manifeste ul { margin: 0 0 10px; padding-left: 22px; }
+.manifeste li { margin: 0 0 6px; }
+.manifeste .signature { margin-top: 32px; font-family: var(--serif); font-style: italic; font-size: 24px; color: var(--blue); }
 .prose .donnee { font-family: var(--mono); font-size: 14px; }
 
 @media (max-width: 1400px) {

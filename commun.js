@@ -11,7 +11,7 @@ window.MiniOutils = (function () {
   // dernier chiffre pour une retouche, chiffre du milieu pour un nouvel outil.
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
-  var VERSION = "1.2.3";
+  var VERSION = "1.2.4";
 
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [

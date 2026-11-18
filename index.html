@@ -3,14 +3,130 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mini-outils</title>
 <meta name="theme-color" content="#1136DB">
+<meta name="description" content="Mini-outils prépare les écritures comptables répétitives (FNP, abonnements, rémunération de gérance, extournes, import de relevé) à coller dans ACDCompta. Gratuit, installable, sans envoi de données.">
 <link rel="manifest" href="manifest.webmanifest">
-<!-- Page d'accueil : renvoie vers le premier outil. -->
-<meta http-equiv="refresh" content="0; url=fnp.html">
-<style>body { margin: 0; background: #F4EFE3; color: #1B2450; font: 16px system-ui, sans-serif; padding: 32px; }</style>
+<link rel="apple-touch-icon" href="icones/icone-180.png">
+<title>Mini-outils — écritures comptables prêtes à coller</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="commun.css">
 </head>
 <body>
-<p><a href="fnp.html">Ouvrir les mini-outils</a></p>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur accueil">
+    <p class="eyebrow">Pour les collaborateurs comptables — gratuit, sans compte</p>
+    <h1>Moins de saisie, <em>plus de temps.</em></h1>
+    <p class="lead">Mini-outils prépare à votre place les écritures répétitives. Vous renseignez quelques paramètres, vous copiez, vous collez dans <span class="nom-propre">ACDCompta</span>.</p>
+    <div class="boutons">
+      <a class="btn grand" href="#outils">Voir les outils</a>
+      <button class="btn ghost grand" type="button" data-installer="info-haut">Installer l'application</button>
+      <span class="info-installer" id="info-haut" role="status" hidden></span>
+    </div>
+
+    <section id="outils">
+      <p class="eyebrow">01 — Ce que fait l'application</p>
+      <h2>Cinq outils, <em>un seul geste.</em></h2>
+      <p>Quatre outils transforment quelques informations en écritures équilibrées, au format d'import, avec un contrôle des totaux débit et crédit avant la copie. Le cinquième calcule une provision et rédige sa note de compte.</p>
+      <div class="cartes">
+        <a class="carte" href="fnp.html">
+          <span class="num">01</span>
+          <strong>Calcul de FNP</strong>
+          <span>Estime une facture non parvenue au prorata des jours et rédige la note de compte.</span>
+          <span class="suite">Ouvrir l'outil →</span>
+        </a>
+        <a class="carte" href="abo-mensuel.html">
+          <span class="num">02</span>
+          <strong>Abonnement mensuel</strong>
+          <span>Génère d'un coup les écritures d'un loyer ou d'un abonnement, en charge ou en produit.</span>
+          <span class="suite">Ouvrir l'outil →</span>
+        </a>
+        <a class="carte" href="rem-gerance.html">
+          <span class="num">03</span>
+          <strong>Rémunération gérance 64x</strong>
+          <span>Passe la rémunération du gérant sur plusieurs mois, avec la provision de charges sociales en option.</span>
+          <span class="suite">Ouvrir l'outil →</span>
+        </a>
+        <a class="carte" href="extournes.html">
+          <span class="num">04</span>
+          <strong>Extournes</strong>
+          <span>Contre-passe à l'ouverture les écritures d'inventaire collées, débit et crédit inversés.</span>
+          <span class="suite">Ouvrir l'outil →</span>
+        </a>
+        <a class="carte" href="import-banque.html">
+          <span class="num">05</span>
+          <strong>Import banque</strong>
+          <span>Transforme un relevé de banque ou de caisse en écritures, banque et contrepartie.</span>
+          <span class="suite">Ouvrir l'outil →</span>
+        </a>
+      </div>
+    </section>
+
+    <section>
+      <p class="eyebrow">02 — Le temps gagné</p>
+      <h2>Des lignes que vous <em>ne saisissez plus.</em></h2>
+      <p>Le gain vient du nombre de lignes produites en une seule fois. Trois exemples, tels que les outils les calculent :</p>
+      <div class="cartes">
+        <div class="carte">
+          <span class="chiffre">72 lignes</span>
+          <strong>Un abonnement sur 24 mois</strong>
+          <span>Tiers, charge et TVA pour chaque mois, avec le bon libellé daté.</span>
+        </div>
+        <div class="carte">
+          <span class="chiffre">48 lignes</span>
+          <strong>Une gérance sur 12 mois</strong>
+          <span>Rémunération et provision de charges sociales, mois par mois.</span>
+        </div>
+        <div class="carte">
+          <span class="chiffre">200 lignes</span>
+          <strong>Un relevé de 100 opérations</strong>
+          <span>Deux lignes par opération, numérotées par pièce et triées par date.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="bandeau-bleu">
+      <p class="eyebrow" style="color: var(--on-blue-muted)">03 — S'installe comme un logiciel</p>
+      <h2>Une icône sur votre poste, <em>même hors ligne.</em></h2>
+      <ul>
+        <li>L'application s'ouvre dans sa propre fenêtre, depuis le bureau ou la barre des tâches.</li>
+        <li>Elle fonctionne sans connexion une fois installée.</li>
+        <li>Elle se met à jour toute seule quand une nouvelle version est en ligne.</li>
+        <li>Il n'y a pas de programme à télécharger : l'installation passe par Chrome ou Edge.</li>
+      </ul>
+      <div class="boutons">
+        <button class="btn grand" type="button" data-installer="info-bas">Installer l'application</button>
+        <span class="info-installer" id="info-bas" role="status" hidden></span>
+      </div>
+    </section>
+
+    <section>
+      <p class="eyebrow">04 — Vos données</p>
+      <h2>Vos saisies restent <em>sur votre poste.</em></h2>
+      <p>Les calculs se font dans votre navigateur. Les dates, comptes, libellés, montants et relevés que vous saisissez ou collez ne sont envoyés nulle part, ni à l'éditeur ni à un serveur : ils disparaissent quand vous fermez la page.</p>
+      <p>Le site n'a ni compte, ni cookie, ni mesure d'audience. Seuls ses propres fichiers et ses polices sont téléchargés. Le détail figure dans les <a href="mentions-legales.html#donnees">mentions légales</a>.</p>
+    </section>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Mini-outils — générateurs d'écritures pour ACDCompta</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
 </body>
 </html>

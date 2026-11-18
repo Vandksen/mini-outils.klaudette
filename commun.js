@@ -11,7 +11,7 @@ window.MiniOutils = (function () {
   // dernier chiffre pour une retouche, chiffre du milieu pour un nouvel outil.
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
-  var VERSION = "1.2.2";
+  var VERSION = "1.2.3";
 
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [
@@ -21,52 +21,51 @@ window.MiniOutils = (function () {
     { fichier: "extournes.html", nom: "Extournes" },
     { fichier: "import-banque.html", nom: "Import banque" }
   ];
-  // Logo : clé plate dessinée sur une grille de 32 × 32 pixels, dans l'esprit de la cape
+  // Logo : clé plate dessinée sur une grille de 24 × 24 pixels, dans l'esprit de la cape
   // de capedinvisibilite.fr. "1" = couleur principale, "3" = ombre, "." = vide.
   // Le même dessin est recopié dans icones/generer.py pour les icônes de l'application.
   var PIXELS = [
-    "................................",
-    "................................",
-    "................................",
-    ".....................1133.......",
-    "...................11133........",
-    "..................11133.........",
-    "..................1133..........",
-    ".................1111.......3...",
-    ".................11111.....13...",
-    ".................111111...113...",
-    ".................1111111.1133...",
-    ".................11111111113....",
-    "................111111111133....",
-    "...............111111111333.....",
-    "..............11111333333.......",
-    ".............1111133............",
-    "............1111133.............",
-    ".......11111111133..............",
-    ".....111111111133...............",
-    "....111111111133................",
-    "....11311111113.................",
-    "...1133.1111113.................",
-    "...133...111113.................",
-    "...33.....11113.................",
-    "...3.......1133.................",
-    "..........1113..................",
-    ".........11133..................",
-    "........11333...................",
-    ".......3333.....................",
-    "................................",
-    "................................",
-    "................................"
+    "........................",
+    "........................",
+    "................133.....",
+    "..............1133......",
+    ".............1133.......",
+    ".............111.....3..",
+    ".............1111...13..",
+    ".............11111.133..",
+    ".............11111113...",
+    "............111111133...",
+    "...........111333333....",
+    "..........11133.........",
+    ".........11133..........",
+    "....111111133...........",
+    "...111111133............",
+    "...13111113.............",
+    "..133.11113.............",
+    "..33...1113.............",
+    "..3.....113.............",
+    ".......1133.............",
+    "......1333..............",
+    ".....333................",
+    "........................",
+    "........................"
   ];
   function clePlate(couleur, ombre) {
-    var rects = "";
+    // Deux tracés superposés plutôt qu'un carré par case : toute la forme dans la
+    // couleur d'ombre, puis les cases principales par-dessus. Le dessin reste ainsi
+    // sans liseré entre les cases quand il est affiché à une taille non multiple de 24.
+    var forme = "", principal = "";
     PIXELS.forEach(function (ligne, y) {
       for (var x = 0; x < ligne.length; x++) {
-        if (ligne[x] !== ".") rects += '<rect x="' + x + '" y="' + y + '" width="1" height="1" fill="' +
-          (ligne[x] === "3" ? ombre : couleur) + '"/>';
+        if (ligne[x] === ".") continue;
+        var caseSvg = "M" + x + " " + y + "h1v1h-1z";
+        forme += caseSvg;
+        if (ligne[x] !== "3") principal += caseSvg;
       }
     });
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + PIXELS.length + ' ' + PIXELS.length + '" shape-rendering="crispEdges" aria-hidden="true">' + rects + '</svg>';
+    var n = PIXELS.length;
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + n + ' ' + n + '" aria-hidden="true">' +
+      '<path fill="' + ombre + '" d="' + forme + '"/><path fill="' + couleur + '" d="' + principal + '"/></svg>';
   }
   var CLE_PLATE = clePlate("#ffffff", "#9bb0ff");
 

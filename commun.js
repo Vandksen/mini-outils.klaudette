@@ -11,7 +11,7 @@ window.MiniOutils = (function () {
   // dernier chiffre pour une retouche, chiffre du milieu pour un nouvel outil.
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
-  var VERSION = "1.2.0";
+  var VERSION = "1.2.1";
 
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [
@@ -21,25 +21,42 @@ window.MiniOutils = (function () {
     { fichier: "extournes.html", nom: "Extournes" },
     { fichier: "import-banque.html", nom: "Import banque" }
   ];
-  // Logo : clé plate dessinée sur une grille de 16 × 16 pixels, comme la cape de
-  // capedinvisibilite.fr. "1" = couleur principale, "3" = ombre, "." = vide.
+  // Logo : clé plate dessinée sur une grille de 32 × 32 pixels, dans l'esprit de la cape
+  // de capedinvisibilite.fr. "1" = couleur principale, "3" = ombre, "." = vide.
+  // Le même dessin est recopié dans icones/generer.py pour les icônes de l'application.
   var PIXELS = [
-    ".........111....",
-    "........1111....",
-    "........111.....",
-    "........111...11",
-    "........1111.111",
-    ".........111113.",
-    "........113113..",
-    ".......113......",
-    "......113.......",
-    "..111113........",
-    ".111111.........",
-    "111.1111........",
-    "11...113........",
-    ".....113........",
-    "....1113........",
-    "....111........."
+    "................................",
+    "................................",
+    "................................",
+    ".....................1133.......",
+    "...................11133........",
+    "..................11133.........",
+    "..................1133..........",
+    ".................1111.......3...",
+    ".................11111.....13...",
+    ".................111111...113...",
+    ".................1111111.1133...",
+    ".................11111111113....",
+    "................111111111133....",
+    "...............111111111333.....",
+    "..............11111333333.......",
+    ".............1111133............",
+    "............1111133.............",
+    ".......11111111133..............",
+    ".....111111111133...............",
+    "....111111111133................",
+    "....11311111113.................",
+    "...1133.1111113.................",
+    "...133...111113.................",
+    "...33.....11113.................",
+    "...3.......1133.................",
+    "..........1113..................",
+    ".........11133..................",
+    "........11333...................",
+    ".......3333.....................",
+    "................................",
+    "................................",
+    "................................"
   ];
   function clePlate(couleur, ombre) {
     var rects = "";
@@ -49,7 +66,7 @@ window.MiniOutils = (function () {
           (ligne[x] === "3" ? ombre : couleur) + '"/>';
       }
     });
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true">' + rects + '</svg>';
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + PIXELS.length + ' ' + PIXELS.length + '" shape-rendering="crispEdges" aria-hidden="true">' + rects + '</svg>';
   }
   var CLE_PLATE = clePlate("#ffffff", "#9bb0ff");
 

@@ -60,6 +60,7 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
 .logo b { font-weight: inherit; }
 .logo span { font-family: var(--serif); font-style: italic; font-weight: 400; }
 #menu h2:not(:first-child) { margin-top: 22px; }
+.entree-vide { display: block; padding: 5px 12px; font-family: var(--mono); font-size: 11px; color: var(--on-blue-muted); opacity: .75; }
 .entree .num svg { display: block; width: 14px; height: 14px; position: relative; top: 2px; }
 /* Un nom de logiciel garde sa casse, même dans un libellé en majuscules. */
 .nom-propre { text-transform: none; }
@@ -95,26 +96,6 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
 #installer:hover { background: var(--cream); color: var(--blue); border-color: var(--cream); }
 #menu .pied .version { display: block; margin-top: 8px; color: var(--on-blue); letter-spacing: .04em; text-decoration: none; }
 #menu .pied .version:hover { text-decoration: underline; text-underline-offset: 3px; }
-#replier {
-  position: absolute; top: 24px; right: 12px; width: 30px; height: 30px; padding: 0 0 2px;
-  border-radius: 50%; border: 1px solid rgba(248, 243, 230, .3); background: transparent; color: var(--on-blue);
-  font-family: var(--sans); font-size: 18px; line-height: 1; cursor: pointer; transition: background .15s;
-}
-#replier:hover { background: rgba(248, 243, 230, .14); }
-.logo { padding-right: 50px; }
-
-/* Menu replié : bande étroite avec le logo et les numéros (grand écran seulement) */
-@media (min-width: 821px) {
-  body { transition: grid-template-columns .2s ease; }
-  body.menu-replie { grid-template-columns: 64px minmax(0, 1fr); }
-  body.menu-replie .logo { padding: 24px 0 14px; justify-content: center; }
-  body.menu-replie .logo b, body.menu-replie .marque-sous, body.menu-replie #menu h2,
-  body.menu-replie .entree .lib, body.menu-replie #menu .pied { display: none; }
-  body.menu-replie #replier { position: static; margin: 0 auto 18px; flex: none; }
-  body.menu-replie #menu .defile { padding: 0 9px 12px; }
-  body.menu-replie .entree { justify-content: center; padding: 9px 0; }
-  body.menu-replie .entree .num { width: auto; font-size: 12px; }
-}
 /* Tout le contenu (hors menu) est affiché à 90 % de sa taille. */
 #contenu { min-width: 0; zoom: 0.9; }
 
@@ -371,6 +352,9 @@ a.carte:hover { box-shadow: 0 24px 44px -24px rgba(17, 54, 219, .45), 0 2px 6px 
 .version-bloc .numero { background: var(--blue); color: var(--on-blue); padding: 2px 12px; border-radius: 9999px; font-size: 13px; font-weight: 500; letter-spacing: 0; }
 .version-bloc ul { margin: 0; padding-left: 20px; }
 .version-bloc li { margin: 0 0 4px; }
+.prose .cadre-table { margin: 6px 0 14px; }
+.prose tbody td { font-family: var(--sans); font-size: 15px; white-space: normal; padding: 9px 16px 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose tbody td:last-child { font-family: var(--mono); font-size: 13px; white-space: nowrap; }
 .prose .donnee { font-family: var(--mono); font-size: 14px; }
 
 @media (max-width: 1400px) {
@@ -379,7 +363,6 @@ a.carte:hover { box-shadow: 0 24px 44px -24px rgba(17, 54, 219, .45), 0 2px 6px 
 @media (max-width: 820px) {
   body { grid-template-columns: minmax(0, 1fr); }
   #menu { position: fixed; z-index: 40; inset: 0 auto 0 0; width: min(300px, 86vw); transform: translateX(-102%); transition: transform .25s ease; }
-  #replier { display: none; }
   body.menu-ouvert #menu { transform: none; box-shadow: 0 0 60px rgba(8, 20, 90, .5); }
   body.menu-ouvert #fond { display: block; position: fixed; z-index: 35; inset: 0; background: rgba(27, 36, 80, .35); }
   #barre-mobile {

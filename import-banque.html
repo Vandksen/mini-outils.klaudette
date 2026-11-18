@@ -27,7 +27,7 @@
     <p class="eyebrow">Générateur d'écritures — relevé de banque ou de caisse</p>
     <h1>Import <em>banque.</em></h1>
     <p class="lead"><strong>But de la page :</strong> transformer un relevé de banque ou de caisse en écritures comptables. Chaque opération du relevé donne deux lignes, l'une sur le compte de banque, l'autre sur le compte de contrepartie, avec un numéro de pièce construit à partir de la date.</p>
-    <p class="lead">Renseignez les paramètres, puis collez le relevé. Les écritures sont générées aussitôt, prêtes à être copiées puis collées dans Cador.</p>
+    <p class="lead">Renseignez les paramètres, puis collez le relevé. Les écritures sont générées aussitôt, prêtes à être copiées puis collées dans ACDCompta.</p>
 
     <div class="grille">
 
@@ -45,8 +45,8 @@
           <div class="champ">
             <label for="sens">Sens du relevé</label>
             <select id="sens">
-              <option value="bancaire">Bancaire (Débit = sortie)</option>
-              <option value="blast">Blast (Débit = entrée)</option>
+              <option value="debit">Débit = sortie</option>
+              <option value="credit">Crédit = sortie</option>
             </select>
           </div>
           <div class="champ">
@@ -78,7 +78,7 @@
           <p class="eyebrow">04 — Écritures</p>
           <div class="actions">
             <span class="etat" id="etat" role="status"></span>
-            <button class="btn" id="copier" type="button">Copier pour Cador</button>
+            <button class="btn" id="copier" type="button">Copier pour ACDCompta</button>
           </div>
         </div>
         <div class="cadre-table">
@@ -127,7 +127,7 @@
     var banque = $("banque").value.trim();
     var defaut = $("defaut").value.trim() || "471000";
     var prefixe = $("prefixe").value.trim() || "BQ";
-    var blast = $("sens").value === "blast";
+    var creditSortie = $("sens").value === "credit";
     $("banque").classList.toggle("erreur", !banque);
 
     var alertes = [], ops = [], parDate = {}, ignorees = 0, nbDefaut = 0;
@@ -149,8 +149,8 @@
       if (!c[4]) nbDefaut++;
       ops.push({
         cle: cle, date: M.dateFr(d), piece: piece, libelle: c[1] || "", contrepartie: c[4] || defaut,
-        // Bancaire : le débit du relevé est une sortie. Blast : c'est une entrée.
-        entree: blast ? deb : cre, sortie: blast ? cre : deb
+        // Par défaut, le débit du relevé est une sortie d'argent ; sinon c'est le crédit.
+        entree: creditSortie ? deb : cre, sortie: creditSortie ? cre : deb
       });
     });
     if (ignorees) alertes.push(ignorees + " ligne" + (ignorees > 1 ? "s" : "") + " sans date valide ignorée" + (ignorees > 1 ? "s" : "") + ".");

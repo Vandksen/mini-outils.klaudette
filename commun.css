@@ -40,6 +40,10 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
 .logo svg { width: 36px; height: 36px; flex: none; }
 .logo b { font-weight: inherit; }
 .logo span { font-family: var(--serif); font-style: italic; font-weight: 400; }
+#menu h2:not(:first-child) { margin-top: 22px; }
+.entree .num svg { display: block; width: 14px; height: 14px; position: relative; top: 2px; }
+/* Un nom de logiciel garde sa casse, même dans un libellé en majuscules. */
+.nom-propre { text-transform: none; }
 .marque-sous {
   display: block; padding: 0 26px 20px; color: var(--on-blue-muted);
   font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase;

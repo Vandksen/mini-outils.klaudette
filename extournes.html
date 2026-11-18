@@ -27,7 +27,7 @@
     <p class="eyebrow">Générateur d'écritures — contre-passation</p>
     <h1>Écritures <em>d'extourne.</em></h1>
     <p class="lead"><strong>But de la page :</strong> contre-passer à l'ouverture de l'exercice les écritures d'inventaire passées à la clôture (stocks, charges à payer, provisions de congés payés…). La page reprend chaque ligne en inversant débit et crédit, à la date d'extourne, avec un libellé préfixé.</p>
-    <p class="lead">Collez les écritures à extourner, telles que copiées depuis Cador. Les écritures d'extourne sont générées aussitôt, prêtes à être collées dans Cador.</p>
+    <p class="lead">Collez les écritures à extourner, telles que copiées depuis ACDCompta. Les écritures d'extourne sont générées aussitôt, prêtes à être collées dans ACDCompta.</p>
 
     <div class="grille">
 
@@ -70,7 +70,7 @@
           <p class="eyebrow">04 — Écritures d'extourne</p>
           <div class="actions">
             <span class="etat" id="etat" role="status"></span>
-            <button class="btn" id="copier" type="button">Copier pour Cador</button>
+            <button class="btn" id="copier" type="button">Copier pour ACDCompta</button>
           </div>
         </div>
         <div class="cadre-table">
@@ -106,7 +106,7 @@
   var M = window.MiniOutils, $ = M.$;
   var ids = ["date", "prefixe", "piece", "source"];
 
-  // Exemple fictif de départ : deux lignes de stock au format Cador à 8 colonnes.
+  // Exemple fictif de départ : deux lignes de stock au format ACDCompta à 8 colonnes.
   var TAB = String.fromCharCode(9), SAUT = String.fromCharCode(10);
   $("source").value = [
     ["31/12/2025", "", "372000", "Stocks 31.12.2025", "", "Faux", "1000,00", "0,00"].join(TAB),

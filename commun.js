@@ -1,4 +1,4 @@
-/* Mini-outils — fonctions communes : montants, dates, tableau d'écritures, copie pour Cador.
+/* Mini-outils — fonctions communes : montants, dates, tableau d'écritures, copie pour ACDCompta.
    Chaque page attend les éléments d'id : lignes, vide, totDebit, totCredit, equilibre,
    nbLignes, copier, etat, alertes. */
 window.MiniOutils = (function () {
@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.4.0";
+  var VERSION = "1.4.1";
 
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [
@@ -70,6 +70,9 @@ window.MiniOutils = (function () {
   }
   var CLE_PLATE = clePlate("#ffffff", "#9bb0ff");
 
+  // Icône de l'entrée « Suivi des versions » du menu (petit robot), fournie par Simon.
+  var ICONE_VERSIONS = '<svg width="14" height="14" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M25 6H17V2C17 1.73478 16.8946 1.48043 16.7071 1.29289C16.5196 1.10536 16.2652 1 16 1C15.7348 1 15.4804 1.10536 15.2929 1.29289C15.1054 1.48043 15 1.73478 15 2V6H7C5.93913 6 4.92172 6.42143 4.17157 7.17157C3.42143 7.92172 3 8.93913 3 10V24C3 25.0609 3.42143 26.0783 4.17157 26.8284C4.92172 27.5786 5.93913 28 7 28H25C26.0609 28 27.0783 27.5786 27.8284 26.8284C28.5786 26.0783 29 25.0609 29 24V10C29 8.93913 28.5786 7.92172 27.8284 7.17157C27.0783 6.42143 26.0609 6 25 6ZM27 24C27 24.5304 26.7893 25.0391 26.4142 25.4142C26.0391 25.7893 25.5304 26 25 26H7C6.46957 26 5.96086 25.7893 5.58579 25.4142C5.21071 25.0391 5 24.5304 5 24V10C5 9.46957 5.21071 8.96086 5.58579 8.58579C5.96086 8.21071 6.46957 8 7 8H25C25.5304 8 26.0391 8.21071 26.4142 8.58579C26.7893 8.96086 27 9.46957 27 10V24ZM20.5 17H11.5C10.5717 17 9.6815 17.3687 9.02513 18.0251C8.36875 18.6815 8 19.5717 8 20.5C8 21.4283 8.36875 22.3185 9.02513 22.9749C9.6815 23.6313 10.5717 24 11.5 24H20.5C21.4283 24 22.3185 23.6313 22.9749 22.9749C23.6313 22.3185 24 21.4283 24 20.5C24 19.5717 23.6313 18.6815 22.9749 18.0251C22.3185 17.3687 21.4283 17 20.5 17ZM17.5 19V22H14.5V19H17.5ZM10 20.5C10 20.1022 10.158 19.7206 10.4393 19.4393C10.7206 19.158 11.1022 19 11.5 19H12.5V22H11.5C11.1022 22 10.7206 21.842 10.4393 21.5607C10.158 21.2794 10 20.8978 10 20.5ZM20.5 22H19.5V19H20.5C20.8978 19 21.2794 19.158 21.5607 19.4393C21.842 19.7206 22 20.1022 22 20.5C22 20.8978 21.842 21.2794 21.5607 21.5607C21.2794 21.842 20.8978 22 20.5 22ZM9 13.5C9 13.2033 9.08797 12.9133 9.2528 12.6666C9.41762 12.42 9.65189 12.2277 9.92597 12.1142C10.2001 12.0006 10.5017 11.9709 10.7926 12.0288C11.0836 12.0867 11.3509 12.2296 11.5607 12.4393C11.7704 12.6491 11.9133 12.9164 11.9712 13.2074C12.0291 13.4983 11.9994 13.7999 11.8858 14.074C11.7723 14.3481 11.58 14.5824 11.3334 14.7472C11.0867 14.912 10.7967 15 10.5 15C10.1022 15 9.72064 14.842 9.43934 14.5607C9.15804 14.2794 9 13.8978 9 13.5ZM20 13.5C20 13.2033 20.088 12.9133 20.2528 12.6666C20.4176 12.42 20.6519 12.2277 20.926 12.1142C21.2001 12.0006 21.5017 11.9709 21.7926 12.0288C22.0836 12.0867 22.3509 12.2296 22.5607 12.4393C22.7704 12.6491 22.9133 12.9164 22.9712 13.2074C23.0291 13.4983 22.9993 13.7999 22.8858 14.074C22.7723 14.3481 22.58 14.5824 22.3334 14.7472C22.0867 14.912 21.7967 15 21.5 15C21.1022 15 20.7206 14.842 20.4393 14.5607C20.158 14.2794 20 13.8978 20 13.5Z"></path></svg>';
+
   // Remplit <nav id="menu"> et branche l'ouverture du menu sur petit écran.
   function menu() {
     var nav = $("menu");
@@ -78,12 +81,16 @@ window.MiniOutils = (function () {
     nav.innerHTML =
       '<a class="logo" href="' + OUTILS[0].fichier + '">' + CLE_PLATE + '<b>MINI-<span>OUTILS</span></b></a>' +
       '<button id="replier" type="button" aria-controls="menu"></button>' +
-      '<span class="marque-sous">Écritures pour Cador</span>' +
+      '<span class="marque-sous">Écritures pour <span class="nom-propre">ACDCompta</span></span>' +
       '<div class="defile"><h2>Outils</h2>' +
       OUTILS.map(function (o, i) {
         return '<a class="entree" href="' + o.fichier + '"' + (o.fichier === page ? ' aria-current="page"' : '') +
                ' title="' + o.nom + '"><span class="num">' + deux(i + 1) + '</span><span class="lib">' + o.nom + '</span></a>';
       }).join("") +
+      '<h2>À propos</h2>' +
+      '<a class="entree" href="versions.html"' + (page === "versions.html" ? ' aria-current="page"' : '') +
+      ' title="Suivi des versions"><span class="num">' + ICONE_VERSIONS + '</span>' +
+      '<span class="lib">Suivi des versions</span></a>' +
       '</div><div class="pied"><button id="installer" type="button">Installer l’application</button>' +
       '<span id="installer-info" role="status" hidden></span>' +
       '<span>Calcul dans votre navigateur</span><span>Rien n\'est envoyé</span>' +
@@ -158,7 +165,7 @@ window.MiniOutils = (function () {
 
   // Affiche les écritures {date, piece, compte, libelle, debit, credit, debut}
   // (montants en centimes ou null), les totaux, l'équilibre et les alertes.
-  // huit : copie au format d'import Cador à 8 colonnes. true = deux colonnes vides avant
+  // huit : copie au format d'import ACDCompta à 8 colonnes. true = deux colonnes vides avant
   // le débit ; un tableau donne leur contenu, par exemple ["", "FAUX"].
   function rendre(liste, blocage, alertes, huit) {
     ecritures = liste;

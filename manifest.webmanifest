@@ -1,7 +1,7 @@
 {
   "name": "Mini-outils",
   "short_name": "Mini-outils",
-  "description": "Générateurs d'écritures pour Cador : FNP, abonnement mensuel, rémunération gérance, extournes.",
+  "description": "Générateurs d'écritures pour ACDCompta : FNP, abonnement mensuel, rémunération gérance, extournes.",
   "lang": "fr",
   "dir": "ltr",
   "start_url": "./fnp.html",

@@ -343,6 +343,24 @@ a.carte:hover { box-shadow: 0 24px 44px -24px rgba(17, 54, 219, .45), 0 2px 6px 
 .bandeau-bleu ul { margin: 0 0 6px; padding-left: 20px; max-width: 760px; }
 .bandeau-bleu li { margin: 0 0 4px; }
 
+/* Bandeau final de l'accueil : image de mer agitée reprise de capedinvisibilite.fr.
+   Le voile bleu à gauche garde le texte lisible sur la partie sombre de l'image. */
+.final {
+  position: relative; overflow: hidden; border-radius: 10px; min-height: 440px;
+  display: flex; align-items: center; padding: 48px 44px;
+  background: #1136DB url("images/fond-contact.jpg") center right / cover no-repeat;
+  color: var(--on-blue);
+}
+.final::before {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(8, 20, 110, .72) 0%, rgba(8, 20, 110, .45) 45%, rgba(8, 20, 110, 0) 75%);
+}
+.final-texte { position: relative; max-width: 620px; }
+.accueil .final h2 { color: var(--on-blue); font-size: clamp(34px, 4.6vw, 56px); line-height: 1.04; margin: 0 0 14px; }
+.accueil .final p { color: var(--on-blue); font-size: 20px; margin: 0; }
+.final .btn { background: var(--on-blue); color: var(--blue); border-color: var(--on-blue); }
+.final .btn:hover:not(:disabled) { background: var(--cream); border-color: var(--cream); color: var(--ink); }
+
 /* ---------- Pages de texte (mentions légales) ---------- */
 .conteneur.prose { max-width: 844px; margin: 0; }
 .prose h2 { font-size: 24px; font-weight: 500; letter-spacing: -0.03em; line-height: 1.15; color: var(--blue); margin: 40px 0 10px; scroll-margin-top: 24px; }
@@ -386,6 +404,8 @@ a.carte:hover { box-shadow: 0 24px 44px -24px rgba(17, 54, 219, .45), 0 2px 6px 
   a.carte { pointer-events: none; }
   .carte .suite { display: none; }
   .panel { padding: 20px 18px; }
+  .final { min-height: 360px; padding: 32px 22px; }
+  .final::before { background: rgba(8, 20, 110, .55); }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 @media print {

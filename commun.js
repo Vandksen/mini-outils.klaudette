@@ -193,9 +193,51 @@ window.MiniOutils = (function () {
     copierTexte(texteACopier(), ecritures.length + " lignes copiées");
   }
 
+  // Copie réussie : petit jet de confettis depuis le bouton et message de félicitations.
+  var bravo = null, bravoFin = null;
+  function fete(bouton) {
+    if (!bravo) {
+      bravo = document.createElement("div");
+      bravo.className = "bravo";
+      bravo.setAttribute("role", "status");
+      bravo.textContent = "Bravo ! Vous venez de gagner du temps !";
+      document.body.appendChild(bravo);
+    }
+    bravo.classList.remove("visible");
+    void bravo.offsetWidth; // relance l'animation d'apparition à chaque copie
+    bravo.classList.add("visible");
+    clearTimeout(bravoFin);
+    bravoFin = setTimeout(function () { bravo.classList.remove("visible"); }, 3500);
+
+    // Les confettis partent même si le système demande moins d'animations : ils sont
+    // brefs et demandés expressément, et ce réglage est souvent actif sous Windows.
+    if (!bouton || !bouton.animate) return;
+    var r = bouton.getBoundingClientRect();
+    var x0 = r.left + r.width / 2, y0 = r.top + r.height / 2;
+    var couleurs = ["#1136DB", "#1B2450", "#9bb0ff", "#c7d2fa", "#1136DB"];
+    for (var i = 0; i < 36; i++) {
+      var c = document.createElement("span");
+      c.className = "confetti";
+      var taille = 5 + Math.round(Math.random() * 5);
+      c.style.width = taille + "px";
+      c.style.height = (Math.random() < 0.4 ? taille * 2 : taille) + "px";
+      c.style.left = (x0 - taille / 2) + "px";
+      c.style.top = (y0 - taille / 2) + "px";
+      c.style.background = couleurs[i % couleurs.length];
+      document.body.appendChild(c);
+      var dx = (Math.random() - 0.5) * 320, haut = 70 + Math.random() * 110, tour = (Math.random() - 0.5) * 900;
+      var anim = c.animate([
+        { transform: "translate(0, 0) rotate(0deg)", opacity: 1 },
+        { transform: "translate(" + dx * 0.6 + "px, " + -haut + "px) rotate(" + tour * 0.5 + "deg)", opacity: 1, offset: 0.35 },
+        { transform: "translate(" + dx + "px, " + (haut * 0.8 + 60) + "px) rotate(" + tour + "deg)", opacity: 0 }
+      ], { duration: 900 + Math.random() * 600, easing: "cubic-bezier(.2, .6, .4, 1)" });
+      anim.onfinish = (function (el) { return function () { el.remove(); }; })(c);
+    }
+  }
+
   // Met un texte dans le presse-papiers et affiche le message dans #etat.
   function copierTexte(txt, message) {
-    var ok = function () { $("etat").textContent = message; };
+    var ok = function () { $("etat").textContent = message; fete($("copier")); };
     var secours = function () {
       var ta = document.createElement("textarea");
       ta.value = txt;

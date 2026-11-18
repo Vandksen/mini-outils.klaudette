@@ -98,7 +98,9 @@ h1 {
   letter-spacing: -0.035em; color: var(--blue); margin: 0 0 16px;
 }
 h1 em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: -0.01em; font-size: 1.08em; }
-.lead { font-size: 18px; max-width: 580px; margin: 0 0 44px; }
+.lead { font-size: 18px; margin: 0 0 12px; }
+.lead strong { font-weight: 500; color: var(--blue); }
+.lead + .grille { margin-top: 44px; }
 
 .grille { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 32px; align-items: start; }
 .colonne { display: grid; gap: 32px; }
@@ -135,6 +137,18 @@ h1 em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-
 .saisie:focus { outline: 2px solid var(--blue); outline-offset: 1px; border-color: var(--blue); }
 .aide-bloc { font-size: 14px; color: var(--muted); margin: 0 0 12px; }
 .champ input:focus, .champ select:focus { outline: 2px solid var(--blue); outline-offset: 1px; border-color: var(--blue); }
+/* ---------- Copie réussie : confettis et message ---------- */
+.confetti { position: fixed; z-index: 60; pointer-events: none; }
+.bravo {
+  position: fixed; z-index: 55; left: 50%; bottom: 32px; max-width: calc(100vw - 32px);
+  padding: 12px 22px; border-radius: 9999px; background: var(--blue); color: var(--on-blue);
+  font-size: 16px; font-weight: 500; text-align: center;
+  box-shadow: 0 18px 40px -12px rgba(17, 54, 219, .55);
+  opacity: 0; transform: translate(-50%, 16px); pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease;
+}
+.bravo.visible { opacity: 1; transform: translate(-50%, 0); }
+
 /* ---------- Calendrier maison (construit par commun.js) ---------- */
 .date-champ { position: relative; display: block; }
 .champ .date-champ input { padding-right: 42px; }

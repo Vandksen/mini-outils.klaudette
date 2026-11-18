@@ -95,7 +95,6 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
   aspect-ratio: 1 / 1; padding: 14px; border-radius: 14px; text-decoration: none; color: var(--on-blue);
   background: #1136DB url("images/fond-tempete.jpg") 78% 70% / 230% auto no-repeat;
   border: 1px solid rgba(248, 243, 230, .28);
-  box-shadow: 0 0 0 rgba(4, 10, 70, 0); transition: box-shadow .35s ease;
 }
 /* Sur un écran peu haut, l'encart céderait sa place aux entrées du menu : on le masque. */
 @media (max-height: 1020px) {
@@ -106,8 +105,6 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
 }
 @media (max-height: 920px) { .encart-zone { display: none; } }
 .encart::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8, 20, 110, .15) 0%, rgba(8, 20, 110, .82) 62%); }
-/* Survol : uniquement un jeu d'ombre, portée douce en dessous et léger halo clair autour. */
-.encart:hover, .encart:focus-visible { box-shadow: 0 18px 34px -12px rgba(4, 10, 70, .75), 0 6px 14px -6px rgba(4, 10, 70, .55), 0 0 22px rgba(155, 176, 255, .22); }
 .encart strong, .encart small { position: relative; display: block; white-space: normal; }
 .encart strong { font-family: var(--sans); font-size: 17px; font-weight: 500; line-height: 1.15; letter-spacing: -0.02em; }
 .encart em { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 1.1em; letter-spacing: 0; }
@@ -369,7 +366,8 @@ a.carte:hover { box-shadow: 0 24px 44px -24px rgba(17, 54, 219, .45), 0 2px 6px 
 .final .btn:hover:not(:disabled) { background: var(--cream); border-color: var(--cream); color: var(--ink); }
 
 /* ---------- Pages de texte (mentions légales) ---------- */
-.conteneur.prose { max-width: 844px; margin: 0; }
+/* La colonne de texte est centrée dans la page ; le texte lui-même reste aligné à gauche. */
+.conteneur.prose { max-width: 844px; margin: 0 auto; }
 .prose h2 { font-size: 24px; font-weight: 500; letter-spacing: -0.03em; line-height: 1.15; color: var(--blue); margin: 40px 0 10px; scroll-margin-top: 24px; }
 .prose p { margin: 0 0 10px; }
 .prose a { color: var(--blue); text-underline-offset: 3px; }

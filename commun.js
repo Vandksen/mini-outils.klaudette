@@ -110,8 +110,16 @@ window.MiniOutils = (function () {
   }
   // Date ISO "AAAA-MM-JJ" -> {a, m, j} ou null.
   function lireDate(txt) {
-    var d = /^(\d{4})-(\d{2})-(\d{2})$/.exec(txt);
-    return d ? { a: +d[1], m: +d[2], j: +d[3] } : null;
+    // Accepte aussi la saisie française : JJ/MM/AAAA, JJ.MM.AAAA, JJ-MM-AAAA ou JJMMAAAA.
+    txt = String(txt).trim();
+    var d = /^(\d{4})-(\d{2})-(\d{2})$/.exec(txt), r = null;
+    if (d) r = { a: +d[1], m: +d[2], j: +d[3] };
+    else {
+      d = /^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/.exec(txt) || /^(\d{2})(\d{2})(\d{4})$/.exec(txt);
+      if (d) r = { a: +d[3], m: +d[2], j: +d[1] };
+    }
+    if (!r || r.m < 1 || r.m > 12 || r.j < 1 || r.j > new Date(r.a, r.m, 0).getDate()) return null;
+    return r;
   }
   // Décale de k mois : même jour, ramené à la fin du mois si besoin.
   function decale(d, k) {
@@ -252,6 +260,143 @@ window.MiniOutils = (function () {
     });
   }
 
+  // Calendrier maison : remplace celui du navigateur, qui ne peut pas être mis aux
+  // couleurs de la page. Chaque <input type="date"> devient un champ JJ/MM/AAAA
+  // avec un bouton qui ouvre le calendrier ; la saisie au clavier reste possible.
+  function calendrier() {
+    var MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août",
+                "septembre", "octobre", "novembre", "décembre"];
+    var JOURS = ["lu", "ma", "me", "je", "ve", "sa", "di"];
+    var ouvert = null;
+
+    function fermer() {
+      if (!ouvert) return;
+      ouvert.pop.remove();
+      ouvert.bouton.setAttribute("aria-expanded", "false");
+      ouvert = null;
+    }
+    function el(balise, classe, texte) {
+      var e = document.createElement(balise);
+      if (classe) e.className = classe;
+      if (texte !== undefined) e.textContent = texte;
+      if (balise === "button") e.type = "button";
+      return e;
+    }
+    function choisir(champ, valeur) {
+      champ.value = valeur;
+      champ.dispatchEvent(new Event("input", { bubbles: true }));
+      fermer();
+      champ.focus();
+    }
+
+    function ouvrir(champ, bouton, cadre) {
+      fermer();
+      var auj = new Date();
+      auj = { a: auj.getFullYear(), m: auj.getMonth() + 1, j: auj.getDate() };
+      var choisi = lireDate(champ.value);
+      var vue = choisi ? { a: choisi.a, m: choisi.m } : { a: auj.a, m: auj.m };
+      var pop = el("div", "cal");
+      pop.setAttribute("role", "dialog");
+      pop.setAttribute("aria-label", "Choisir une date");
+
+      function dessine() {
+        pop.textContent = "";
+        var tete = el("div", "cal-tete");
+        var titre = el("span", "cal-titre");
+        titre.appendChild(document.createTextNode(MOIS[vue.m - 1] + " "));
+        titre.appendChild(el("em", "", String(vue.a)));
+        var nav = el("span", "cal-nav");
+        [["«", -12, "Année précédente"], ["‹", -1, "Mois précédent"],
+         ["›", 1, "Mois suivant"], ["»", 12, "Année suivante"]].forEach(function (n) {
+          var b = el("button", "", n[0]);
+          b.setAttribute("aria-label", n[2]);
+          b.title = n[2];
+          b.addEventListener("click", function () {
+            var d = decale({ a: vue.a, m: vue.m, j: 1 }, n[1]);
+            vue = { a: d.a, m: d.m };
+            dessine();
+          });
+          nav.appendChild(b);
+        });
+        tete.appendChild(titre);
+        tete.appendChild(nav);
+        pop.appendChild(tete);
+
+        var grille = el("div", "cal-grille");
+        JOURS.forEach(function (j) { grille.appendChild(el("span", "cal-jour-nom", j)); });
+        // La grille commence au lundi de la semaine du 1er et montre 6 semaines.
+        var premier = new Date(vue.a, vue.m - 1, 1);
+        var depart = 1 - (premier.getDay() + 6) % 7;
+        for (var i = 0; i < 42; i++) {
+          var d = new Date(vue.a, vue.m - 1, depart + i);
+          var j = { a: d.getFullYear(), m: d.getMonth() + 1, j: d.getDate() };
+          var b = el("button", "cal-jour", String(j.j));
+          if (j.m !== vue.m) b.classList.add("hors");
+          if (j.a === auj.a && j.m === auj.m && j.j === auj.j) b.classList.add("auj");
+          if (choisi && j.a === choisi.a && j.m === choisi.m && j.j === choisi.j) {
+            b.classList.add("choisi");
+            b.setAttribute("aria-current", "date");
+          }
+          b.setAttribute("aria-label", j.j + " " + MOIS[j.m - 1] + " " + j.a);
+          b.addEventListener("click", (function (date) {
+            return function () { choisir(champ, dateFr(date)); };
+          })(j));
+          grille.appendChild(b);
+        }
+        pop.appendChild(grille);
+
+        var pied = el("div", "cal-pied");
+        var effacer = el("button", "", "Effacer");
+        effacer.addEventListener("click", function () { choisir(champ, ""); });
+        var aujourdhui = el("button", "", "Aujourd'hui");
+        aujourdhui.addEventListener("click", function () { choisir(champ, dateFr(auj)); });
+        pied.appendChild(effacer);
+        pied.appendChild(aujourdhui);
+        pop.appendChild(pied);
+      }
+
+      dessine();
+      cadre.appendChild(pop);
+      bouton.setAttribute("aria-expanded", "true");
+      ouvert = { pop: pop, bouton: bouton, cadre: cadre };
+    }
+
+    Array.prototype.forEach.call(document.querySelectorAll('input[type="date"]'), function (champ) {
+      var depart = lireDate(champ.value);
+      champ.type = "text";
+      champ.value = depart ? dateFr(depart) : "";
+      champ.placeholder = "jj/mm/aaaa";
+      champ.inputMode = "numeric";
+      champ.autocomplete = "off";
+      champ.maxLength = 10;
+      var cadre = el("span", "date-champ");
+      champ.parentNode.insertBefore(cadre, champ);
+      cadre.appendChild(champ);
+      var bouton = el("button", "cal-bouton");
+      bouton.setAttribute("aria-label", "Ouvrir le calendrier");
+      bouton.setAttribute("aria-expanded", "false");
+      bouton.title = "Ouvrir le calendrier";
+      bouton.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true" shape-rendering="crispEdges" fill="currentColor">' +
+        '<path d="M2 3h12v11H2zM3 6v7h10V6z" fill-rule="evenodd"/><path d="M4 1h2v3H4zM10 1h2v3h-2zM5 8h2v2H5zM9 8h2v2H9z"/></svg>';
+      cadre.appendChild(bouton);
+      bouton.addEventListener("click", function () {
+        if (ouvert && ouvert.cadre === cadre) fermer(); else ouvrir(champ, bouton, cadre);
+      });
+      // Une date tapée au clavier est remise au format JJ/MM/AAAA en quittant la case.
+      champ.addEventListener("blur", function () {
+        var d = lireDate(champ.value);
+        if (d) champ.value = dateFr(d);
+      });
+    });
+    document.addEventListener("mousedown", function (e) {
+      if (ouvert && !ouvert.cadre.contains(e.target)) fermer();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && ouvert) { var b = ouvert.bouton; fermer(); b.focus(); }
+    });
+  }
+
+  calendrier();
   menu();
   icone();
   reinitialisation();

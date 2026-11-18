@@ -135,6 +135,45 @@ h1 em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-
 .saisie:focus { outline: 2px solid var(--blue); outline-offset: 1px; border-color: var(--blue); }
 .aide-bloc { font-size: 14px; color: var(--muted); margin: 0 0 12px; }
 .champ input:focus, .champ select:focus { outline: 2px solid var(--blue); outline-offset: 1px; border-color: var(--blue); }
+/* ---------- Calendrier maison (construit par commun.js) ---------- */
+.date-champ { position: relative; display: block; }
+.champ .date-champ input { padding-right: 42px; }
+.cal-bouton {
+  position: absolute; top: 4px; right: 4px; width: 30px; height: 30px; padding: 7px;
+  border: 0; border-radius: 50%; background: transparent; color: var(--blue); cursor: pointer;
+}
+.cal-bouton:hover, .cal-bouton[aria-expanded="true"] { background: var(--blue); color: var(--on-blue); }
+.cal-bouton svg { display: block; width: 16px; height: 16px; }
+.cal {
+  position: absolute; z-index: 30; top: calc(100% + 8px); right: 0; width: 292px; padding: 16px 16px 12px;
+  background: var(--paper); border: 1px solid var(--line); border-radius: 10px;
+  box-shadow: 0 30px 60px -20px rgba(17, 54, 219, .38), 0 4px 14px rgba(27, 36, 80, .10);
+}
+.cal button { font: inherit; border: 0; background: transparent; cursor: pointer; padding: 0; color: inherit; }
+.cal button:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+.cal-tete { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.cal-titre { font-family: var(--sans); font-size: 18px; font-weight: 500; letter-spacing: -0.02em; color: var(--blue); text-transform: capitalize; white-space: nowrap; }
+.cal-titre em { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 1.12em; letter-spacing: 0; }
+.cal-nav { display: flex; gap: 2px; }
+.cal-nav button { width: 26px; height: 26px; border-radius: 50%; color: var(--blue); font-size: 16px; line-height: 1; padding-bottom: 2px; }
+.cal-nav button:hover { background: var(--chip); }
+.cal-grille { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.cal-jour-nom {
+  font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--muted); text-align: center; padding: 6px 0;
+}
+.cal .cal-jour {
+  height: 34px; border-radius: 9999px; font-family: var(--mono); font-size: 13px; color: var(--ink);
+  border: 1px solid transparent; transition: background .12s;
+}
+.cal .cal-jour:hover { background: var(--chip); }
+.cal .cal-jour.hors { color: var(--muted); opacity: .5; }
+.cal .cal-jour.auj { border-color: rgba(17, 54, 219, .45); color: var(--blue); }
+.cal .cal-jour.choisi { background: var(--blue); color: var(--on-blue); font-weight: 500; opacity: 1; border-color: var(--blue); }
+.cal-pied { display: flex; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+.cal-pied button { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--blue); padding: 4px 2px; }
+.cal-pied button:hover { text-decoration: underline; text-underline-offset: 3px; }
+
 .champ input::placeholder { color: var(--muted); opacity: .6; }
 .champ input.erreur { border-color: var(--blue); background: var(--chip); }
 .champ input[type="checkbox"] { width: 20px; height: 20px; margin: 9px 0; accent-color: var(--blue); justify-self: start; }

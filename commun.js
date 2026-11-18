@@ -11,7 +11,7 @@ window.MiniOutils = (function () {
   // dernier chiffre pour une retouche, chiffre du milieu pour un nouvel outil.
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
-  var VERSION = "1.2.4";
+  var VERSION = "1.2.5";
 
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [
@@ -83,7 +83,8 @@ window.MiniOutils = (function () {
         return '<a class="entree" href="' + o.fichier + '"' + (o.fichier === page ? ' aria-current="page"' : '') +
                ' title="' + o.nom + '"><span class="num">' + deux(i + 1) + '</span><span class="lib">' + o.nom + '</span></a>';
       }).join("") +
-      '</div><div class="pied"><button id="installer" type="button" hidden>Installer l’application</button>' +
+      '</div><div class="pied"><button id="installer" type="button">Installer l’application</button>' +
+      '<span id="installer-info" role="status" hidden></span>' +
       '<span>Calcul dans votre navigateur</span><span>Rien n\'est envoyé</span>' +
       '<span class="version">Version ' + VERSION + '</span></div>';
     // Repli du menu sur grand écran : il reste une bande avec le logo et les numéros.
@@ -527,28 +528,34 @@ window.MiniOutils = (function () {
     if (document.visibilityState === "visible") verifieVersion();
   });
 
-  // Bouton « Installer l'application » en bas du menu. Le navigateur signale quand
-  // l'installation est possible (événement beforeinstallprompt, Chrome et Edge) : le
-  // bouton n'apparaît qu'à ce moment-là, et disparaît une fois l'application installée.
+  // Bouton « Installer l'application » en bas du menu, toujours visible.
+  // Le navigateur (Chrome, Edge) signale par l'événement beforeinstallprompt que
+  // l'installation est possible : le clic ouvre alors sa fenêtre d'installation.
+  // Sans ce signal (application déjà installée, ou navigateur qui ne le propose pas),
+  // le clic affiche une explication sous le bouton au lieu de ne rien faire.
   var invite = null;
-  function montreInstaller() {
-    var b = $("installer");
-    if (b) b.hidden = !invite;
-  }
   window.addEventListener("beforeinstallprompt", function (e) {
     e.preventDefault(); // on garde l'invite pour la déclencher au clic
     invite = e;
-    montreInstaller();
   });
-  window.addEventListener("appinstalled", function () { invite = null; montreInstaller(); });
+  window.addEventListener("appinstalled", function () { invite = null; });
   function installation() {
-    var b = $("installer");
-    if (!b) return;
-    montreInstaller();
+    var b = $("installer"), info = $("installer-info");
+    if (!b || !info) return;
     b.addEventListener("click", function () {
-      if (!invite) return;
-      invite.prompt();
-      Promise.resolve(invite.userChoice).then(function () { invite = null; montreInstaller(); });
+      if (invite) {
+        info.hidden = true;
+        invite.prompt();
+        Promise.resolve(invite.userChoice).then(function () { invite = null; });
+        return;
+      }
+      var enApplication = (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
+                          navigator.standalone === true;
+      info.textContent = enApplication
+        ? "L’application est déjà installée : vous l’utilisez en ce moment."
+        : "Déjà installée sur ce poste, ou installation non proposée par ce navigateur. " +
+          "Sinon, ouvrez le menu du navigateur puis « Installer Mini-outils ».";
+      info.hidden = false;
     });
   }
 

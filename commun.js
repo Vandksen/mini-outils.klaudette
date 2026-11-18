@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.5.1";
+  var VERSION = "1.6.0";
 
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [
@@ -87,9 +87,9 @@ window.MiniOutils = (function () {
       '<div class="defile">' +
       '<a class="entree" href="index.html"' + (page === "index.html" ? ' aria-current="page"' : '') +
       ' title="Accueil"><span class="num">' + ICONE_ACCUEIL + '</span><span class="lib">Accueil</span></a>' +
-      '<h2>Outils</h2>' +
+      '<h2 class="outil">Outils</h2>' +
       OUTILS.map(function (o, i) {
-        return '<a class="entree" href="' + o.fichier + '"' + (o.fichier === page ? ' aria-current="page"' : '') +
+        return '<a class="entree outil" href="' + o.fichier + '"' + (o.fichier === page ? ' aria-current="page"' : '') +
                ' title="' + o.nom + '"><span class="num">' + deux(i + 1) + '</span><span class="lib">' + o.nom + '</span></a>';
       }).join("") +
       '<h2>À propos</h2>' +
@@ -595,8 +595,33 @@ window.MiniOutils = (function () {
     c.appendChild(bloc);
   }
 
+  // Sur téléphone, seules les pages d'information sont affichées : les tableaux
+  // d'écritures n'y sont pas lisibles. Les pages d'outil reçoivent la classe
+  // « page-outil » et un message de remplacement ; c'est le CSS (écran de 820 px
+  // de large au plus) qui masque l'outil et montre le message.
+  function mobile() {
+    var page = location.pathname.split("/").pop() || "index.html";
+    var outil = OUTILS.filter(function (o) { return o.fichier === page; })[0];
+    var contenu = $("contenu"), principal = document.querySelector("main");
+    if (!outil || !contenu || !principal) return;
+    document.body.classList.add("page-outil");
+    var bloc = document.createElement("div");
+    bloc.className = "mobile-info";
+    var c = document.createElement("div");
+    c.className = "conteneur";
+    c.innerHTML = '<p class="eyebrow">Sur ordinateur</p>' +
+      '<h1>Cet outil s’utilise <em>sur ordinateur.</em></h1>' +
+      '<p class="lead"></p>' +
+      '<a class="btn grand" href="index.html">Découvrir l’application</a>';
+    c.querySelector(".lead").textContent = "« " + outil.nom + " » affiche des tableaux d’écritures qui ne sont pas " +
+      "lisibles sur un écran de téléphone. Ouvrez Mini-outils depuis un ordinateur pour l’utiliser.";
+    bloc.appendChild(c);
+    contenu.insertBefore(bloc, principal);
+  }
+
   calendrier();
   menu();
+  mobile();
   pied();
   installation();
   icone();

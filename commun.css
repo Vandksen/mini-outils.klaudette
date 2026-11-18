@@ -125,6 +125,7 @@ body::before {
   background: var(--ink); pointer-events: none;
 }
 #barre-mobile { display: none; }
+.mobile-info, .mobile-seul { display: none; }
 #fond { display: none; }
 
 main { padding: 56px 0 72px; }
@@ -374,6 +375,16 @@ a.carte:hover { box-shadow: 0 24px 44px -24px rgba(17, 54, 219, .45), 0 2px 6px 
   }
   .conteneur { padding: 0 16px; }
   main { padding: 36px 0 48px; }
+
+  /* Téléphone : pages d'information seulement. Les outils disparaissent du menu,
+     leurs pages affichent un message, et l'accueil ne propose pas de les ouvrir. */
+  #menu .outil, #installer, #installer-info, [data-installer], .info-installer { display: none !important; }
+  body.page-outil main { display: none; }
+  body.page-outil .mobile-info { display: block; padding: 36px 0 48px; }
+  body.page-outil .site-footer .conteneur > span { display: none; }
+  .mobile-seul { display: block; }
+  a.carte { pointer-events: none; }
+  .carte .suite { display: none; }
   .panel { padding: 20px 18px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

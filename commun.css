@@ -60,14 +60,19 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
 .logo b { font-weight: inherit; }
 .logo span { font-family: var(--serif); font-style: italic; font-weight: 400; }
 #menu h2:not(:first-child) { margin-top: 22px; }
+/* Titre de catégorie : un bouton qui replie ou déplie ses entrées (accordéon). */
+#menu .rubrique {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; width: calc(100% + 16px); margin: 0 -8px; padding: 4px 8px;
+  border: 0; border-radius: 6px; background: none; cursor: pointer; color: inherit; font: inherit; letter-spacing: inherit; text-transform: inherit; text-align: left;
+  transition: background .15s, color .15s;
+}
+#menu .rubrique:hover { background: rgba(248, 243, 230, .10); color: var(--on-blue); }
+#menu .rubrique .chevron { flex: none; transition: transform .15s; }
+#menu .rubrique[aria-expanded="false"] .chevron { transform: rotate(-90deg); }
 .entree-vide { display: block; padding: 5px 12px; font-family: var(--mono); font-size: 11px; color: var(--on-blue-muted); opacity: .75; }
 .entree .num svg { display: block; width: 14px; height: 14px; position: relative; top: 2px; }
 /* Un nom de logiciel garde sa casse, même dans un libellé en majuscules. */
 .nom-propre { text-transform: none; }
-.marque-sous {
-  display: block; padding: 0 26px 20px; color: var(--on-blue-muted);
-  font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase;
-}
 #menu .defile { flex: 1; overflow-y: auto; padding: 0 14px 12px; scrollbar-width: thin; scrollbar-color: rgba(248, 243, 230, .25) transparent; }
 #menu h2 {
   margin: 6px 12px 8px; color: var(--on-blue-muted);
@@ -388,6 +393,85 @@ a.carte:hover { box-shadow: 0 24px 44px -24px rgba(17, 54, 219, .45), 0 2px 6px 
 .manifeste .signature { margin-top: 32px; font-family: var(--serif); font-style: italic; font-size: 24px; color: var(--blue); }
 .prose .donnee { font-family: var(--mono); font-size: 14px; }
 
+/* ---------- Plan de comptes (pcg.html) ---------- */
+/* Second menu, à droite du menu principal : recherche et filtre par catégorie. */
+body.avec-filtres { grid-template-columns: 276px 300px minmax(0, 1fr); }
+#filtres {
+  position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; min-height: 0;
+  background: var(--paper); border-right: 1px solid var(--line);
+}
+#filtres header { padding: 26px 22px 14px; border-bottom: 1px solid var(--line); }
+#filtres header div { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+#filtres header .eyebrow { margin: 0; }
+#filtres header strong { display: block; margin-top: 8px; font-size: 19px; font-weight: 500; letter-spacing: -0.03em; line-height: 1.2; color: var(--blue); }
+#filtres .defile { flex: 1; overflow-y: auto; padding: 0 14px 20px; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+#filtres .titre {
+  display: block; margin: 20px 8px 8px; color: var(--muted);
+  font-family: var(--mono); font-size: 11px; font-weight: 500; line-height: 1.4; letter-spacing: .14em; text-transform: uppercase;
+}
+#filtres input[type="search"] {
+  display: block; width: 100%; height: 40px; padding: 0 14px;
+  font-family: var(--mono); font-size: 13px; color: var(--ink);
+  background: var(--cream); border: 1px solid var(--line); border-radius: 9999px;
+}
+#filtres input[type="search"]:focus { outline: 2px solid var(--blue); outline-offset: 1px; border-color: var(--blue); }
+#filtres input::placeholder { color: var(--muted); opacity: .7; }
+.pcg-categories { display: flex; flex-direction: column; gap: 2px; }
+.pcg-categorie {
+  display: flex; align-items: baseline; gap: 10px; width: 100%; padding: 7px 12px; border: 0; border-radius: 9999px; cursor: pointer;
+  background: transparent; color: var(--ink); font-family: var(--sans); font-size: 14px; text-align: left;
+  transition: background .15s, color .15s;
+}
+.pcg-categorie .lib { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pcg-categorie .nb { font-family: var(--mono); font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.pcg-categorie:hover { background: var(--chip); }
+.pcg-categorie[aria-pressed="true"] { background: var(--blue); color: var(--on-blue); font-weight: 500; }
+.pcg-categorie[aria-pressed="true"] .nb { color: var(--on-blue-muted); }
+.pcg-categorie:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+#filtres footer { padding: 12px 22px; border-top: 1px solid var(--line); }
+#filtres footer button { padding: 4px 0; border: 0; background: none; cursor: pointer; font-family: var(--sans); font-size: 13px; color: var(--blue); }
+#filtres footer button:disabled { color: var(--muted); opacity: .45; cursor: default; }
+#filtres footer button:not(:disabled):hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Le second menu reste toujours une colonne : sur un écran moins large, elle se resserre. */
+@media (max-width: 1180px) {
+  body.avec-filtres { grid-template-columns: 276px 240px minmax(0, 1fr); }
+  body.avec-filtres .conteneur { padding: 0 22px; }
+  #filtres header { padding: 26px 18px 14px; }
+  #filtres .defile { padding: 0 10px 20px; }
+  #filtres footer { padding: 12px 18px; }
+}
+@media (max-width: 1000px) {
+  .pcg tbody td.compte { width: 74px; }
+}
+#ouvrir-filtres { display: none; }
+
+.pcg-groupe h2 {
+  display: flex; align-items: center; gap: 12px; margin: 34px 0 6px;
+  font-family: var(--mono); font-size: 12px; font-weight: 400; letter-spacing: .05em; text-transform: uppercase; color: var(--muted);
+}
+.pcg-groupe .numero { background: var(--blue); color: var(--on-blue); padding: 2px 12px; border-radius: 9999px; font-size: 13px; font-weight: 500; letter-spacing: 0; }
+/* Largeurs fixes : les colonnes restent alignées d'un groupe à l'autre. */
+.pcg table { table-layout: fixed; }
+.pcg tbody td { vertical-align: middle; }
+.pcg tbody td.compte { width: 96px; font-family: var(--mono); font-size: 13px; white-space: nowrap; color: var(--blue); }
+.pcg tbody td.copie { width: 36px; padding: 0; }
+.pcg-copier {
+  display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; cursor: pointer;
+  border: 1px solid transparent; border-radius: 50%; background: transparent; color: var(--blue);
+  transition: background .15s, color .15s, border-color .15s;
+}
+.pcg-copier:hover { background: var(--chip); border-color: rgba(17, 54, 219, .35); }
+.pcg-copier:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.pcg-copier.fait { background: var(--blue); border-color: var(--blue); color: var(--on-blue); }
+.pcg .vide { margin-top: 28px; }
+#message-copie {
+  position: fixed; z-index: 30; right: 24px; top: 20px; max-width: min(420px, calc(100vw - 48px)); padding: 9px 16px; border-radius: 9999px;
+  background: var(--blue); color: var(--on-blue); font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  box-shadow: 0 12px 34px rgba(17, 54, 219, .3); opacity: 0; transform: translateY(-8px); transition: opacity .2s, transform .2s; pointer-events: none;
+}
+#message-copie.visible { opacity: 1; transform: none; }
+
 @media (max-width: 1400px) {
   .grille { grid-template-columns: minmax(0, 1fr); }
 }
@@ -418,6 +502,18 @@ a.carte:hover { box-shadow: 0 24px 44px -24px rgba(17, 54, 219, .45), 0 2px 6px 
   a.carte { pointer-events: none; }
   .carte .suite { display: none; }
   .panel { padding: 20px 18px; }
+  /* Téléphone : le second menu est un volet, comme le menu principal ; le bouton
+     « Filtres » de la barre du haut l'ouvre. */
+  body.avec-filtres { grid-template-columns: minmax(0, 1fr); }
+  body.avec-filtres .conteneur { padding: 0 16px; }
+  #filtres { position: fixed; z-index: 40; inset: 0 auto 0 0; width: min(300px, 86vw); height: auto; transform: translateX(-102%); transition: transform .25s ease; }
+  body.filtres-ouverts #filtres { transform: none; box-shadow: 0 0 60px rgba(8, 20, 90, .5); }
+  body.filtres-ouverts #fond { display: block; position: fixed; z-index: 35; inset: 0; background: rgba(27, 36, 80, .35); }
+  #ouvrir-filtres {
+    display: block; margin-left: auto; height: 36px; padding: 0 16px; border-radius: 9999px; cursor: pointer;
+    background: transparent; color: var(--blue); border: 1px solid rgba(17, 54, 219, .35);
+    font-family: var(--sans); font-size: 14px; font-weight: 500; letter-spacing: 0;
+  }
   .final { min-height: 360px; padding: 32px 22px; }
   .final::before { background: rgba(8, 20, 110, .55); }
 }

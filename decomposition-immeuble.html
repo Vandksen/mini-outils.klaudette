@@ -55,6 +55,10 @@
         <section class="panel">
           <p class="eyebrow">01 — Bien immobilier</p>
           <div class="champ">
+            <label for="dossier">Dossier<span class="aide">Facultatif, pour le justificatif PDF</span></label>
+            <input id="dossier" type="text" value="EXEMPLE SARL">
+          </div>
+          <div class="champ">
             <label for="date">Date d'acquisition</label>
             <input id="date" type="date" value="2025-04-24">
           </div>
@@ -162,6 +166,7 @@
             <div class="actions">
               <span class="etat" id="etatNote" role="status"></span>
               <button class="btn ghost" id="copierNote" type="button">Copier la note</button>
+              <button class="btn ghost" id="pdf" type="button">Télécharger le justificatif PDF</button>
             </div>
           </div>
           <p class="note" id="note"></p>
@@ -203,14 +208,16 @@
 </div>
 
 <script src="commun.js"></script>
+<script src="pdf.js"></script>
 <script>
 (function () {
   "use strict";
   var M = window.MiniOutils, $ = M.$;
   var RANGS = [1, 2, 3, 4, 5];
-  var ids = ["date", "rue", "ville", "valeur", "droits", "honoraires", "tauxTerrain", "cptTerrain", "tiersForce", "piece"];
+  var ids = ["dossier", "date", "rue", "ville", "valeur", "droits", "honoraires", "tauxTerrain", "cptTerrain", "tiersForce", "piece"];
   RANGS.forEach(function (i) { ids.push("cpt" + i, "nom" + i, "pct" + i, "dur" + i); });
   var note = "";
+  var dernier = null;   // dernier calcul valide, repris par le justificatif PDF
 
   function pourcent(c) { return M.affiche(c).replace(/,00$/, "") + " %"; }
   // Compte du vendeur : 467 suivi des trois premières lettres de la ville, comme dans le classeur.
@@ -267,6 +274,7 @@
     var corps = $("detail");
     corps.textContent = "";
     note = "";
+    dernier = null;
     if (!blocage) {
       // Comme dans le classeur : le terrain est un pourcentage de la valeur d'origine, hors
       // frais ; les composants se partagent le reste de la valeur totale. Le dernier
@@ -314,6 +322,8 @@
                return c.nom + " " + pourcent(c.pct) + " soit " + M.affiche(c.valeur) + " Euros" + (c.duree ? " sur " + c.duree + " ans" : "");
              }).join(" ; ") + ".";
 
+      dernier = { dossier: v.dossier, adresse: adresse, ville: v.ville, date: d, valeur: valeur, droits: droits, honoraires: honoraires,
+                  total: total, terrain: terrain, taux: taux, reste: reste, lignes: lignes, ecritures: ecritures };
       if (!d) blocage = "Renseignez la date d'acquisition.";
       else if (!cptTiers) blocage = "Renseignez la ville du bien ou le compte vendeur forcé.";
       else if (composants.some(function (c) { return !c.cpt; })) blocage = "Renseignez le compte de chaque composant.";
@@ -333,6 +343,7 @@
 
     $("note").textContent = note || "La note s'affichera une fois la configuration complète.";
     $("copierNote").disabled = !note;
+    $("pdf").disabled = !dernier;
     $("etatNote").textContent = "";
     M.rendre(ecritures, blocage, alertes);
   }
@@ -343,6 +354,38 @@
       navigator.clipboard.writeText(note).then(fait, function () { $("etatNote").textContent = "Copie impossible dans ce navigateur"; });
     } else $("etatNote").textContent = "Copie impossible dans ce navigateur";
   });
+  // Justificatif PDF d'une page : identification du bien, décomposition, méthode, écriture.
+  function nomPdf(d) { return ["Decomposition immeuble", d.ville, d.dossier].filter(Boolean).join(" "); }
+  function justificatif(d) {
+    var f = window.MiniPdf.fiche("Décomposition d'un immeuble");
+    f.section("Bien immobilier");
+    f.ligne("Dossier", d.dossier).ligne("Adresse du bien", d.adresse).ligne("Date d'acquisition", d.date ? M.dateFr(d.date) : "");
+    f.ligne("Valeur d'origine", M.affiche(d.valeur) + " €");
+    if (d.droits) f.ligne("Droits d'enregistrement", M.affiche(d.droits) + " €");
+    if (d.honoraires) f.ligne("Honoraires de notaire ou d'agent immobilier", M.affiche(d.honoraires) + " €");
+    f.total("Valeur totale du bien", M.affiche(d.total) + " €");
+    f.section("Décomposition par composants");
+    f.tableau([{ nom: "Compte", largeur: 55 }, { nom: "Composant", largeur: 164 }, { nom: "%", largeur: 45, droite: true },
+               { nom: "Valeur", largeur: 80, droite: true }, { nom: "Durée", largeur: 80, droite: true },
+               { nom: "Dotation par an", largeur: 75, droite: true }],
+              d.lignes.map(function (l) {
+                var c = [l.cpt, l.nom, l.pct, M.affiche(l.valeur), l.duree, l.dotation];
+                c.gras = !!l.total;
+                return c;
+              }));
+    f.texte("Le terrain est retenu pour " + pourcent(d.taux) + " de la valeur d'origine, soit " + M.affiche(d.terrain) +
+            " €, et n'est pas amortissable. Le reste de la valeur totale, soit " + M.affiche(d.reste) +
+            " €, est réparti entre les composants selon les pourcentages indiqués ; chaque composant est amorti sur sa propre durée. " +
+            "La dotation par an est donnée pour une année entière, en amortissement linéaire.");
+    return f.ecritures(d.ecritures, M.affiche);
+  }
+
+  $("pdf").addEventListener("click", function () {
+    if (!dernier) return;
+    justificatif(dernier).telecharger(window.MiniPdf.nomFichier(nomPdf(dernier)) + ".pdf");
+    $("etatNote").textContent = "Justificatif téléchargé";
+  });
+  window.justificatifPdf = function () { return dernier ? justificatif(dernier) : null; };   // pour les contrôles
   M.brancher(ids, calcule);
 })();
 </script>

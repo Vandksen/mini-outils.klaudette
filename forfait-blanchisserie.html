@@ -54,6 +54,10 @@
       <section class="panel">
         <p class="eyebrow">01 — Configuration</p>
         <div class="champ">
+          <label for="dossier">Dossier<span class="aide">Facultatif, pour le justificatif PDF</span></label>
+          <input id="dossier" type="text" value="EXEMPLE SARL">
+        </div>
+        <div class="champ">
           <label for="annee">Année</label>
           <input id="annee" type="number" min="2000" max="2099" step="1" value="2025">
         </div>
@@ -99,6 +103,7 @@
             <div class="actions">
               <span class="etat" id="etat" role="status"></span>
               <button class="btn" id="copier" type="button">Copier la note</button>
+              <button class="btn ghost" id="pdf" type="button">Télécharger le justificatif PDF</button>
             </div>
           </div>
           <p class="note" id="note"></p>
@@ -118,14 +123,16 @@
 </div>
 
 <script src="commun.js"></script>
+<script src="pdf.js"></script>
 <script>
 (function () {
   "use strict";
   var M = window.MiniOutils, $ = M.$;
   var RANGS = [1, 2, 3, 4];
-  var ids = ["annee", "semaines"];
+  var ids = ["dossier", "annee", "semaines"];
   RANGS.forEach(function (i) { ids.push("nom" + i, "lav" + i, "prix" + i); });
   var note = "";
+  var dernier = null;   // dernier calcul valide, repris par le justificatif PDF
 
   // Nombre affiché sans décimales inutiles : 48 ou 0,5.
   function nombre(centiemes) { return M.affiche(centiemes).replace(/,00$/, "").replace(/(,\d)0$/, "$1"); }
@@ -163,6 +170,7 @@
     var corps = $("detail");
     corps.textContent = "";
     note = "";
+    dernier = null;
     if (!blocage) {
       lignes.forEach(function (l) {
         l.parAn = l.lav * semaines;                       // en centièmes de lavage
@@ -186,6 +194,7 @@
                return l.nom + " " + nombre(l.lav) + " lavage" + (l.lav > 100 ? "s" : "") + " par semaine, soit " + nombre(l.parAn) +
                       " lavages x " + M.affiche(l.prix) + " = " + M.affiche(l.cout) + " Euros";
              }).join(" ; ") + ". Forfait de l'année : " + M.affiche(total) + " Euros.";
+      dernier = { dossier: v.dossier, annee: annee, semaines: semaines, lignes: lignes, total: total };
     } else {
       $("total").textContent = "—";
       alertes.unshift(blocage);
@@ -193,6 +202,7 @@
 
     $("note").textContent = note || "La note s'affichera une fois la configuration complète.";
     $("copier").disabled = !note;
+    $("pdf").disabled = !dernier;
     $("etat").textContent = "";
     var ul = $("alertes");
     ul.textContent = "";
@@ -203,6 +213,31 @@
     });
   }
 
+  // Justificatif PDF d'une page : identification, détail par élément, formule.
+  function nomPdf(d) { return ["Forfait blanchisserie", d.annee, d.dossier].filter(Boolean).join(" "); }
+  function justificatif(d) {
+    var f = window.MiniPdf.fiche("Forfait blanchisserie " + d.annee);
+    f.section("Identification");
+    f.ligne("Dossier", d.dossier).ligne("Année", String(d.annee)).ligne("Semaines travaillées", String(d.semaines));
+    f.section("Calcul");
+    var corps = d.lignes.map(function (l) { return [l.nom, nombre(l.lav), nombre(l.parAn), M.affiche(l.prix), M.affiche(l.cout)]; });
+    var total = ["Total", "", "", "", M.affiche(d.total)];
+    total.gras = true;
+    f.tableau([{ nom: "Élément lavé", largeur: 159 }, { nom: "Lavages par semaine", largeur: 90, droite: true },
+               { nom: "Lavages par an", largeur: 80, droite: true }, { nom: "Prix d'un lavage", largeur: 85, droite: true },
+               { nom: "Coût", largeur: 85, droite: true }], corps.concat([total]));
+    f.total("Forfait blanchisserie " + d.annee, M.affiche(d.total) + " €");
+    f.texte("Linge professionnel lavé par le professionnel lui-même. Pour chaque élément : lavages par semaine x semaines travaillées " +
+            "x prix d'un lavage.");
+    return f;
+  }
+
+  $("pdf").addEventListener("click", function () {
+    if (!dernier) return;
+    justificatif(dernier).telecharger(window.MiniPdf.nomFichier(nomPdf(dernier)) + ".pdf");
+    $("etat").textContent = "Justificatif téléchargé";
+  });
+  window.justificatifPdf = function () { return dernier ? justificatif(dernier) : null; };   // pour les contrôles
   ids.forEach(function (id) {
     $(id).addEventListener("input", calcule);
     $(id).addEventListener("change", calcule);

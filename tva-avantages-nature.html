@@ -45,6 +45,10 @@
         <section class="panel">
           <p class="eyebrow">01 — Configuration</p>
           <div class="champ">
+            <label for="dossier">Dossier<span class="aide">Facultatif, pour le justificatif PDF</span></label>
+            <input id="dossier" type="text" value="EXEMPLE SARL">
+          </div>
+          <div class="champ">
             <label for="montant">Avantages en nature<span class="aide">Montant de la période, tenu pour TTC</span></label>
             <input id="montant" class="droite" type="text" inputmode="decimal" value="12000,00">
           </div>
@@ -103,6 +107,7 @@
             <div class="actions">
               <span class="etat" id="etatNote" role="status"></span>
               <button class="btn ghost" id="copierNote" type="button">Copier la note</button>
+              <button class="btn ghost" id="pdf" type="button">Télécharger le justificatif PDF</button>
             </div>
           </div>
           <p class="note" id="note"></p>
@@ -144,12 +149,14 @@
 </div>
 
 <script src="commun.js"></script>
+<script src="pdf.js"></script>
 <script>
 (function () {
   "use strict";
   var M = window.MiniOutils, $ = M.$;
-  var ids = ["montant", "part", "date", "cptCharge", "cptTva", "piece"];
+  var ids = ["dossier", "montant", "part", "date", "cptCharge", "cptTva", "piece"];
   var note = "";
+  var dernier = null;   // dernier calcul valide, repris par le justificatif PDF
 
   function pourcent(c) { return M.affiche(c).replace(/,00$/, "") + " %"; }
 
@@ -177,6 +184,7 @@
     var corps = $("detail");
     corps.textContent = "";
     note = "";
+    dernier = null;
     if (!blocage) {
       // Le montant est réparti TTC entre les deux taux ; la TVA de chaque taux est
       // arrondie au centime : TTC / 1,055 × 0,055 et TTC / 1,20 × 0,20.
@@ -203,6 +211,8 @@
              " Euros TTC, soit " + M.affiche(tva20) + " Euros de TVA). TVA totale de " + M.affiche(tva) +
              " Euros, portée au débit du compte " + v.cptCharge + " par le crédit du compte " + v.cptTva + ".";
 
+      dernier = { dossier: v.dossier, date: d, montant: montant, part: part, ttc55: ttc55, ttc20: ttc20, tva55: tva55, tva20: tva20,
+                  tva: tva, ecritures: ecritures };
       if (!d) blocage = "Renseignez la date de l'écriture.";
       else if (tva === 0) blocage = "La TVA est nulle : aucune écriture à passer.";
       else {
@@ -219,6 +229,7 @@
 
     $("note").textContent = note || "La note s'affichera une fois la configuration complète.";
     $("copierNote").disabled = !note;
+    $("pdf").disabled = !dernier;
     $("etatNote").textContent = "";
     M.rendre(ecritures, blocage, alertes);
   }
@@ -229,6 +240,32 @@
       navigator.clipboard.writeText(note).then(fait, function () { $("etatNote").textContent = "Copie impossible dans ce navigateur"; });
     } else $("etatNote").textContent = "Copie impossible dans ce navigateur";
   });
+  // Justificatif PDF d'une page : identification, calcul par taux, méthode, écriture.
+  function nomPdf(d) { return ["TVA avantages en nature", d.date ? d.date.a : "", d.dossier].filter(Boolean).join(" "); }
+  function justificatif(d) {
+    var f = window.MiniPdf.fiche("TVA sur avantages en nature" + (d.date ? " " + d.date.a : ""));
+    f.section("Identification");
+    f.ligne("Dossier", d.dossier).ligne("Date de l'écriture", d.date ? M.dateFr(d.date) : "");
+    f.ligne("Avantages en nature nourriture de la période (TTC)", M.affiche(d.montant) + " €");
+    f.section("Calcul");
+    var total = ["Total", "100 %", M.affiche(d.montant), M.affiche(d.montant - d.tva), M.affiche(d.tva)];
+    total.gras = true;
+    f.tableau([{ nom: "Taux de TVA", largeur: 119 }, { nom: "Part", largeur: 80, droite: true }, { nom: "TTC", largeur: 100, droite: true },
+               { nom: "HT", largeur: 100, droite: true }, { nom: "TVA", largeur: 100, droite: true }],
+              [["5,5 %", pourcent(d.part), M.affiche(d.ttc55), M.affiche(d.ttc55 - d.tva55), M.affiche(d.tva55)],
+               ["20 %", pourcent(10000 - d.part), M.affiche(d.ttc20), M.affiche(d.ttc20 - d.tva20), M.affiche(d.tva20)], total]);
+    f.total("TVA à comptabiliser", M.affiche(d.tva) + " €");
+    f.texte("Prélèvements pour les besoins du personnel : le montant des avantages en nature nourriture est tenu pour toutes taxes " +
+            "comprises et réparti entre le taux de 5,5 % et le taux de 20 %. TVA de chaque part : TTC / 1,055 x 0,055 et TTC / 1,20 x 0,20.");
+    return f.ecritures(d.ecritures, M.affiche);
+  }
+
+  $("pdf").addEventListener("click", function () {
+    if (!dernier) return;
+    justificatif(dernier).telecharger(window.MiniPdf.nomFichier(nomPdf(dernier)) + ".pdf");
+    $("etatNote").textContent = "Justificatif téléchargé";
+  });
+  window.justificatifPdf = function () { return dernier ? justificatif(dernier) : null; };   // pour les contrôles
   M.brancher(ids, calcule);
 })();
 </script>

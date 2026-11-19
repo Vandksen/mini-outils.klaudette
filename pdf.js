@@ -172,5 +172,101 @@
     return String(texte).normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   }
 
-  window.MiniPdf = { creer: creer, nomFichier: nomFichier };
+  // Justificatif type d'une page : en-tête, sections de lignes « nom … valeur », tableaux,
+  // montant mis en avant, texte, écriture comptable et pied de page. Chaque appel se place
+  // sous le précédent.
+  //   var f = MiniPdf.fiche("Forfait blanchisserie 2025");
+  //   f.section("Calcul"); f.ligne("Semaines travaillées", "48"); f.total("Forfait", "240,00 €");
+  //   f.telecharger("forfait.pdf");
+  function fiche(titre) {
+    var doc = creer(), G = 48, D = LARGEUR - 48, y = 86, fini = false;
+    doc.rectangle(0, 0, LARGEUR, 5, "bleu");
+    doc.texte(G, 44, "MINI-OUTILS", { taille: 8, gras: true, couleur: "bleu" });
+    doc.texte(D, 44, "Justificatif de calcul", { taille: 8, couleur: "gris", align: "droite" });
+    doc.texte(G, 78, titre, { taille: 22, gras: true });
+
+    // Raccourcit un texte trop large pour sa colonne.
+    var ajuste = function (texte, max, taille, gras) {
+      texte = String(texte);
+      if (largeur(texte, taille, gras) <= max) return texte;
+      while (texte.length > 1 && largeur(texte + "…", taille, gras) > max) texte = texte.slice(0, -1);
+      return texte + "…";
+    };
+    var f = {
+      doc: doc,
+      section: function (texte) {
+        y += 30;
+        doc.texte(G, y, texte.toUpperCase(), { taille: 8, gras: true, couleur: "bleu" });
+        y += 7;
+        doc.trait(G, y, D, y, "bleu", 0.8);
+        y += 6;
+        return f;
+      },
+      // Une ligne dont la valeur est vide n'est pas écrite.
+      ligne: function (nom, valeur, o) {
+        if (valeur === "" || valeur === null || valeur === undefined) return f;
+        y += 17;
+        doc.texte(G, y, nom, { couleur: "gris" });
+        doc.texte(D, y, ajuste(valeur, D - G - largeur(nom, 10) - 16, 10, o && o.gras), { align: "droite", gras: o && o.gras, couleur: o && o.couleur });
+        doc.trait(G, y + 6, D, y + 6);
+        return f;
+      },
+      total: function (nom, valeur) {
+        y += 12;
+        doc.rectangle(G, y, D - G, 34, "fond");
+        doc.texte(G + 12, y + 21, nom, { taille: 11, gras: true });
+        doc.texte(D - 12, y + 22, valeur, { taille: 15, gras: true, couleur: "bleu", align: "droite" });
+        y += 34;
+        return f;
+      },
+      // colonnes : [{ nom, largeur (en points, 499 au total), droite }]. lignes : tableaux de
+      // textes ; une ligne peut porter la propriété gras (ligne de total).
+      tableau: function (colonnes, lignes) {
+        var x = G, bords = colonnes.map(function (c) { var debut = x; x += c.largeur; return c.droite ? x : debut; });
+        var ecrit = function (cellules, o) {
+          y += 15;
+          cellules.forEach(function (t, k) {
+            if (t === "" || t === null || t === undefined) return;
+            var c = colonnes[k];
+            doc.texte(bords[k], y, ajuste(t, c.largeur - 6, o.taille, o.gras), { taille: o.taille, gras: o.gras, couleur: o.couleur, align: c.droite ? "droite" : "" });
+          });
+          doc.trait(G, y + 5, D, y + 5);
+        };
+        ecrit(colonnes.map(function (c) { return c.nom; }), { taille: 8, gras: true, couleur: "gris" });
+        lignes.forEach(function (l) { ecrit(l, { taille: 9, gras: !!l.gras }); });
+        return f;
+      },
+      texte: function (texte) {
+        y += 20;
+        y = doc.paragraphe(G, y, D - G, texte, { taille: 8.5, couleur: "gris" }) - 12;
+        return f;
+      },
+      // Écritures au format de MiniOutils.rendre ; affiche : fonction centimes -> « 1 234,56 ».
+      ecritures: function (liste, affiche) {
+        if (!liste || !liste.length) return f;
+        f.section("Écriture comptable");
+        var l = liste.map(function (e) {
+          return [e.date, e.piece, e.compte, e.libelle, e.debit === null ? "" : affiche(e.debit), e.credit === null ? "" : affiche(e.credit)];
+        });
+        return f.tableau([{ nom: "Date", largeur: 58 }, { nom: "Pièce", largeur: 46 }, { nom: "Compte", largeur: 50 },
+                          { nom: "Libellé", largeur: 221 }, { nom: "Débit", largeur: 62, droite: true }, { nom: "Crédit", largeur: 62, droite: true }], l);
+      },
+      // Pied de page, écrit une seule fois avant la sortie.
+      fin: function () {
+        if (fini) return doc;
+        fini = true;
+        var jour = new Date(), deux = function (n) { return (n < 10 ? "0" : "") + n; };
+        doc.trait(G, 792, D, 792);
+        doc.texte(G, 806, "Document établi le " + deux(jour.getDate()) + "/" + deux(jour.getMonth() + 1) + "/" + jour.getFullYear() +
+                  " avec mini-outils-compta.fr", { taille: 8, couleur: "gris" });
+        doc.texte(D, 806, "Calcul à contrôler avant utilisation", { taille: 8, couleur: "gris", align: "droite" });
+        return doc;
+      },
+      octets: function () { return f.fin().octets(); },
+      telecharger: function (nom) { f.fin().telecharger(nom); }
+    };
+    return f;
+  }
+
+  window.MiniPdf = { creer: creer, fiche: fiche, nomFichier: nomFichier };
 })();

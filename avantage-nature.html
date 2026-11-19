@@ -45,6 +45,10 @@
         <section class="panel">
           <p class="eyebrow">01 — Configuration</p>
           <div class="champ">
+            <label for="dossier">Dossier<span class="aide">Facultatif, pour le justificatif PDF</span></label>
+            <input id="dossier" type="text" value="EXEMPLE SARL">
+          </div>
+          <div class="champ">
             <label for="annee">Année</label>
             <input id="annee" type="number" min="2025" max="2099" step="1" value="2026">
           </div>
@@ -138,6 +142,7 @@
             <div class="actions">
               <span class="etat" id="etatNote" role="status"></span>
               <button class="btn ghost" id="copierNote" type="button">Copier la note</button>
+              <button class="btn ghost" id="pdf" type="button">Télécharger le justificatif PDF</button>
             </div>
           </div>
           <p class="note" id="note"></p>
@@ -179,13 +184,15 @@
 </div>
 
 <script src="commun.js"></script>
+<script src="pdf.js"></script>
 <script>
 (function () {
   "use strict";
   var M = window.MiniOutils, $ = M.$;
-  var ids = ["annee", "beneficiaire", "vehicule", "immat", "mode", "age", "carburant", "electrique",
+  var ids = ["dossier", "annee", "beneficiaire", "vehicule", "immat", "mode", "age", "carburant", "electrique",
              "coutAchat", "coutAnnuel", "cptDebit", "cptCredit", "piece"];
   var note = "";
+  var dernier = null;   // dernier calcul valide, repris par le justificatif PDF
   // Abattement des véhicules 100 % électriques : 70 % de l'avantage, plafonné (en centimes).
   var ABATTEMENT = 70, PLAFOND = 458200;
   var MODES = { achat: "achat", lld: "location longue durée", cb: "crédit-bail" };
@@ -222,6 +229,7 @@
     var corps = $("detail");
     corps.textContent = "";
     note = "";
+    dernier = null;
     if (!blocage) {
       var brut = Math.round(base * taux / 100);
       var abattement = electrique ? Math.min(Math.round(brut * ABATTEMENT / 100), PLAFOND) : 0;
@@ -253,6 +261,9 @@
                            M.affiche(montant) + " Euros" : "") +
              ", porté au débit du compte " + v.cptDebit + " par le crédit du compte " + v.cptCredit + ".";
 
+      dernier = { dossier: v.dossier, beneficiaire: v.beneficiaire, vehicule: v.vehicule, immat: v.immat, mode: v.mode, achat: achat,
+                  recent: recent, carburant: carburant, electrique: electrique, annee: annee, nomBase: nomBase, base: base, taux: taux,
+                  brut: brut, abattement: abattement, montant: montant, ecritures: ecritures };
       if (montant === 0) blocage = "L'avantage en nature est nul : aucune écriture à passer.";
       else {
         var piece = v.piece || M.code6(["avn", annee, v.mode, v.age, carburant, electrique, base, v.immat, v.cptDebit, v.cptCredit].join("|"));
@@ -269,6 +280,7 @@
 
     $("note").textContent = note || "La note s'affichera une fois la configuration complète.";
     $("copierNote").disabled = !note;
+    $("pdf").disabled = !dernier;
     $("etatNote").textContent = "";
     M.rendre(ecritures, blocage, alertes);
   }
@@ -279,6 +291,34 @@
       navigator.clipboard.writeText(note).then(fait, function () { $("etatNote").textContent = "Copie impossible dans ce navigateur"; });
     } else $("etatNote").textContent = "Copie impossible dans ce navigateur";
   });
+  // Justificatif PDF d'une page : identification, calcul, règle appliquée, écriture.
+  function nomPdf(d) { return ["Avantage en nature", d.annee, d.immat || d.beneficiaire].filter(Boolean).join(" "); }
+  function justificatif(d) {
+    var f = window.MiniPdf.fiche("Avantage en nature véhicule " + d.annee);
+    f.section("Identification");
+    f.ligne("Dossier", d.dossier).ligne("Bénéficiaire", d.beneficiaire).ligne("Véhicule", d.vehicule).ligne("Immatriculation", d.immat);
+    f.ligne("Mode de détention", MODES[d.mode].charAt(0).toUpperCase() + MODES[d.mode].slice(1));
+    if (d.achat) f.ligne("Âge du véhicule", d.recent ? "5 ans au plus" : "Plus de 5 ans");
+    f.ligne("Carburant pris en charge", d.carburant ? "Oui" : "Non");
+    f.ligne("Véhicule 100 % électrique", d.electrique ? "Oui" : "Non");
+    f.section("Calcul");
+    f.ligne(d.nomBase, M.affiche(d.base) + " €").ligne("Taux applicable", d.taux + " %");
+    f.ligne("Avantage en nature annuel", M.affiche(d.brut) + " €");
+    if (d.electrique) f.ligne("Abattement véhicule électrique", "- " + M.affiche(d.abattement) + " €");
+    f.total("Avantage en nature " + d.annee, M.affiche(d.montant) + " €");
+    f.texte("Évaluation forfaitaire. Véhicule acheté : 15 % du coût d'acquisition TTC (20 % si le carburant est pris en charge) " +
+            "pour un véhicule de 5 ans au plus, 10 % (15 %) au-delà. Véhicule en location ou en crédit-bail : 50 % du coût annuel TTC " +
+            "(67 % si le carburant est pris en charge). Véhicule 100 % électrique : abattement de " + ABATTEMENT +
+            " % de l'avantage, plafonné à " + M.affiche(PLAFOND) + " €.");
+    return f.ecritures(d.ecritures, M.affiche);
+  }
+
+  $("pdf").addEventListener("click", function () {
+    if (!dernier) return;
+    justificatif(dernier).telecharger(window.MiniPdf.nomFichier(nomPdf(dernier)) + ".pdf");
+    $("etatNote").textContent = "Justificatif téléchargé";
+  });
+  window.justificatifPdf = function () { return dernier ? justificatif(dernier) : null; };   // pour les contrôles
   M.brancher(ids, calcule);
 })();
 </script>

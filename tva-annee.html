@@ -189,6 +189,11 @@
     return td;
   }
   function solde(centimes) { return (centimes < 0 ? "-" : "") + M.affiche(Math.abs(centimes)); }
+  // Montant arrondi à l'euro le plus proche, sans décimales (0,50 arrondi à l'euro supérieur).
+  function euros(centimes) {
+    var e = Math.round(Math.abs(centimes) / 100);
+    return (centimes < 0 && e ? "-" : "") + String(e).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  }
 
   function calcule() {
     var dossier = $("dossier").value.trim();
@@ -313,13 +318,13 @@
              (ecartes.length ? " (non retenu" + (ecartes.length > 1 ? "s" : "") + " : " + ecartes.join(", ") + ")" : "") +
              (collectee ? ". Somme des crédits " + M.affiche(totC) + " Euros - somme des débits " + M.affiche(totD)
                         : ". Somme des débits " + M.affiche(totD) + " Euros - somme des crédits " + M.affiche(totC)) +
-             " Euros = " + solde(total) + " Euros (" + sens + ").";
+             " Euros = " + solde(total) + " Euros, soit " + euros(total) + " Euros arrondi à l'euro le plus proche (" + sens + ").";
       dernier = { dossier: dossier, journaux: ordre.map(function (j) { return journaux[j]; }), retenus: retenus, ecartes: ecartes,
                   comptes: ordreComptes.map(function (k) { return comptes[k]; }), totD: totD, totC: totC, total: total, nb: nb,
                   periode: periode, sens: sens, collectee: collectee, nomTva: nomTva, formule: formule.replace("−", "-") };
     }
 
-    $("resultat").textContent = blocage ? "—" : solde(total) + " €";
+    $("resultat").textContent = blocage ? "—" : euros(total) + " €";
     $("sens").textContent = blocage ? "—" : (totD > totC ? "Débiteur" : (totD < totC ? "Créditeur" : "Nul"));
     $("totDebit").textContent = blocage ? "—" : M.affiche(totD);
     $("totCredit").textContent = blocage ? "—" : M.affiche(totC);
@@ -363,7 +368,7 @@
                  { nom: "Crédit", largeur: 85, droite: true }, { nom: d.formule, largeur: 80, droite: true }],
                 d.comptes.map(function (c) { return [c.nom, String(c.lignes), M.affiche(c.debit), M.affiche(c.credit), m(c)]; }));
     }
-    f.total(d.nomTva + " de l'année (" + d.sens + ")", solde(d.total) + " €");
+    f.total(d.nomTva + " de l'année, arrondie à l'euro (" + d.sens + ")", euros(d.total) + " €");
     f.texte((d.collectee ? "Somme des crédits moins somme des débits" : "Somme des débits moins somme des crédits") +
             " des lignes du compte, pour les seuls journaux retenus.");
     return f;

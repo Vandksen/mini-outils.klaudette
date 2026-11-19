@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.20.2";
+  var VERSION = "1.20.3";
 
   // Catégorie « Outils de production » du menu : écritures courantes de la tenue.
   // Pour ajouter un outil : une ligne ici, à sa place dans l'ordre d'affichage.

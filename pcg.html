@@ -26,6 +26,8 @@
     <input id="recherche" type="search" autocomplete="off" spellcheck="false" placeholder="6226, honoraires…">
     <p class="titre" id="titre-categories">Catégories</p>
     <div class="pcg-categories" id="categories" role="group" aria-labelledby="titre-categories"></div>
+    <p class="titre" id="titre-reforme">Réforme PCG 2025</p>
+    <div class="pcg-categories" id="reforme" role="group" aria-labelledby="titre-reforme"></div>
   </div>
   <footer><button id="effacer" type="button" disabled>Tout afficher</button></footer>
 </aside>
@@ -43,7 +45,7 @@
     <p class="eyebrow">Référentiel</p>
     <h1>Plan de comptes <em>normé.</em></h1>
     <p class="lead"><strong>But de la page :</strong> retrouver un compte du plan de comptes normé, avec un numéro à six chiffres et un libellé intelligible, pour tenir tous les dossiers avec les mêmes comptes.</p>
-    <p class="lead">Tapez un numéro ou un mot du libellé, ou choisissez une catégorie. Les comptes sont regroupés par racine, c'est-à-dire par leurs deux premiers chiffres. Le bouton placé après chaque libellé le copie.</p>
+    <p class="lead">Tapez un numéro ou un mot du libellé, ou choisissez une catégorie. Les comptes sont regroupés par racine, c'est-à-dire par leurs deux premiers chiffres. Le bouton placé après chaque libellé le copie. Une pastille signale les comptes touchés par la réforme du plan comptable de 2025 : « ✓ PCG 2025 » pour un compte du nouveau plan, « Avant 2025 » pour un compte de l'ancien plan.</p>
 
     <div id="liste"></div>
     <p class="vide" id="aucun" hidden>Aucun compte ne correspond à cette recherche.</p>
@@ -66,8 +68,15 @@
   "use strict";
   var $ = function (id) { return document.getElementById(id); };
   var CATEGORIES = window.PCG.categories;
-  var COMPTES = window.PCG.comptes;          // [numéro, libellé, rang de la catégorie]
+  var COMPTES = window.PCG.comptes;          // [numéro, libellé, rang de la catégorie, réforme]
   var categorie = -1;                        // -1 = toutes les catégories
+  // Réforme du PCG 2025, d'après la colonne d'Airtable : 0 = compte non concerné,
+  // 1 = compte du nouveau plan, 2 = compte de l'ancien plan.
+  var reforme = -1;                          // -1 = tous les comptes
+  var PASTILLES = {
+    1: ['nouveau', '✓ PCG 2025', 'Compte du nouveau plan comptable (réforme 2025)'],
+    2: ['ancien', 'Avant 2025', 'Compte de l’ancien plan comptable, d’avant la réforme 2025']
+  };
   var ICONE_COPIER = '<svg width="16" height="16" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M26.7075 8.2925L21.7075 3.2925C21.6146 3.19967 21.5042 3.12605 21.3829 3.07586C21.2615 3.02568 21.1314 2.9999 21 3H11C10.4696 3 9.96086 3.21071 9.58579 3.58579C9.21071 3.96086 9 4.46957 9 5V7H7C6.46957 7 5.96086 7.21071 5.58579 7.58579C5.21071 7.96086 5 8.46957 5 9V27C5 27.5304 5.21071 28.0391 5.58579 28.4142C5.96086 28.7893 6.46957 29 7 29H21C21.5304 29 22.0391 28.7893 22.4142 28.4142C22.7893 28.0391 23 27.5304 23 27V25H25C25.5304 25 26.0391 24.7893 26.4142 24.4142C26.7893 24.0391 27 23.5304 27 23V9C27.0001 8.86864 26.9743 8.73855 26.9241 8.61715C26.8739 8.49576 26.8003 8.38544 26.7075 8.2925ZM21 27H7V9H16.5863L21 13.4137V23.98C21 23.9875 21 23.9937 21 24C21 24.0063 21 24.0125 21 24.02V27ZM25 23H23V13C23.0001 12.8686 22.9743 12.7385 22.9241 12.6172C22.8739 12.4958 22.8003 12.3854 22.7075 12.2925L17.7075 7.2925C17.6146 7.19967 17.5042 7.12605 17.3829 7.07586C17.2615 7.02568 17.1314 6.9999 17 7H11V5H20.5863L25 9.41375V23ZM18 19C18 19.2652 17.8946 19.5196 17.7071 19.7071C17.5196 19.8946 17.2652 20 17 20H11C10.7348 20 10.4804 19.8946 10.2929 19.7071C10.1054 19.5196 10 19.2652 10 19C10 18.7348 10.1054 18.4804 10.2929 18.2929C10.4804 18.1054 10.7348 18 11 18H17C17.2652 18 17.5196 18.1054 17.7071 18.2929C17.8946 18.4804 18 18.7348 18 19ZM18 23C18 23.2652 17.8946 23.5196 17.7071 23.7071C17.5196 23.8946 17.2652 24 17 24H11C10.7348 24 10.4804 23.8946 10.2929 23.7071C10.1054 23.5196 10 23.2652 10 23C10 22.7348 10.1054 22.4804 10.2929 22.2929C10.4804 22.1054 10.7348 22 11 22H17C17.2652 22 17.5196 22.1054 17.7071 22.2929C17.8946 22.4804 18 22.7348 18 23Z"/></svg>';
 
   // Texte comparable : minuscules, sans accents, pour que « tresorerie » trouve « Trésorerie ».
@@ -96,6 +105,10 @@
     };
     $("categories").innerHTML = bouton(-1, "Toutes", COMPTES.length) +
       CATEGORIES.map(function (nom, i) { return bouton(i, nom, total[i]); }).join("");
+    var parReforme = [0, 0, 0];
+    COMPTES.forEach(function (c) { parReforme[c[3] || 0]++; });
+    $("reforme").innerHTML = bouton(-1, "Tous les comptes", COMPTES.length) +
+      bouton(1, "Nouveau plan (PCG 2025)", parReforme[1]) + bouton(2, "Ancien plan (avant 2025)", parReforme[2]);
   }
 
   function affiche() {
@@ -104,6 +117,7 @@
     var groupes = [], parRacine = {}, nombre = 0;
     COMPTES.forEach(function (c, i) {
       if (categorie !== -1 && c[2] !== categorie) return;
+      if (reforme !== -1 && (c[3] || 0) !== reforme) return;
       for (var m = 0; m < mots.length; m++) if (INDEX[i].indexOf(mots[m]) === -1) return;
       var r = racine(c[0]);
       if (!parRacine[r]) { parRacine[r] = []; groupes.push(r); }
@@ -116,14 +130,15 @@
       return '<section class="pcg-groupe"><h2><span class="numero">' + echappe(r) + '</span> ' +
         pluriel(lignes.length, "compte") + '</h2><div class="cadre-table"><table><tbody>' +
         lignes.map(function (c) {
-          var lib = echappe(c[1]);
-          return '<tr><td class="compte">' + echappe(c[0]) + '</td><td class="libelle">' + lib + '</td>' +
+          var lib = echappe(c[1]), p = PASTILLES[c[3]];
+          var pastille = p ? ' <span class="pcg-reforme ' + p[0] + '" title="' + p[2] + '">' + p[1] + '</span>' : '';
+          return '<tr><td class="compte">' + echappe(c[0]) + '</td><td class="libelle">' + lib + pastille + '</td>' +
                  '<td class="copie"><button type="button" class="pcg-copier" data-libelle="' + lib +
                  '" title="Copier le libellé" aria-label="Copier le libellé « ' + lib + ' »">' + ICONE_COPIER + '</button></td></tr>';
         }).join("") + '</tbody></table></div></section>';
     }).join("");
 
-    var filtre = mots.length > 0 || categorie !== -1;
+    var filtre = mots.length > 0 || categorie !== -1 || reforme !== -1;
     $("compteur").textContent = filtre ? nombre + " / " + COMPTES.length : String(COMPTES.length);
     $("titre-filtre").textContent = categorie === -1 ? "Toutes les catégories" : CATEGORIES[categorie];
     $("aucun").hidden = nombre > 0;
@@ -134,6 +149,13 @@
     categorie = rang;
     Array.prototype.forEach.call($("categories").children, function (b) {
       b.setAttribute("aria-pressed", String(Number(b.getAttribute("data-rang")) === rang));
+    });
+    affiche();
+  }
+  function choisitReforme(code) {
+    reforme = code;
+    Array.prototype.forEach.call($("reforme").children, function (b) {
+      b.setAttribute("aria-pressed", String(Number(b.getAttribute("data-rang")) === code));
     });
     affiche();
   }
@@ -179,9 +201,18 @@
     // Recliquer sur la catégorie active revient à « Toutes ».
     choisit(rang === categorie ? -1 : rang);
   });
+  $("reforme").addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (!b) return;
+    var code = Number(b.getAttribute("data-rang"));
+    // Recliquer sur le choix actif revient à « Tous les comptes ».
+    choisitReforme(code === reforme ? -1 : code);
+  });
   $("recherche").addEventListener("input", affiche);
   $("effacer").addEventListener("click", function () {
     $("recherche").value = "";
+    reforme = -1;
+    choisitReforme(-1);
     choisit(-1);
     $("recherche").focus();
   });

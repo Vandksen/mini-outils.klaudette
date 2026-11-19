@@ -79,7 +79,7 @@
 
         <section class="panel">
           <p class="eyebrow">04 — Journaux à retenir</p>
-          <p class="aide-bloc">Les journaux lus dans le collage. AC, VE et OD sont cochés d'office ; les autres sont laissés de côté tant qu'ils ne sont pas cochés.</p>
+          <p class="aide-bloc">Les journaux lus dans le collage. AC est coché d'office pour la TVA déductible, VE pour la TVA collectée ; les autres sont laissés de côté tant qu'ils ne sont pas cochés.</p>
           <div class="cadre-table">
             <table class="choix">
               <thead>
@@ -135,7 +135,8 @@
   "use strict";
   var M = window.MiniOutils, $ = M.$;
   var TAB = String.fromCharCode(9), SAUT = String.fromCharCode(10);
-  var D_OFFICE = ["AC", "VE", "OD"];   // journaux cochés d'office
+  // Journal coché d'office : AC pour la TVA déductible, VE pour la TVA collectée.
+  function dOffice() { return $("nature").value === "collectee" ? ["VE"] : ["AC"]; }
   var choix = {};                      // journal -> true / false, dès que l'utilisateur a coché ou décoché
   var note = "";
   var dernier = null;                  // dernier calcul valide, repris par le justificatif PDF
@@ -177,7 +178,7 @@
   var SANS_COMPTE = "(sans compte)";
 
   function retenu(journal) {
-    return journal in choix ? choix[journal] : D_OFFICE.indexOf(journal) !== -1;
+    return journal in choix ? choix[journal] : dOffice().indexOf(journal) !== -1;
   }
   // Date lue -> nombre comparable (AAAAMMJJ), pour trouver la première et la dernière.
   function rang(d) { return d.a * 10000 + d.m * 100 + d.j; }
@@ -240,7 +241,7 @@
 
     // Journaux cochés d'office en tête, puis les autres par ordre alphabétique.
     ordre.sort(function (a, b) {
-      var ia = D_OFFICE.indexOf(a), ib = D_OFFICE.indexOf(b);
+      var d = dOffice(), ia = d.indexOf(a), ib = d.indexOf(b);
       if (ia !== -1 || ib !== -1) return (ia === -1 ? 9 : ia) - (ib === -1 ? 9 : ib);
       return a < b ? -1 : 1;
     });
@@ -389,6 +390,8 @@
     $("etat").textContent = "Justificatif téléchargé";
   });
   window.justificatifPdf = function () { return dernier ? justificatif(dernier) : null; };   // pour les contrôles
+  // Changer de nature remet les cases à leur état d'office (AC ou VE).
+  $("nature").addEventListener("change", function () { choix = {}; });
   ["nature", "dossier", "source"].forEach(function (id) {
     $(id).addEventListener("input", calcule);
     $(id).addEventListener("change", calcule);

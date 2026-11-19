@@ -257,7 +257,9 @@
         fini = true;
         var jour = new Date(), deux = function (n) { return (n < 10 ? "0" : "") + n; };
         doc.trait(G, 792, D, 792);
+        // Date et heure du poste, au moment où le justificatif est produit.
         doc.texte(G, 806, "Document établi le " + deux(jour.getDate()) + "/" + deux(jour.getMonth() + 1) + "/" + jour.getFullYear() +
+                  " à " + deux(jour.getHours()) + "h" + deux(jour.getMinutes()) +
                   " avec mini-outils-compta.fr", { taille: 8, couleur: "gris" });
         doc.texte(D, 806, "Calcul à contrôler avant utilisation", { taille: 8, couleur: "gris", align: "droite" });
         return doc;

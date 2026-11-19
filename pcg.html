@@ -62,7 +62,10 @@
 <div id="message-copie" role="status" aria-live="polite"></div>
 
 <script src="commun.js"></script>
-<script src="pcg-donnees.js"></script>
+<!-- Le « ?v= » lie cette page à la forme des données qu'elle attend : l'augmenter chaque
+     fois que la forme de pcg-donnees.js change (nouvelle valeur par compte, par exemple),
+     pour qu'un navigateur ne puisse pas assembler la nouvelle page avec d'anciennes données. -->
+<script src="pcg-donnees.js?v=2"></script>
 <script>
 (function () {
   "use strict";
@@ -73,6 +76,9 @@
   // Réforme du PCG 2025, d'après la colonne d'Airtable : 0 = compte non concerné,
   // 1 = compte du nouveau plan, 2 = compte de l'ancien plan.
   var reforme = -1;                          // -1 = tous les comptes
+  // Garde-fou : des données d'avant la colonne de réforme n'ont que trois valeurs par compte.
+  // On masque alors le filtre plutôt que d'afficher des compteurs à zéro.
+  var AVEC_REFORME = COMPTES.length > 0 && COMPTES[0].length > 3;
   var PASTILLES = {
     1: ['nouveau', '✓ PCG 2025', 'Compte du nouveau plan comptable (réforme 2025)'],
     2: ['ancien', 'Avant 2025', 'Compte de l’ancien plan comptable, d’avant la réforme 2025']
@@ -229,6 +235,7 @@
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") volet(false); });
 
   boutonsCategories();
+  if (!AVEC_REFORME) { $("titre-reforme").hidden = true; $("reforme").hidden = true; }
   affiche();
 })();
 </script>

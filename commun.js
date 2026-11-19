@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.12.0";
+  var VERSION = "1.12.1";
 
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [
@@ -672,7 +672,13 @@ window.MiniOutils = (function () {
   // (cache: "reload"), pour que le navigateur n'assemble pas un nouveau script avec
   // d'anciens styles gardés en mémoire : c'est ce qui donnait un bouton sans style.
   function rechargeFrais() {
-    var fichiers = [location.href.split("#")[0], "commun.css", "commun.js", "manifest.webmanifest"];
+    // La page, le manifeste, puis tous les scripts et feuilles de style que la page charge
+    // depuis le site : une page comme le plan de comptes a aussi son fichier de données.
+    var fichiers = [location.href.split("#")[0], "manifest.webmanifest"];
+    Array.prototype.forEach.call(document.querySelectorAll('script[src], link[rel="stylesheet"][href]'), function (e) {
+      var adresse = e.src || e.href;
+      if (adresse.indexOf(location.origin + "/") === 0 && fichiers.indexOf(adresse) === -1) fichiers.push(adresse);
+    });
     Promise.all(fichiers.map(function (f) {
       return fetch(f, { cache: "reload" }).catch(function () {});
     })).then(function () { location.reload(); });

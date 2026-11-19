@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1136DB">
+<meta name="description" content="Ventilation de la CSG-CRDS payée avec les cotisations Urssaf d'un indépendant : part déductible, part non déductible, CFP et CURPS, avec l'écriture de régularisation à coller dans ACDCompta et les lignes de la 2035. Gratuit, sans envoi de données.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/icone-180.png">
+<title>Ventilation CSG-CRDS — Mini-outils</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mini-outils">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Ventilation CSG-CRDS — Mini-outils">
+<meta property="og:description" content="Ventilation de la CSG-CRDS payée avec les cotisations Urssaf d'un indépendant : part déductible, part non déductible, CFP et CURPS, avec l'écriture de régularisation à coller dans ACDCompta et les lignes de la 2035. Gratuit, sans envoi de données.">
+<meta property="og:url" content="https://mini-outils-compta.fr/csg-crds.html">
+<link rel="canonical" href="https://mini-outils-compta.fr/csg-crds.html">
+<meta property="og:image" content="https://mini-outils-compta.fr/images/og-tempete.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Un navire dans la tempête, avec le slogan « Quand la période fiscale se déchaîne, gardez le cap. »">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="commun.css">
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">CSG-CRDS — comptes 637810 et 108000</p>
+    <h1>Ventilation <em>CSG-CRDS.</em></h1>
+    <p class="lead"><strong>But de la page :</strong> sortir des charges sociales personnelles d'un indépendant la CSG-CRDS payée avec ses cotisations Urssaf, pour séparer la part déductible de la part non déductible, ainsi que la contribution à la formation professionnelle (CFP) et la CURPS des professionnels de santé. La page passe l'écriture de régularisation et indique les lignes de la déclaration 2035.</p>
+    <p class="lead">Renseignez le total de CSG-CRDS payé dans l'année, ou les montants du relevé de l'Urssaf. Le résultat est calculé aussitôt.</p>
+
+    <div class="grille">
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">01 — Configuration</p>
+          <div class="champ">
+            <label for="dossier">Dossier<span class="aide">Facultatif, pour le justificatif PDF</span></label>
+            <input id="dossier" type="text" value="EXEMPLE EI">
+          </div>
+          <div class="champ">
+            <label for="annee">Année</label>
+            <input id="annee" type="number" min="2018" max="2099" step="1" value="2025">
+          </div>
+          <div class="champ pleine">
+            <label for="methode">Méthode</label>
+            <select id="methode" class="segments">
+              <option value="coef">Coefficients 6,8 / 9,7</option>
+              <option value="urssaf">Montants du relevé Urssaf</option>
+            </select>
+          </div>
+          <div class="champ">
+            <label for="total">CSG-CRDS payée dans l'année<span class="aide">Total des lignes CSG-CRDS des avis Urssaf</span></label>
+            <input id="total" class="droite" type="text" inputmode="decimal" value="4850,00">
+          </div>
+          <div class="champ urssaf">
+            <label for="deductible">Dont CSG déductible<span class="aide">Montant indiqué par l'Urssaf</span></label>
+            <input id="deductible" class="droite" type="text" inputmode="decimal" value="3390,00">
+          </div>
+          <div class="champ">
+            <label for="cfp">CFP payée<span class="aide">Facultatif — contribution à la formation professionnelle</span></label>
+            <input id="cfp" class="droite" type="text" inputmode="decimal" value="120,00">
+          </div>
+          <div class="champ">
+            <label for="curps">CURPS payée<span class="aide">Facultatif — professionnels de santé</span></label>
+            <input id="curps" class="droite" type="text" inputmode="decimal" value="40,00">
+          </div>
+          <div class="champ">
+            <label for="solde">Solde du compte de cotisations<span class="aide">Facultatif, pour contrôler le montant sorti</span></label>
+            <input id="solde" class="droite" type="text" inputmode="decimal">
+          </div>
+          <div class="champ">
+            <label for="cptCot">Compte de cotisations<span class="aide">Où les prélèvements Urssaf ont été passés</span></label>
+            <input id="cptCot" type="text" inputmode="numeric" placeholder="646100" value="646100">
+          </div>
+          <div class="champ">
+            <label for="cptDed">Compte CSG déductible</label>
+            <input id="cptDed" type="text" inputmode="numeric" placeholder="637810" value="637810">
+          </div>
+          <div class="champ">
+            <label for="cptNonDed">Compte CSG-CRDS non déductible<span class="aide">108000, ou 637830 réintégré en ligne 36</span></label>
+            <input id="cptNonDed" type="text" inputmode="numeric" placeholder="108000" value="108000">
+          </div>
+          <div class="champ">
+            <label for="cptCfp">Compte CFP</label>
+            <input id="cptCfp" type="text" inputmode="numeric" placeholder="633300" value="633300">
+          </div>
+          <div class="champ">
+            <label for="cptCurps">Compte CURPS</label>
+            <input id="cptCurps" type="text" inputmode="numeric" placeholder="628100" value="628100">
+          </div>
+          <div class="champ">
+            <label for="piece">Pièce<span class="aide">Vide : code automatique de 6 caractères</span></label>
+            <input id="piece" type="text">
+          </div>
+          <div class="champ total">
+            <span class="etiquette">CSG déductible</span>
+            <span class="valeur" id="resultat"></span>
+          </div>
+          <ul class="alertes" id="alertes"></ul>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">02 — Ventilation et report sur la 2035</p>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr><th>Élément</th><th class="droite">Montant</th><th>Report sur la 2035</th></tr>
+              </thead>
+              <tbody id="ventilation"></tbody>
+            </table>
+          </div>
+          <div class="champ"><span class="etiquette">Total débit</span><span class="valeur droite" id="totDebit"></span></div>
+          <div class="champ"><span class="etiquette">Total crédit</span><span class="valeur droite" id="totCredit"></span></div>
+          <div class="champ"><span class="etiquette">Équilibre</span><span class="valeur droite"><span id="equilibre"></span></span></div>
+          <div class="champ"><span class="etiquette">Lignes générées</span><span class="valeur droite" id="nbLignes"></span></div>
+        </section>
+      </div>
+
+      <div class="colonne">
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">03 — Note de calcul</p>
+            <div class="actions">
+              <span class="etat" id="etatNote" role="status"></span>
+              <button class="btn ghost" id="copierNote" type="button">Copier la note</button>
+              <button class="btn ghost" id="pdf" type="button">Télécharger le justificatif PDF</button>
+            </div>
+          </div>
+          <p class="note" id="note"></p>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">04 — Écriture de régularisation</p>
+            <div class="actions">
+              <span class="etat" id="etat" role="status"></span>
+              <button class="btn" id="copier" type="button">Copier pour ACDCompta</button>
+            </div>
+          </div>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>N°</th><th>Date</th><th>Pièce</th><th>Compte</th><th>Libellé</th>
+                  <th class="droite">Débit</th><th class="droite">Crédit</th>
+                </tr>
+              </thead>
+              <tbody id="lignes"></tbody>
+            </table>
+          </div>
+          <div class="vide" id="vide" hidden></div>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>CSG déductible = CSG-CRDS payée × 6,8 / 9,7 (guide fiscal 2035, n° 336)</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script src="pdf.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var ids = ["dossier", "annee", "methode", "total", "deductible", "cfp", "curps", "solde",
+             "cptCot", "cptDed", "cptNonDed", "cptCfp", "cptCurps", "piece"];
+  var note = "";
+  var dernier = null;   // dernier calcul valide, repris par le justificatif PDF
+
+  // Taux de CSG et de CRDS sur les revenus d'activité des indépendants, en centièmes de
+  // point : CSG 9,20 % dont 6,80 % déductibles, CRDS 0,50 % non déductible. Inchangés
+  // depuis 2018. Quand un taux change : ajouter l'année concernée et augmenter DERNIERE_ANNEE.
+  var PREMIERE_ANNEE = 2018, DERNIERE_ANNEE = 2026;
+  var TAUX = { csg: 920, crds: 50, deductible: 680 };
+  var TOTAL = TAUX.csg + TAUX.crds;                 // 970, soit 9,70 %
+  var ECART_ADMIS = 2;                              // en %, entre le relevé et la part théorique
+
+  function calcule() {
+    var v = {};
+    ids.forEach(function (id) { v[id] = $(id).value.trim(); });
+    ["cptCot", "cptDed", "cptNonDed", "cptCfp", "cptCurps"].forEach(function (id) { v[id] = v[id] || $(id).placeholder; });
+    var urssaf = v.methode === "urssaf";
+    Array.prototype.forEach.call(document.querySelectorAll(".champ.urssaf"), function (c) { c.hidden = !urssaf; });
+    var alertes = [], ecritures = [], blocage = "";
+
+    var annee = /^\d{4}$/.test(v.annee) ? parseInt(v.annee, 10) : NaN;
+    var total = M.centimes(v.total), ded = urssaf ? M.centimes(v.deductible) : 0;
+    var cfp = M.centimes(v.cfp), curps = M.centimes(v.curps), solde = M.centimes(v.solde);
+    var faux = function (id, n) { var f = isNaN(n) || n < 0; $(id).classList.toggle("erreur", f); return f; };
+    $("annee").classList.toggle("erreur", isNaN(annee) || annee < PREMIERE_ANNEE);
+    var invalide = [faux("total", total), urssaf && faux("deductible", ded), faux("cfp", cfp), faux("curps", curps), faux("solde", solde)]
+                   .some(Boolean);
+
+    if (isNaN(annee)) blocage = "Renseignez l'année sur quatre chiffres.";
+    else if (annee < PREMIERE_ANNEE) blocage = "L'outil reprend les taux à partir de l'année " + PREMIERE_ANNEE + ".";
+    else if (invalide) blocage = "Un montant n'est pas un nombre positif valide.";
+    else if (!total) blocage = "Renseignez la CSG-CRDS payée dans l'année.";
+    else if (urssaf && !ded) blocage = "Renseignez la CSG déductible indiquée par l'Urssaf.";
+    else if (urssaf && ded > total) blocage = "La CSG déductible dépasse le total de CSG-CRDS payé : vérifiez le relevé.";
+
+    var corps = $("ventilation");
+    corps.textContent = "";
+    note = "";
+    dernier = null;
+    if (!blocage) {
+      if (annee > DERNIERE_ANNEE) {
+        alertes.push("Les taux de l'année " + annee + " ne sont pas repris dans l'outil : ceux de " + DERNIERE_ANNEE +
+                     " sont appliqués (CSG 9,2 % dont 6,8 % déductibles, CRDS 0,5 %). Vérifiez qu'ils n'ont pas changé.");
+      }
+      // Méthode des coefficients : la part déductible est arrondie au centime, la part non
+      // déductible en est la différence, pour que le total retombe juste.
+      var theorique = Math.round(total * TAUX.deductible / TOTAL);
+      if (!urssaf) ded = theorique;
+      var nonDed = total - ded;
+      if (urssaf && Math.abs(ded - theorique) * 100 > theorique * ECART_ADMIS) {
+        alertes.push("La CSG déductible du relevé s'écarte de plus de " + ECART_ADMIS + " % de la part théorique (" +
+                     M.affiche(theorique) + " € = " + M.affiche(total) + " x 6,8 / 9,7) : vérifiez le relevé de l'Urssaf.");
+      }
+      var sorti = total + cfp + curps;
+      if (v.solde && sorti > solde) {
+        blocage = "Le montant à sortir du compte " + v.cptCot + " (" + M.affiche(sorti) + " €) dépasse son solde (" + M.affiche(solde) +
+                  " €) : vérifiez que la CSG-CRDS y a bien été comptabilisée.";
+      }
+      alertes.push("Rapprochez ces montants de l'attestation CSG/CRDS disponible dans l'espace Urssaf du professionnel.");
+
+      var lignes = [
+        { nom: "CSG déductible", montant: ded, compte: v.cptDed, report: "Ligne 14 « CSG déductible » (case BV)" },
+        { nom: "CSG-CRDS non déductible", montant: nonDed, compte: v.cptNonDed,
+          report: v.cptNonDed.indexOf("108") === 0 ? "Non déductible : compte de l'exploitant" : "À réintégrer ligne 36 « divers à réintégrer »" },
+        { nom: "Contribution à la formation professionnelle", montant: cfp, compte: v.cptCfp, report: "Ligne 13 « autres impôts » (case BS)" },
+        { nom: "CURPS", montant: curps, compte: v.cptCurps, report: "Ligne 29 « cotisations syndicales et professionnelles » (case BY)" }
+      ].filter(function (l) { return l.montant; });
+      lignes.concat([{ nom: "Total sorti du compte " + v.cptCot, montant: sorti, report: "", total: true }]).forEach(function (l) {
+        var tr = document.createElement("tr");
+        if (l.total) tr.className = "debut";
+        [[l.nom, "lib"], [M.affiche(l.montant), "droite"], [l.report, "lib"]].forEach(function (c) {
+          var td = document.createElement("td");
+          td.textContent = c[0];
+          td.className = c[1];
+          tr.appendChild(td);
+        });
+        corps.appendChild(tr);
+      });
+      $("resultat").textContent = M.affiche(ded) + " €";
+
+      note = "CSG-CRDS " + annee + " payée avec les cotisations Urssaf : " + M.affiche(total) + " Euros, ventilée " +
+             (urssaf ? "d'après le relevé de l'Urssaf" : "selon les coefficients 6,8 / 9,7 et 2,9 / 9,7") +
+             " en " + M.affiche(ded) + " Euros de CSG déductible et " + M.affiche(nonDed) + " Euros de CSG-CRDS non déductible" +
+             (cfp ? ", CFP " + M.affiche(cfp) + " Euros" : "") + (curps ? ", CURPS " + M.affiche(curps) + " Euros" : "") +
+             ". Montants sortis du compte " + v.cptCot + " (" + M.affiche(sorti) + " Euros) et portés aux comptes " +
+             lignes.map(function (l) { return l.compte; }).join(", ") + ".";
+
+      if (!blocage) {
+        var piece = v.piece || M.code6(["csg", annee, v.methode, total, ded, cfp, curps, v.cptCot, v.cptDed, v.cptNonDed, v.cptCfp, v.cptCurps].join("|"));
+        var date = "31/12/" + annee;
+        lignes.forEach(function (l, i) {
+          ecritures.push({ date: date, piece: piece, compte: l.compte, libelle: l.nom + " " + annee, debit: l.montant, credit: null, debut: i === 0 });
+        });
+        ecritures.push({ date: date, piece: piece, compte: v.cptCot, libelle: "Ventilation CSG-CRDS " + annee, debit: null, credit: sorti });
+      }
+      dernier = { dossier: v.dossier, annee: annee, urssaf: urssaf, total: total, theorique: theorique, ded: ded, nonDed: nonDed,
+                  sorti: sorti, cptCot: v.cptCot, lignes: lignes, ecritures: ecritures };
+    } else {
+      $("resultat").textContent = "—";
+    }
+
+    $("note").textContent = note || "La note s'affichera une fois la configuration complète.";
+    $("copierNote").disabled = !note;
+    $("pdf").disabled = !dernier;
+    $("etatNote").textContent = "";
+    M.rendre(ecritures, blocage, alertes);
+  }
+
+  // Justificatif PDF d'une page : identification, ventilation, report sur la 2035, écriture.
+  function justificatif(d) {
+    var f = window.MiniPdf.fiche("Ventilation CSG-CRDS " + d.annee);
+    f.section("Identification");
+    f.ligne("Dossier", d.dossier).ligne("Année", String(d.annee))
+     .ligne("Méthode", d.urssaf ? "Montants du relevé de l'Urssaf" : "Coefficients 6,8 / 9,7 et 2,9 / 9,7");
+    f.section("Calcul");
+    f.ligne("CSG-CRDS payée dans l'année", M.affiche(d.total) + " €");
+    f.ligne("Part déductible théorique (x 6,8 / 9,7)", M.affiche(d.theorique) + " €");
+    if (d.urssaf) f.ligne("CSG déductible du relevé de l'Urssaf", M.affiche(d.ded) + " €");
+    f.ligne("CSG-CRDS non déductible", M.affiche(d.nonDed) + " €");
+    f.total("CSG déductible " + d.annee, M.affiche(d.ded) + " €");
+    f.section("Ventilation et report sur la 2035");
+    var corps = d.lignes.map(function (l) { return [l.nom, l.compte, M.affiche(l.montant), l.report]; });
+    var total = ["Total sorti du compte " + d.cptCot, "", M.affiche(d.sorti), ""];
+    total.gras = true;
+    f.tableau([{ nom: "Élément", largeur: 170 }, { nom: "Compte", largeur: 50 }, { nom: "Montant", largeur: 70, droite: true },
+               { nom: "Report", largeur: 209 }], corps.concat([total]));
+    f.texte("Taux sur les revenus d'activité des indépendants : CSG 9,2 %, dont 6,8 % déductibles, et CRDS 0,5 %, soit 9,7 %. " +
+            "La part non déductible représente 2,9 / 9,7 du total (guide fiscal 2035, n° 336 et 3365).");
+    f.ecritures(d.ecritures, M.affiche);
+    return f;
+  }
+
+  $("copierNote").addEventListener("click", function () {
+    var fait = function () { $("etatNote").textContent = "Note copiée"; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(note).then(fait, function () { $("etatNote").textContent = "Copie impossible dans ce navigateur"; });
+    } else $("etatNote").textContent = "Copie impossible dans ce navigateur";
+  });
+  $("pdf").addEventListener("click", function () {
+    if (!dernier) return;
+    var nom = window.MiniPdf.nomFichier(["CSG-CRDS", dernier.annee, dernier.dossier].filter(Boolean).join(" "));
+    justificatif(dernier).telecharger(nom + ".pdf");
+    $("etatNote").textContent = "Justificatif téléchargé";
+  });
+  window.justificatifPdf = function () { return dernier ? justificatif(dernier) : null; };   // pour les contrôles
+  M.brancher(ids, calcule);
+})();
+</script>
+</body>
+</html>

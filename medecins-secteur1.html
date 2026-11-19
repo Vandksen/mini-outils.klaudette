@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1136DB">
+<meta name="description" content="Déductions forfaitaires des médecins conventionnés du secteur 1 : abattement de 2 %, déduction complémentaire de 3 % et barème du groupe III, avec les cases DF, DG et DH de la 2035 et l'écriture de reclassement des frais couverts. Gratuit, sans envoi de données.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/icone-180.png">
+<title>Médecins du secteur 1 — Mini-outils</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mini-outils">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Médecins du secteur 1 — Mini-outils">
+<meta property="og:description" content="Déductions forfaitaires des médecins conventionnés du secteur 1 : abattement de 2 %, déduction complémentaire de 3 % et barème du groupe III, avec les cases DF, DG et DH de la 2035 et l'écriture de reclassement des frais couverts. Gratuit, sans envoi de données.">
+<meta property="og:url" content="https://mini-outils-compta.fr/medecins-secteur1.html">
+<link rel="canonical" href="https://mini-outils-compta.fr/medecins-secteur1.html">
+<meta property="og:image" content="https://mini-outils-compta.fr/images/og-tempete.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Un navire dans la tempête, avec le slogan « Quand la période fiscale se déchaîne, gardez le cap. »">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="commun.css">
+<style>
+/* Frais réels couverts par l'abattement de 2 % : un compte et un montant par ligne. */
+.frais { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr); gap: 8px; align-items: end; margin-top: 12px; }
+.frais .tete { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.frais input { width: 100%; min-width: 0; height: 38px; padding: 0 10px; font-family: var(--mono); font-size: 13px; color: var(--ink); background: var(--cream); border: 1px solid var(--line); border-radius: 8px; }
+.frais input.droite { text-align: right; }
+.frais input:focus { outline: 2px solid var(--blue); outline-offset: 1px; border-color: var(--blue); }
+.frais input.erreur { border-color: var(--blue); background: var(--chip); }
+#bareme tr.choisi td { color: var(--blue); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">Médecins conventionnés — 2035 ligne 43, cases DF, DG, DH</p>
+    <h1>Médecins <em>du secteur 1.</em></h1>
+    <p class="lead"><strong>But de la page :</strong> calculer les trois déductions forfaitaires qu'un médecin conventionné du secteur 1 peut cumuler sur sa déclaration 2035 : l'abattement de 2 % pour frais, la déduction complémentaire de 3 % et le forfait du groupe III. La page indique les montants des cases DF, DG et DH de la ligne 43 « divers à déduire » et, avec l'abattement de 2 %, reclasse au compte de l'exploitant les frais réels qu'il couvre.</p>
+    <p class="lead">Renseignez la catégorie du médecin et ses recettes. Le résultat est calculé aussitôt.</p>
+
+    <div class="grille">
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">01 — Configuration</p>
+          <div class="champ">
+            <label for="dossier">Dossier<span class="aide">Facultatif, pour le justificatif PDF</span></label>
+            <input id="dossier" type="text" value="EXEMPLE EI">
+          </div>
+          <div class="champ">
+            <label for="annee">Année</label>
+            <input id="annee" type="number" min="2000" max="2099" step="1" value="2025">
+          </div>
+          <div class="champ">
+            <label for="categorie">Catégorie de médecin</label>
+            <select id="categorie">
+              <option value="omni">Omnipraticien</option>
+              <option value="spec">Spécialiste médical (y compris biologiste)</option>
+              <option value="chir">Chirurgien et spécialiste chirurgical</option>
+              <option value="radio">Électroradiologiste qualifié</option>
+            </select>
+          </div>
+          <div class="champ">
+            <label for="remplacant">Médecin remplaçant<span class="aide">Exclu du régime des médecins conventionnés</span></label>
+            <input id="remplacant" type="checkbox" class="bascule" role="switch">
+          </div>
+          <div class="champ">
+            <label for="recettes">Recettes brutes<span class="aide">Base des 2 % : dépassements compris, avant rétrocessions aux remplaçants</span></label>
+            <input id="recettes" class="droite" type="text" inputmode="decimal" value="98000,00">
+          </div>
+          <div class="champ">
+            <label for="conv">Honoraires conventionnels<span class="aide">Base du groupe III et des 3 % : sans honoraires libres ni dépassements</span></label>
+            <input id="conv" class="droite" type="text" inputmode="decimal" value="85000,00">
+          </div>
+          <div class="champ">
+            <label for="permanence">Dont permanence des soins exonérée<span class="aide">Retirée de la base du groupe III et des 3 %</span></label>
+            <input id="permanence" class="droite" type="text" inputmode="decimal">
+          </div>
+          <div class="champ">
+            <label for="salaires">Salaires médicaux bruts<span class="aide">Facultatif — activité salariée : le groupe III est réduit au prorata</span></label>
+            <input id="salaires" class="droite" type="text" inputmode="decimal">
+          </div>
+          <div class="champ">
+            <label for="debut">Début d'activité dans l'année<span class="aide">Facultatif — installation en cours d'année</span></label>
+            <input id="debut" type="date">
+          </div>
+          <div class="champ">
+            <label for="fin">Fin d'activité dans l'année<span class="aide">Facultatif — cessation en cours d'année</span></label>
+            <input id="fin" type="date">
+          </div>
+          <div class="champ">
+            <label for="quotePart">Quote-part dans la société (%)<span class="aide">100 en exercice individuel ; associé de SCP : ses droits</span></label>
+            <input id="quotePart" class="droite" type="text" inputmode="decimal" value="100">
+          </div>
+          <div class="champ">
+            <label for="option3">Groupe III et déduction de 3 %</label>
+            <input id="option3" type="checkbox" class="bascule" role="switch" checked>
+          </div>
+          <div class="champ">
+            <label for="option2">Abattement de 2 % pour frais<span class="aide">Remplace les frais réels de même nature</span></label>
+            <input id="option2" type="checkbox" class="bascule" role="switch" checked>
+          </div>
+          <div class="frais deux">
+            <span class="tete">Compte</span><span class="tete">Frais couverts, déjà en charges</span><span class="tete">Montant</span>
+            <input id="cpt1" type="text" inputmode="numeric" aria-label="Compte, frais 1" value="625700">
+            <input id="nom1" type="text" aria-label="Nature, frais 1" value="Réceptions">
+            <input id="mt1" class="droite" type="text" inputmode="decimal" aria-label="Montant, frais 1" value="350,00">
+            <input id="cpt2" type="text" inputmode="numeric" aria-label="Compte, frais 2" value="623400">
+            <input id="nom2" type="text" aria-label="Nature, frais 2" value="Cadeaux">
+            <input id="mt2" class="droite" type="text" inputmode="decimal" aria-label="Montant, frais 2">
+            <input id="cpt3" type="text" inputmode="numeric" aria-label="Compte, frais 3">
+            <input id="nom3" type="text" aria-label="Nature, frais 3">
+            <input id="mt3" class="droite" type="text" inputmode="decimal" aria-label="Montant, frais 3">
+          </div>
+          <div class="champ deux">
+            <label for="cptExploitant">Compte de l'exploitant</label>
+            <input id="cptExploitant" type="text" inputmode="numeric" placeholder="108000" value="108000">
+          </div>
+          <div class="champ deux">
+            <label for="piece">Pièce<span class="aide">Vide : code automatique de 6 caractères</span></label>
+            <input id="piece" type="text">
+          </div>
+          <div class="champ total">
+            <span class="etiquette">Total ligne 43</span>
+            <span class="valeur" id="resultat"></span>
+          </div>
+          <ul class="alertes" id="alertes"></ul>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">02 — Vérification</p>
+          <div class="champ"><span class="etiquette">Base du groupe III</span><span class="valeur droite" id="baseG3"></span></div>
+          <div class="champ"><span class="etiquette">Total débit</span><span class="valeur droite" id="totDebit"></span></div>
+          <div class="champ"><span class="etiquette">Total crédit</span><span class="valeur droite" id="totCredit"></span></div>
+          <div class="champ"><span class="etiquette">Équilibre</span><span class="valeur droite"><span id="equilibre"></span></span></div>
+          <div class="champ"><span class="etiquette">Lignes générées</span><span class="valeur droite" id="nbLignes"></span></div>
+        </section>
+      </div>
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">03 — Déductions de la ligne 43</p>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr><th>Case</th><th>Déduction</th><th>Calcul</th><th class="droite">Montant</th><th class="droite">Sur la 2035</th></tr>
+              </thead>
+              <tbody id="deductions"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow" id="titreBareme">04 — Barème du groupe III</p>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr><th>Honoraires conventionnels</th><th class="droite">Forfait</th></tr>
+              </thead>
+              <tbody id="bareme"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">05 — Note de calcul</p>
+            <div class="actions">
+              <span class="etat" id="etatNote" role="status"></span>
+              <button class="btn ghost" id="copierNote" type="button">Copier la note</button>
+              <button class="btn ghost" id="pdf" type="button">Télécharger le justificatif PDF</button>
+            </div>
+          </div>
+          <p class="note" id="note"></p>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">06 — Écriture de reclassement des frais couverts</p>
+            <div class="actions">
+              <span class="etat" id="etat" role="status"></span>
+              <button class="btn" id="copier" type="button">Copier pour ACDCompta</button>
+            </div>
+          </div>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>N°</th><th>Date</th><th>Pièce</th><th>Compte</th><th>Libellé</th>
+                  <th class="droite">Débit</th><th class="droite">Crédit</th>
+                </tr>
+              </thead>
+              <tbody id="lignes"></tbody>
+            </table>
+          </div>
+          <div class="vide" id="vide" hidden></div>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>DF = 2 % des recettes brutes · DG = 3 % des honoraires conventionnels · DH = barème du groupe III (guide fiscal 2035, n° 390, 391 et 560)</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script src="pdf.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var RANGS = [1, 2, 3];
+  var ids = ["dossier", "annee", "categorie", "remplacant", "recettes", "conv", "permanence", "salaires", "debut", "fin",
+             "quotePart", "option3", "option2", "cptExploitant", "piece"];
+  RANGS.forEach(function (i) { ids.push("cpt" + i, "nom" + i, "mt" + i); });
+  var note = "";
+  var dernier = null;   // dernier calcul valide, repris par le justificatif PDF
+
+  // Barème forfaitaire du groupe III (BOI-BAREME-000025, inchangé depuis les revenus de 2001 ;
+  // guide fiscal 2035 n° 560). Pour chaque catégorie, les limites hautes des huit premières
+  // tranches d'honoraires conventionnels, en euros ; au-delà de la dernière, le forfait maximal.
+  var FORFAITS = [770, 920, 1220, 1530, 1830, 2140, 2440, 2750, 3050];
+  var BAREME = {
+    omni:  { nom: "Omnipraticien", seuils: [9100, 12150, 15200, 18250, 21300, 24350, 27400, 30450] },
+    spec:  { nom: "Spécialiste médical", seuils: [9100, 12150, 16750, 19800, 22850, 25900, 28950, 32000] },
+    chir:  { nom: "Chirurgien et spécialiste chirurgical", seuils: [9100, 15200, 18250, 22850, 27400, 30450, 33500, 36550] },
+    radio: { nom: "Électroradiologiste qualifié", seuils: [15200, 24350, 33500, 41150, 48750, 51800, 57900, 64000] }
+  };
+
+  function entier(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
+  function euros(c) { return entier(Math.round(c / 100)) + " €"; }
+  function tranche(seuils, k) {
+    return k === 0 ? "jusqu'à " + entier(seuils[0]) + " €"
+         : k === seuils.length ? "plus de " + entier(seuils[k - 1]) + " €"
+         : "de " + entier(seuils[k - 1]) + " à " + entier(seuils[k]) + " €";
+  }
+  // Rang du jour dans l'année en base 360 (mois de 30 jours), comme pour un amortissement.
+  function rang360(d) {
+    var fin = new Date(d.a, d.m, 0).getDate();
+    return (d.m - 1) * 30 + (d.j === fin ? 30 : Math.min(d.j, 30));
+  }
+
+  function calcule() {
+    var v = {};
+    ids.forEach(function (id) { v[id] = $(id).type === "checkbox" ? $(id).checked : $(id).value.trim(); });
+    v.cptExploitant = v.cptExploitant || "108000";
+    var cat = BAREME[v.categorie] || BAREME.omni;
+    Array.prototype.forEach.call(document.querySelectorAll(".deux"), function (c) { c.hidden = !v.option2; });
+    var alertes = [], ecritures = [], blocage = "";
+
+    var annee = /^\d{4}$/.test(v.annee) ? parseInt(v.annee, 10) : NaN;
+    var marque = function (id, faux) { $(id).classList.toggle("erreur", !!faux); return !!faux; };
+    var montant = function (id) { var n = M.centimes(v[id]); marque(id, isNaN(n) || n < 0); return n; };
+    var recettes = montant("recettes"), conv = montant("conv"), permanence = montant("permanence"), salaires = montant("salaires");
+    var qp = M.centimes(v.quotePart || "100");
+    marque("quotePart", isNaN(qp) || qp <= 0 || qp > 10000);
+    var debut = v.debut ? M.lireDate(v.debut) : null, fin = v.fin ? M.lireDate(v.fin) : null;
+    marque("debut", v.debut && (!debut || debut.a !== annee));
+    marque("fin", v.fin && (!fin || fin.a !== annee));
+    marque("annee", isNaN(annee));
+    var frais = [], fraisFaux = false;
+    RANGS.forEach(function (i) {
+      var mt = M.centimes(v["mt" + i]);
+      var faux = isNaN(mt) || mt < 0;
+      $("mt" + i).classList.toggle("erreur", faux);
+      $("cpt" + i).classList.toggle("erreur", !!mt && !v["cpt" + i]);
+      if (faux) { fraisFaux = true; return; }
+      if (mt) frais.push({ compte: v["cpt" + i], nom: v["nom" + i] || "Frais couverts", montant: mt });
+    });
+
+    if (isNaN(annee)) blocage = "Renseignez l'année sur quatre chiffres.";
+    else if (v.remplacant) blocage = "Un médecin remplaçant n'adhère pas personnellement à la convention : il ne peut pas pratiquer ces déductions.";
+    else if ([recettes, conv, permanence, salaires].some(function (n) { return isNaN(n) || n < 0; })) blocage = "Un montant n'est pas un nombre positif valide.";
+    else if (isNaN(qp) || qp <= 0 || qp > 10000) blocage = "La quote-part doit être comprise entre 0 et 100 %.";
+    else if (v.debut && (!debut || debut.a !== annee)) blocage = "La date de début d'activité doit tomber dans l'année " + v.annee + ".";
+    else if (v.fin && (!fin || fin.a !== annee)) blocage = "La date de fin d'activité doit tomber dans l'année " + v.annee + ".";
+    else if (debut && fin && rang360(fin) < rang360(debut)) blocage = "La fin d'activité précède son début.";
+    else if (permanence > conv) blocage = "La permanence des soins exonérée dépasse les honoraires conventionnels.";
+    else if (conv > recettes) blocage = "Les honoraires conventionnels dépassent les recettes brutes.";
+    else if (!v.option2 && !v.option3) blocage = "Choisissez au moins une déduction.";
+    else if (!recettes && !conv) blocage = "Renseignez les recettes du médecin.";
+    else if (v.option2 && fraisFaux) blocage = "Un montant de frais couverts n'est pas un nombre positif valide.";
+    else if (v.option2 && frais.some(function (f) { return !f.compte; })) blocage = "Renseignez le compte de chaque frais couvert.";
+
+    var corpsBareme = $("bareme");
+    corpsBareme.textContent = "";
+    var corps = $("deductions");
+    corps.textContent = "";
+    $("titreBareme").textContent = "04 — Barème du groupe III : " + cat.nom.toLowerCase();
+    note = "";
+    dernier = null;
+    var rangTranche = -1;
+    if (!blocage) {
+      // Société de personnes : la déduction se calcule sur la part des recettes qui revient à l'associé.
+      var part = function (c) { return Math.round(c * qp / 10000); };
+      var rec = part(recettes), base = part(conv - permanence);
+      var deductions = [];
+
+      if (v.option2) {
+        var df = Math.round(rec * 2 / 100);
+        deductions.push({ cas: "DF", nom: "Abattement de 2 % pour frais", calcul: M.affiche(rec) + " x 2 %", montant: df });
+      }
+      var g3 = null;
+      if (v.option3) {
+        var dg = Math.round(base * 3 / 100);
+        deductions.push({ cas: "DG", nom: "Déduction complémentaire de 3 %", calcul: M.affiche(base) + " x 3 %", montant: dg });
+
+        // Activité sur une partie de l'année : honoraires ramenés à l'année pour lire le
+        // barème, puis forfait réduit au prorata du temps (base 360).
+        var jours = 360;
+        if (debut || fin) jours = (fin ? rang360(fin) : 360) - (debut ? rang360(debut) : 1) + 1;
+        var annuelle = jours < 360 ? Math.round(base * 360 / jours) : base;
+        var lecture = annuelle + (salaires || 0);
+        rangTranche = 0;
+        while (rangTranche < cat.seuils.length && lecture > cat.seuils[rangTranche] * 100) rangTranche++;
+        var forfait = FORFAITS[rangTranche] * 100, dh = forfait, etapes = [entier(FORFAITS[rangTranche]) + " €"];
+        if (jours < 360) { dh = Math.round(dh * jours / 360); etapes.push("x " + jours + " / 360 jours"); }
+        if (salaires) { dh = Math.round(dh * annuelle / lecture); etapes.push("x " + M.affiche(annuelle) + " / " + M.affiche(lecture)); }
+        if (!base) dh = 0;
+        deductions.push({ cas: "DH", nom: "Forfait du groupe III", calcul: etapes.join(" "), montant: dh });
+        g3 = { jours: jours, annuelle: annuelle, lecture: lecture, forfait: forfait, tranche: tranche(cat.seuils, rangTranche) };
+        alertes.push("La déduction de 3 % (case DG) est réintégrée dans le revenu brut social du cadre 8 de la 2035-B ; le groupe III et les 2 % ne réduisent que le résultat fiscal.");
+      }
+      if (v.option2) {
+        alertes.push("Avec l'abattement de 2 %, les frais réels qu'il couvre ne sont plus déductibles : représentation, réception, prospection, cadeaux, " +
+                     "travaux de recherche, blanchissage et petits déplacements. Ne cumulez pas avec le forfait blanchisserie.");
+      }
+      if (qp < 10000) alertes.push("Quote-part de " + M.affiche(qp).replace(/,00$/, "") + " % appliquée aux recettes de la société.");
+
+      var total = deductions.reduce(function (s, d) { return s + d.montant; }, 0);
+      deductions.concat([{ cas: "", nom: "Total ligne 43 « divers à déduire »", calcul: "", montant: total, total: true }]).forEach(function (d) {
+        var tr = document.createElement("tr");
+        if (d.total) tr.className = "debut";
+        [[d.cas, "compte"], [d.nom, "lib"], [d.calcul, "lib"], [M.affiche(d.montant), "droite"], [euros(d.montant), "droite"]].forEach(function (c) {
+          var td = document.createElement("td");
+          td.textContent = c[0];
+          td.className = c[1];
+          tr.appendChild(td);
+        });
+        corps.appendChild(tr);
+      });
+      $("resultat").textContent = euros(total);
+      $("baseG3").textContent = g3 ? M.affiche(g3.lecture) + " €" : "—";
+
+      note = "Médecin conventionné du secteur 1 (" + cat.nom.toLowerCase() + "), année " + annee + " : " +
+             deductions.map(function (d) { return d.nom.toLowerCase() + " (case " + d.cas + ") " + d.calcul + " = " + M.affiche(d.montant) + " Euros"; }).join(" ; ") +
+             (g3 ? ". Groupe III : honoraires conventionnels " + (g3.jours < 360 ? "ramenés à l'année " : "") + (salaires ? "et salaires médicaux " : "") +
+                   "de " + M.affiche(g3.lecture) + " Euros, tranche " + g3.tranche : "") +
+             ". Total porté ligne 43 de la 2035 : " + euros(total).replace(" €", " Euros") + ".";
+
+      if (v.option2 && frais.length) {
+        var totalFrais = frais.reduce(function (s, f) { return s + f.montant; }, 0);
+        var piece = v.piece || M.code6(["sect1", annee, v.cptExploitant].concat(frais.map(function (f) { return f.compte + ":" + f.montant; })).join("|"));
+        var date = "31/12/" + annee;
+        ecritures.push({ date: date, piece: piece, compte: v.cptExploitant, libelle: "Frais couverts par les 2 % " + annee, debit: totalFrais, credit: null, debut: true });
+        frais.forEach(function (f) {
+          ecritures.push({ date: date, piece: piece, compte: f.compte, libelle: f.nom + " - couverts par les 2 %", debit: null, credit: f.montant });
+        });
+        note += " Frais réels couverts par l'abattement de 2 % (" + M.affiche(totalFrais) + " Euros) reclassés au compte " + v.cptExploitant + ".";
+      }
+      dernier = { dossier: v.dossier, annee: annee, categorie: cat.nom, deductions: deductions, total: total, g3: g3, salaires: salaires,
+                  qp: qp, seuils: cat.seuils, rang: rangTranche, ecritures: ecritures };
+    } else {
+      $("resultat").textContent = "—";
+      $("baseG3").textContent = "—";
+    }
+
+    cat.seuils.concat([null]).forEach(function (s, k) {
+      var tr = document.createElement("tr");
+      if (k === rangTranche) tr.className = "choisi";
+      [[tranche(cat.seuils, k), "lib"], [entier(FORFAITS[k]) + " €", "droite"]].forEach(function (c) {
+        var td = document.createElement("td");
+        td.textContent = c[0];
+        td.className = c[1];
+        tr.appendChild(td);
+      });
+      corpsBareme.appendChild(tr);
+    });
+
+    if (!blocage && !ecritures.length) {
+      blocage = v.option2 ? "Pas d'écriture : renseignez les frais réels couverts par les 2 % déjà passés en charges pour les reclasser au compte de l'exploitant."
+                          : "Pas d'écriture : les déductions se portent ligne 43 de la 2035, sans écriture comptable.";
+    }
+    $("note").textContent = note || "La note s'affichera une fois la configuration complète.";
+    $("copierNote").disabled = !note;
+    $("pdf").disabled = !dernier;
+    $("etatNote").textContent = "";
+    M.rendre(ecritures, blocage, alertes);
+  }
+
+  // Justificatif PDF d'une page : identification, déductions, barème appliqué, écriture.
+  function justificatif(d) {
+    var f = window.MiniPdf.fiche("Médecin du secteur 1 " + d.annee);
+    f.section("Identification");
+    f.ligne("Dossier", d.dossier).ligne("Année", String(d.annee)).ligne("Catégorie", d.categorie);
+    if (d.qp < 10000) f.ligne("Quote-part dans la société", M.affiche(d.qp).replace(/,00$/, "") + " %");
+    f.section("Déductions de la ligne 43");
+    var corps = d.deductions.map(function (x) { return [x.cas, x.nom, x.calcul, M.affiche(x.montant)]; });
+    var total = ["", "Total ligne 43", "", M.affiche(d.total)];
+    total.gras = true;
+    f.tableau([{ nom: "Case", largeur: 40 }, { nom: "Déduction", largeur: 170 }, { nom: "Calcul", largeur: 199 },
+               { nom: "Montant", largeur: 90, droite: true }], corps.concat([total]));
+    f.total("Total à porter ligne 43 en " + d.annee, euros(d.total));
+    if (d.g3) {
+      f.section("Barème du groupe III");
+      f.ligne("Honoraires retenus pour lire le barème", M.affiche(d.g3.lecture) + " €");
+      f.ligne("Tranche", d.g3.tranche).ligne("Forfait annuel", M.affiche(d.g3.forfait) + " €");
+      if (d.g3.jours < 360) f.ligne("Prorata du temps d'activité", d.g3.jours + " / 360 jours");
+    }
+    f.texte("Abattement de 2 % sur les recettes brutes, dépassements compris ; déduction de 3 % et groupe III sur les seuls honoraires " +
+            "conventionnels, hors permanence des soins exonérée (guide fiscal 2035, n° 390, 391 et 560 ; BOI-BAREME-000025).");
+    f.ecritures(d.ecritures, M.affiche);
+    return f;
+  }
+
+  $("copierNote").addEventListener("click", function () {
+    var fait = function () { $("etatNote").textContent = "Note copiée"; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(note).then(fait, function () { $("etatNote").textContent = "Copie impossible dans ce navigateur"; });
+    } else $("etatNote").textContent = "Copie impossible dans ce navigateur";
+  });
+  $("pdf").addEventListener("click", function () {
+    if (!dernier) return;
+    var nom = window.MiniPdf.nomFichier(["Medecin secteur 1", dernier.annee, dernier.dossier].filter(Boolean).join(" "));
+    justificatif(dernier).telecharger(nom + ".pdf");
+    $("etatNote").textContent = "Justificatif téléchargé";
+  });
+  window.justificatifPdf = function () { return dernier ? justificatif(dernier) : null; };   // pour les contrôles
+  M.brancher(ids, calcule);
+})();
+</script>
+</body>
+</html>

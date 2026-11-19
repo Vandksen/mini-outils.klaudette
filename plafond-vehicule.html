@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1136DB">
+<meta name="description" content="Plafond de déduction de l'amortissement ou des loyers d'un véhicule de tourisme selon son taux de CO2 et son année d'acquisition : fraction non déductible, part privée, montant à réintégrer sur la 2035 et plus-value de cession. Gratuit, sans envoi de données.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/icone-180.png">
+<title>Plafond d'amortissement véhicule — Mini-outils</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mini-outils">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Plafond d'amortissement véhicule — Mini-outils">
+<meta property="og:description" content="Plafond de déduction de l'amortissement ou des loyers d'un véhicule de tourisme selon son taux de CO2 et son année d'acquisition : fraction non déductible, part privée, montant à réintégrer sur la 2035 et plus-value de cession. Gratuit, sans envoi de données.">
+<meta property="og:url" content="https://mini-outils-compta.fr/plafond-vehicule.html">
+<link rel="canonical" href="https://mini-outils-compta.fr/plafond-vehicule.html">
+<meta property="og:image" content="https://mini-outils-compta.fr/images/og-tempete.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Un navire dans la tempête, avec le slogan « Quand la période fiscale se déchaîne, gardez le cap. »">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="commun.css">
+<style>
+/* Ligne de l'exercice étudié dans le tableau d'amortissement. */
+#tableau tr.choisi td { color: var(--blue); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">Véhicule de tourisme — 2035 ligne 36</p>
+    <h1>Plafond d'amortissement <em>du véhicule.</em></h1>
+    <p class="lead"><strong>But de la page :</strong> appliquer le plafond de déduction de l'amortissement ou des loyers d'une voiture de tourisme (9 900 €, 18 300 €, 20 300 € ou 30 000 € selon son taux de CO₂ et son année d'acquisition), isoler la part d'usage privé et chiffrer le montant à réintégrer en ligne 36 « divers à réintégrer » de la 2035. En cas de vente, la page calcule aussi la plus-value.</p>
+    <p class="lead">Renseignez le véhicule, sa date de mise en service et l'exercice étudié. Le résultat est calculé aussitôt.</p>
+
+    <div class="grille">
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">01 — Configuration</p>
+          <div class="champ">
+            <label for="dossier">Dossier<span class="aide">Facultatif, pour le justificatif PDF</span></label>
+            <input id="dossier" type="text" value="EXEMPLE EI">
+          </div>
+          <div class="champ">
+            <label for="vehicule">Véhicule<span class="aide">Facultatif — immatriculation ou désignation</span></label>
+            <input id="vehicule" type="text" value="AB-123-CD">
+          </div>
+          <div class="champ pleine">
+            <label for="mode">Détention</label>
+            <select id="mode" class="segments">
+              <option value="achat">Achat, inscrit au registre</option>
+              <option value="location">Location ou crédit-bail</option>
+            </select>
+          </div>
+          <div class="champ">
+            <label for="prix">Prix TTC du véhicule<span class="aide">Batterie facturée à part exclue ; en location, valeur indiquée au contrat</span></label>
+            <input id="prix" class="droite" type="text" inputmode="decimal" value="25000,00">
+          </div>
+          <div class="champ">
+            <label for="dateAcq">Date d'acquisition<span class="aide">Ou de début de location ; départ de l'amortissement</span></label>
+            <input id="dateAcq" type="date" value="2025-07-01">
+          </div>
+          <div class="champ">
+            <label for="co2">Taux de CO₂ (g/km)<span class="aide">Rubrique V.7 de la carte grise</span></label>
+            <input id="co2" class="droite" type="text" inputmode="numeric" value="130">
+          </div>
+          <div class="champ pleine">
+            <label for="norme">Mesure du CO₂<span class="aide">Prise en compte pour les véhicules acquis à partir de 2020</span></label>
+            <select id="norme" class="segments">
+              <option value="wltp">WLTP</option>
+              <option value="autre">NEDC</option>
+            </select>
+          </div>
+          <div class="champ">
+            <label for="ancien">Mis en circulation avant le 2 juin 2004<span class="aide">Le plafond ne s'applique pas</span></label>
+            <input id="ancien" type="checkbox" class="bascule" role="switch">
+          </div>
+          <div class="champ achat">
+            <label for="duree">Durée d'amortissement (ans)</label>
+            <input id="duree" class="droite" type="text" inputmode="numeric" value="5">
+          </div>
+          <div class="champ">
+            <label for="pro">Usage professionnel (%)</label>
+            <input id="pro" class="droite" type="text" inputmode="decimal" value="75">
+          </div>
+          <div class="champ">
+            <label for="exercice">Exercice étudié<span class="aide">Année civile de la 2035</span></label>
+            <input id="exercice" type="number" min="2000" max="2099" step="1" value="2025">
+          </div>
+          <div class="champ location">
+            <label for="loyers">Loyers TTC de l'exercice</label>
+            <input id="loyers" class="droite" type="text" inputmode="decimal" value="6000,00">
+          </div>
+          <div class="champ location">
+            <label for="bailleur">Part non déductible indiquée par le bailleur<span class="aide">Vide : estimation au prorata du prix</span></label>
+            <input id="bailleur" class="droite" type="text" inputmode="decimal">
+          </div>
+          <div class="champ achat">
+            <label for="cede">Véhicule vendu</label>
+            <input id="cede" type="checkbox" class="bascule" role="switch">
+          </div>
+          <div class="champ achat cession">
+            <label for="dateCession">Date de cession</label>
+            <input id="dateCession" type="date" value="2027-06-30">
+          </div>
+          <div class="champ achat cession">
+            <label for="prixCession">Prix de cession</label>
+            <input id="prixCession" class="droite" type="text" inputmode="decimal" value="15000,00">
+          </div>
+          <div class="champ achat">
+            <label for="dotation">Écriture de dotation<span class="aide">Dotation de l'exercice sur le prix total</span></label>
+            <input id="dotation" type="checkbox" class="bascule" role="switch">
+          </div>
+          <div class="champ achat ecriture">
+            <label for="cptDot">Compte de dotation</label>
+            <input id="cptDot" type="text" inputmode="numeric" placeholder="681120" value="681120">
+          </div>
+          <div class="champ achat ecriture">
+            <label for="cptAmort">Compte d'amortissement</label>
+            <input id="cptAmort" type="text" inputmode="numeric" placeholder="281820" value="281820">
+          </div>
+          <div class="champ achat ecriture">
+            <label for="piece">Pièce<span class="aide">Vide : code automatique de 6 caractères</span></label>
+            <input id="piece" type="text">
+          </div>
+          <div class="champ total">
+            <span class="etiquette">À réintégrer ligne 36</span>
+            <span class="valeur" id="resultat"></span>
+          </div>
+          <ul class="alertes" id="alertes"></ul>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">02 — Vérification</p>
+          <div class="champ"><span class="etiquette">Plafond applicable</span><span class="valeur droite" id="plafond"></span></div>
+          <div class="champ"><span class="etiquette">Fraction du prix au-delà du plafond</span><span class="valeur droite" id="excedent"></span></div>
+          <div class="champ"><span class="etiquette">Total débit</span><span class="valeur droite" id="totDebit"></span></div>
+          <div class="champ"><span class="etiquette">Total crédit</span><span class="valeur droite" id="totCredit"></span></div>
+          <div class="champ"><span class="etiquette">Équilibre</span><span class="valeur droite"><span id="equilibre"></span></span></div>
+          <div class="champ"><span class="etiquette">Lignes générées</span><span class="valeur droite" id="nbLignes"></span></div>
+        </section>
+      </div>
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow" id="titreTableau">03 — Amortissement et réintégrations</p>
+          <div class="cadre-table">
+            <table>
+              <thead id="entete"></thead>
+              <tbody id="tableau"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel achat" id="panneauCession">
+          <p class="eyebrow">04 — Plus-value de cession</p>
+          <div class="cadre-table">
+            <table>
+              <tbody id="cession"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">05 — Note de calcul</p>
+            <div class="actions">
+              <span class="etat" id="etatNote" role="status"></span>
+              <button class="btn ghost" id="copierNote" type="button">Copier la note</button>
+              <button class="btn ghost" id="pdf" type="button">Télécharger le justificatif PDF</button>
+            </div>
+          </div>
+          <p class="note" id="note"></p>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">06 — Écriture</p>
+            <div class="actions">
+              <span class="etat" id="etat" role="status"></span>
+              <button class="btn" id="copier" type="button">Copier pour ACDCompta</button>
+            </div>
+          </div>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>N°</th><th>Date</th><th>Pièce</th><th>Compte</th><th>Libellé</th>
+                  <th class="droite">Débit</th><th class="droite">Crédit</th>
+                </tr>
+              </thead>
+              <tbody id="lignes"></tbody>
+            </table>
+          </div>
+          <div class="vide" id="vide" hidden></div>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Non déductible = annuité × (prix − plafond) / prix ; part privée sur le reste (guide fiscal 2035, n° 180)</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script src="pdf.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var ids = ["dossier", "vehicule", "mode", "prix", "dateAcq", "co2", "norme", "ancien", "duree", "pro", "exercice", "loyers",
+             "bailleur", "cede", "dateCession", "prixCession", "dotation", "cptDot", "cptAmort", "piece"];
+  var note = "";
+  var dernier = null;   // dernier calcul valide, repris par le justificatif PDF
+
+  // Plafonds de l'article 39-4 du CGI (BOI-BIC-AMT-20-40-50, guide fiscal 2035 n° 180), fixés une
+  // fois pour toutes à l'année d'acquisition ou de location. Chaque ligne : les seuils de CO₂ en
+  // g/km, du plus élevé au plus bas, et le plafond correspondant ; au-dessous du dernier seuil,
+  // 30 000 €. « sup » : seuil strict (supérieur à), sinon supérieur ou égal.
+  function plafondDe(annee, co2, wltp) {
+    if (annee <= 2016) return { plafond: co2 > 200 ? 990000 : 1830000, regle: co2 > 200 ? "plus de 200 g" : "200 g ou moins" };
+    var t;
+    if (annee === 2017) t = [156, 60, 20, false];
+    else if (annee === 2018) t = [151, 60, 20, false];
+    else if (annee === 2019) t = [141, 60, 20, false];
+    else if (annee === 2020) t = wltp ? [165, 50, 20, true] : [136, 60, 20, false];
+    else t = wltp ? [160, 50, 20, true] : [131, 60, 20, false];
+    var haut = t[3] ? co2 > t[0] : co2 >= t[0];
+    if (haut) return { plafond: 990000, regle: t[3] ? "plus de " + t[0] + " g" : t[0] + " g et plus" };
+    if (co2 >= t[1]) return { plafond: 1830000, regle: "de " + t[1] + " à " + (t[3] ? t[0] : t[0] - 1) + " g" };
+    if (co2 >= t[2]) return { plafond: 2030000, regle: "de " + t[2] + " à " + (t[1] - 1) + " g" };
+    return { plafond: 3000000, regle: "moins de " + t[2] + " g" };
+  }
+
+  // Jours d'amortissement en base 360 (mois de 30 jours) : le 1er juillet donne 180 jours,
+  // soit 6/12, comme dans l'exemple du guide. Un dernier jour de mois compte pour le 30.
+  function rang360(d) {
+    var fin = new Date(d.a, d.m, 0).getDate();
+    return (d.m - 1) * 30 + (d.j === fin ? 30 : Math.min(d.j, 30));
+  }
+  function entier(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
+  function pourcent(c) { return M.affiche(c).replace(/,00$/, "").replace(/(,\d)0$/, "$1") + " %"; }
+
+  function calcule() {
+    var v = {};
+    ids.forEach(function (id) { v[id] = $(id).type === "checkbox" ? $(id).checked : $(id).value.trim(); });
+    v.cptDot = v.cptDot || "681120";
+    v.cptAmort = v.cptAmort || "281820";
+    var achat = v.mode === "achat";
+    var montre = function (classe, oui) { Array.prototype.forEach.call(document.querySelectorAll(classe), function (c) { c.hidden = !oui; }); };
+    montre(".champ.achat", achat);
+    montre(".champ.location", !achat);
+    montre(".champ.cession", achat && v.cede);
+    montre(".champ.ecriture", achat && v.dotation);
+    $("panneauCession").hidden = !(achat && v.cede);
+
+    var alertes = [], ecritures = [], blocage = "";
+    var prix = M.centimes(v.prix), co2 = /^\d+$/.test(v.co2) ? parseInt(v.co2, 10) : NaN;
+    var acq = M.lireDate(v.dateAcq), duree = /^\d+$/.test(v.duree) ? parseInt(v.duree, 10) : NaN;
+    var pro = M.centimes(v.pro), exercice = /^\d{4}$/.test(v.exercice) ? parseInt(v.exercice, 10) : NaN;
+    var loyers = M.centimes(v.loyers), bailleur = M.centimes(v.bailleur);
+    var cession = achat && v.cede ? M.lireDate(v.dateCession) : null, prixCession = M.centimes(v.prixCession);
+    var marque = function (id, faux) { $(id).classList.toggle("erreur", !!faux); return !!faux; };
+    marque("prix", isNaN(prix) || prix < 0);
+    marque("co2", isNaN(co2));
+    marque("dateAcq", !acq);
+    marque("duree", achat && !(duree >= 1 && duree <= 50));
+    marque("pro", isNaN(pro) || pro < 0 || pro > 10000);
+    marque("exercice", isNaN(exercice));
+    marque("loyers", !achat && (isNaN(loyers) || loyers < 0));
+    marque("bailleur", !achat && (isNaN(bailleur) || bailleur < 0));
+    marque("dateCession", achat && v.cede && !cession);
+    marque("prixCession", achat && v.cede && (isNaN(prixCession) || prixCession < 0));
+
+    if (isNaN(prix) || prix <= 0) blocage = "Renseignez le prix TTC du véhicule.";
+    else if (!acq) blocage = "Renseignez la date d'acquisition au format JJ/MM/AAAA.";
+    else if (isNaN(co2)) blocage = "Renseignez le taux de CO₂ en grammes par kilomètre (nombre entier).";
+    else if (achat && !(duree >= 1 && duree <= 50)) blocage = "Renseignez la durée d'amortissement en années (entre 1 et 50).";
+    else if (isNaN(pro) || pro < 0 || pro > 10000) blocage = "Le pourcentage d'usage professionnel doit être compris entre 0 et 100.";
+    else if (isNaN(exercice)) blocage = "Renseignez l'exercice étudié sur quatre chiffres.";
+    else if (exercice < acq.a) blocage = "L'exercice étudié précède l'acquisition du véhicule.";
+    else if (!achat && (isNaN(loyers) || isNaN(bailleur) || loyers < 0 || bailleur < 0)) blocage = "Un montant de loyer n'est pas valide.";
+    else if (!achat && bailleur > loyers) blocage = "La part non déductible indiquée par le bailleur dépasse les loyers de l'exercice.";
+    else if (achat && v.cede && !cession) blocage = "Renseignez la date de cession au format JJ/MM/AAAA.";
+    else if (cession && (cession.a < acq.a || rang360(cession) + cession.a * 360 < rang360(acq) + acq.a * 360)) blocage = "La date de cession précède l'acquisition.";
+    else if (cession && (isNaN(prixCession) || prixCession < 0)) blocage = "Renseignez le prix de cession.";
+    else if (cession && exercice > cession.a) blocage = "L'exercice étudié suit la cession du véhicule.";
+
+    var lignesTableau = [], plafond = null, regle = "", ligneExercice = null, pv = null;
+    note = "";
+    dernier = null;
+    if (!blocage) {
+      var p = plafondDe(acq.a, co2, v.norme === "wltp");
+      plafond = v.ancien ? null : p.plafond;
+      regle = v.ancien ? "non applicable (mis en circulation avant le 2 juin 2004)" : M.affiche(p.plafond).replace(/,00$/, "") + " € (" + p.regle + ", " + (achat ? "acquis" : "loué") + " en " + acq.a + ")";
+      if (v.ancien) alertes.push("Véhicule mis en circulation avant le 2 juin 2004 : le plafond ne s'applique pas, seule la part privée est réintégrée.");
+      if (acq.a === 2020 && v.norme === "wltp") alertes.push("Véhicule acquis en 2020 : les seuils WLTP s'appliquent aux véhicules acquis à partir du 1er mars 2020.");
+      var excedent = plafond !== null && prix > plafond ? prix - plafond : 0;
+      var prive = 10000 - pro;
+
+      if (achat) {
+        // Tableau d'amortissement linéaire sur le prix total, du premier exercice à la fin de
+        // l'amortissement ou à la cession.
+        var reste = prix, an = acq.a, debut = rang360(acq) - 1;
+        while (reste > 0) {
+          var fin = cession && an === cession.a ? rang360(cession) : 360;
+          var jours = Math.max(0, fin - (an === acq.a ? debut : 0));
+          var annuite = Math.min(reste, Math.round(prix * jours / (360 * duree)));
+          if (cession && an === cession.a) annuite = Math.min(annuite, reste);
+          else if (reste - annuite < 100) annuite = reste;   // le dernier centime ne reste pas en suspens
+          var nonDed = excedent ? Math.round(annuite * excedent / prix) : 0;
+          var partPrivee = Math.round((annuite - nonDed) * prive / 10000);
+          lignesTableau.push({ annee: an, jours: jours, base: prix, annuite: annuite, nonDed: nonDed, prive: partPrivee,
+                               reint: nonDed + partPrivee, deduit: annuite - nonDed - partPrivee });
+          reste -= annuite;
+          if (cession && an === cession.a) break;
+          an++;
+          if (an > acq.a + 60) break;
+        }
+        ligneExercice = lignesTableau.filter(function (l) { return l.annee === exercice; })[0] || null;
+        if (!ligneExercice) alertes.push("Le véhicule est entièrement amorti avant " + exercice + " : rien à réintégrer pour cet exercice.");
+
+        if (cession) {
+          // Plus-value sur les amortissements non plafonnés (n° 201), réduite à la part
+          // professionnelle pour un véhicule à usage mixte (n° 202).
+          var cumul = lignesTableau.reduce(function (s, l) { return s + l.annuite; }, 0);
+          var vnc = prix - cumul, brute = prixCession - vnc;
+          var imposable = Math.round(brute * pro / 10000);
+          var deuxAns = cession.a * 10000 + cession.m * 100 + cession.j >= (acq.a + 2) * 10000 + acq.m * 100 + acq.j;
+          var amortPro = Math.round(cumul * pro / 10000);
+          var ct = imposable, lt = 0;
+          if (imposable > 0 && deuxAns) { ct = Math.min(imposable, amortPro); lt = imposable - ct; }
+          pv = { date: M.dateFr(cession), prix: prixCession, cumul: cumul, vnc: vnc, brute: brute, imposable: imposable, ct: ct, lt: lt, deuxAns: deuxAns };
+        }
+
+        if (v.dotation && ligneExercice && ligneExercice.annuite) {
+          var piece = v.piece || M.code6(["veh", v.vehicule, prix, v.dateAcq, duree, exercice, v.cptDot, v.cptAmort].join("|"));
+          var date = cession && exercice === cession.a ? M.dateFr(cession) : "31/12/" + exercice;
+          var libelle = "Dotation " + exercice + (v.vehicule ? " - " + v.vehicule : " - véhicule");
+          ecritures.push({ date: date, piece: piece, compte: v.cptDot, libelle: libelle, debit: ligneExercice.annuite, credit: null, debut: true },
+                         { date: date, piece: piece, compte: v.cptAmort, libelle: libelle, debit: null, credit: ligneExercice.annuite });
+        }
+      } else {
+        // Location : la fraction des loyers qui correspond à l'amortissement non admis chez le
+        // bailleur. Elle figure en principe sur la facture ou le contrat ; à défaut, estimation
+        // au prorata de la part du prix qui dépasse le plafond.
+        var estime = !v.bailleur;
+        var nonDedLoyer = estime ? (excedent ? Math.round(loyers * excedent / prix) : 0) : bailleur;
+        if (estime && excedent) alertes.push("Estimation au prorata du prix : demandez au bailleur le montant non déductible exact des loyers, qui prévaut.");
+        var priveLoyer = Math.round((loyers - nonDedLoyer) * prive / 10000);
+        ligneExercice = { annee: exercice, base: loyers, annuite: loyers, nonDed: nonDedLoyer, prive: priveLoyer,
+                          reint: nonDedLoyer + priveLoyer, deduit: loyers - nonDedLoyer - priveLoyer, estime: estime };
+        lignesTableau = [ligneExercice];
+        alertes.push("Le plafond vise les locations de plus de trois mois et le crédit-bail.");
+      }
+
+      $("plafond").textContent = plafond === null ? "Non applicable" : M.affiche(plafond) + " €";
+      $("excedent").textContent = M.affiche(excedent) + " €";
+      $("resultat").textContent = ligneExercice ? M.affiche(ligneExercice.reint) + " €" : "0,00 €";
+
+      var e = ligneExercice;
+      note = "Véhicule de tourisme" + (v.vehicule ? " " + v.vehicule : "") + ", " + (achat ? "acquis" : "loué") + " le " + M.dateFr(acq) +
+             " pour " + M.affiche(prix) + " Euros TTC, " + co2 + " g de CO2/km : plafond de déduction " + regle + ". " +
+             (e ? (achat ? "Amortissement " + exercice + " sur le prix total : " : "Loyers " + exercice + " : ") + M.affiche(e.annuite) + " Euros, dont " +
+                  M.affiche(e.nonDed) + " Euros non déductibles" + (achat && excedent ? " ((" + M.affiche(prix) + " - " + M.affiche(plafond) + ") / " + M.affiche(prix) + ")" : "") +
+                  (!achat && e.estime && excedent ? " (estimation au prorata du prix)" : "") +
+                  (pro < 10000 ? " et " + M.affiche(e.prive) + " Euros de part privée (" + pourcent(prive) + " du solde)" : "") +
+                  ". Montant à réintégrer ligne 36 de la 2035 : " + M.affiche(e.reint) + " Euros ; charge finalement déduite : " + M.affiche(e.deduit) + " Euros."
+                : "Aucun amortissement en " + exercice + ".") +
+             (pv ? " Cession le " + pv.date + " pour " + M.affiche(pv.prix) + " Euros : valeur nette " + M.affiche(pv.vnc) + " Euros (amortissements non plafonnés " +
+                   M.affiche(pv.cumul) + " Euros), " + (pv.brute >= 0 ? "plus-value " : "moins-value ") + M.affiche(Math.abs(pv.imposable)) + " Euros" +
+                   (pro < 10000 ? " après réduction à la part professionnelle" : "") +
+                   (pv.lt ? ", dont " + M.affiche(pv.ct) + " Euros à court terme et " + M.affiche(pv.lt) + " Euros à long terme" : ", à court terme") + "." : "");
+
+      dernier = { dossier: v.dossier, vehicule: v.vehicule, achat: achat, prix: prix, acq: M.dateFr(acq), co2: co2, norme: v.norme,
+                  regle: regle, plafond: plafond, excedent: excedent, duree: duree, pro: pro, exercice: exercice,
+                  lignes: lignesTableau, ligne: ligneExercice, pv: pv, ecritures: ecritures };
+    } else {
+      $("plafond").textContent = "—";
+      $("excedent").textContent = "—";
+      $("resultat").textContent = "—";
+    }
+
+    // Tableau : toutes les années pour un achat, l'exercice seul pour une location.
+    $("entete").innerHTML = "<tr><th>" + (achat ? "Année" : "Exercice") + "</th><th class=\"droite\">" + (achat ? "Annuité" : "Loyers") +
+      "</th><th class=\"droite\">Non déductible</th><th class=\"droite\">Part privée</th><th class=\"droite\">À réintégrer</th><th class=\"droite\">Déduit</th></tr>";
+    var corps = $("tableau");
+    corps.textContent = "";
+    lignesTableau.forEach(function (l) {
+      var tr = document.createElement("tr");
+      if (l.annee === exercice) tr.className = "choisi";
+      [String(l.annee), M.affiche(l.annuite), M.affiche(l.nonDed), M.affiche(l.prive), M.affiche(l.reint), M.affiche(l.deduit)].forEach(function (t, k) {
+        var td = document.createElement("td");
+        td.textContent = t;
+        td.className = k ? "droite" : "lib";
+        tr.appendChild(td);
+      });
+      corps.appendChild(tr);
+    });
+    var cps = $("cession");
+    cps.textContent = "";
+    if (pv) {
+      [["Prix d'acquisition", M.affiche(dernier.prix)], ["Amortissements sans plafond, jusqu'à la cession", "− " + M.affiche(pv.cumul)],
+       ["Valeur nette", M.affiche(pv.vnc)], ["Prix de cession", M.affiche(pv.prix)],
+       [pv.brute >= 0 ? "Plus-value totale" : "Moins-value totale", M.affiche(pv.brute)]]
+        .concat(pro < 10000 ? [["Réduite à l'usage professionnel (" + pourcent(pro) + ")", M.affiche(pv.imposable)]] : [])
+        .concat([["Dont court terme", M.affiche(pv.ct)], ["Dont long terme", M.affiche(pv.lt)]])
+        .forEach(function (c, i) {
+          var tr = document.createElement("tr");
+          if (i === 4) tr.className = "debut";
+          [[c[0], "lib"], [c[1] + " €", "droite"]].forEach(function (x) {
+            var td = document.createElement("td");
+            td.textContent = x[0];
+            td.className = x[1];
+            tr.appendChild(td);
+          });
+          cps.appendChild(tr);
+        });
+      if (!pv.deuxAns) alertes.push("Véhicule détenu moins de deux ans : toute la plus-value est à court terme.");
+    }
+
+    if (!blocage && !ecritures.length) {
+      blocage = achat ? "Pas d'écriture : la réintégration se porte ligne 36 de la 2035. Activez « Écriture de dotation » pour obtenir la dotation de l'exercice."
+                      : "Pas d'écriture : la part non déductible des loyers se réintègre ligne 36 de la 2035.";
+    }
+    $("note").textContent = note || "La note s'affichera une fois la configuration complète.";
+    $("copierNote").disabled = !note;
+    $("pdf").disabled = !dernier;
+    $("etatNote").textContent = "";
+    M.rendre(ecritures, blocage, alertes);
+  }
+
+  // Justificatif PDF d'une page : véhicule, plafond, tableau, plus-value, écriture.
+  function justificatif(d) {
+    var f = window.MiniPdf.fiche("Plafond véhicule de tourisme " + d.exercice);
+    f.section("Identification");
+    f.ligne("Dossier", d.dossier).ligne("Véhicule", d.vehicule)
+     .ligne("Détention", d.achat ? "Achat, amortissement sur " + d.duree + " ans" : "Location ou crédit-bail")
+     .ligne(d.achat ? "Date d'acquisition" : "Début de location", d.acq)
+     .ligne("Prix TTC", M.affiche(d.prix) + " €")
+     .ligne("Taux de CO2", d.co2 + " g/km" + (d.norme === "wltp" ? " (WLTP)" : ""))
+     .ligne("Usage professionnel", pourcent(d.pro));
+    f.section("Plafond");
+    f.ligne("Plafond de déduction", d.regle);
+    f.ligne("Fraction du prix au-delà du plafond", M.affiche(d.excedent) + " €");
+    f.section(d.achat ? "Amortissement et réintégrations" : "Loyers et réintégrations");
+    var corps = d.lignes.map(function (l) {
+      var r = [String(l.annee), M.affiche(l.annuite), M.affiche(l.nonDed), M.affiche(l.prive), M.affiche(l.reint), M.affiche(l.deduit)];
+      r.gras = l.annee === d.exercice;
+      return r;
+    });
+    f.tableau([{ nom: d.achat ? "Année" : "Exercice", largeur: 64 }, { nom: d.achat ? "Annuité" : "Loyers", largeur: 87, droite: true },
+               { nom: "Non déductible", largeur: 87, droite: true }, { nom: "Part privée", largeur: 87, droite: true },
+               { nom: "À réintégrer", largeur: 87, droite: true }, { nom: "Déduit", largeur: 87, droite: true }], corps);
+    f.total("À réintégrer ligne 36 en " + d.exercice, M.affiche(d.ligne ? d.ligne.reint : 0) + " €");
+    if (d.pv) {
+      f.section("Plus-value de cession du " + d.pv.date);
+      f.ligne("Amortissements sans plafond, jusqu'à la cession", M.affiche(d.pv.cumul) + " €")
+       .ligne("Valeur nette", M.affiche(d.pv.vnc) + " €").ligne("Prix de cession", M.affiche(d.pv.prix) + " €")
+       .ligne("Résultat de cession imposable", M.affiche(d.pv.imposable) + " €", { gras: true })
+       .ligne("Dont court terme / long terme", M.affiche(d.pv.ct) + " € / " + M.affiche(d.pv.lt) + " €");
+    }
+    f.texte("Part non déductible = annuité (ou loyers) x (prix - plafond) / prix ; la part privée est calculée sur le solde. " +
+            "La plus-value est calculée avec les amortissements non plafonnés, puis réduite à la part professionnelle " +
+            "(guide fiscal 2035, n° 180, 201 et 202).");
+    f.ecritures(d.ecritures, M.affiche);
+    return f;
+  }
+
+  $("copierNote").addEventListener("click", function () {
+    var fait = function () { $("etatNote").textContent = "Note copiée"; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(note).then(fait, function () { $("etatNote").textContent = "Copie impossible dans ce navigateur"; });
+    } else $("etatNote").textContent = "Copie impossible dans ce navigateur";
+  });
+  $("pdf").addEventListener("click", function () {
+    if (!dernier) return;
+    var nom = window.MiniPdf.nomFichier(["Plafond vehicule", dernier.exercice, dernier.vehicule || dernier.dossier].filter(Boolean).join(" "));
+    justificatif(dernier).telecharger(nom + ".pdf");
+    $("etatNote").textContent = "Justificatif téléchargé";
+  });
+  window.justificatifPdf = function () { return dernier ? justificatif(dernier) : null; };   // pour les contrôles
+  M.brancher(ids, calcule);
+})();
+</script>
+</body>
+</html>

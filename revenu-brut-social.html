@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1136DB">
+<meta name="description" content="Revenu brut social du cadre 8 de l'annexe 2035-B : sommes à réintégrer (DE), sommes à retirer (DB), montant des cases DD ou DC et assiette des cotisations après l'abattement de 26 %. Gratuit, sans envoi de données.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/icone-180.png">
+<title>Revenu brut social — Mini-outils</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mini-outils">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Revenu brut social — Mini-outils">
+<meta property="og:description" content="Revenu brut social du cadre 8 de l'annexe 2035-B : sommes à réintégrer (DE), sommes à retirer (DB), montant des cases DD ou DC et assiette des cotisations après l'abattement de 26 %. Gratuit, sans envoi de données.">
+<meta property="og:url" content="https://mini-outils-compta.fr/revenu-brut-social.html">
+<link rel="canonical" href="https://mini-outils-compta.fr/revenu-brut-social.html">
+<meta property="og:image" content="https://mini-outils-compta.fr/images/og-tempete.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Un navire dans la tempête, avec le slogan « Quand la période fiscale se déchaîne, gardez le cap. »">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="commun.css">
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">Annexe 2035-B — cadre 8, cases DE, DB, DC, DD</p>
+    <h1>Revenu <em>brut social.</em></h1>
+    <p class="lead"><strong>But de la page :</strong> remplir le cadre 8 de l'annexe 2035-B, créé pour la réforme de l'assiette sociale des travailleurs indépendants. La page additionne les éléments de la déclaration qui composent le revenu brut social, indique les montants des cases DE, DB et DD ou DC, et estime l'assiette des cotisations après l'abattement forfaitaire de 26 %.</p>
+    <p class="lead">Reprenez les montants de la 2035 et de ses annexes. Le résultat est calculé aussitôt ; aucune écriture n'est à passer.</p>
+
+    <div class="grille">
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">01 — Montants de la 2035</p>
+          <div class="champ">
+            <label for="dossier">Dossier<span class="aide">Facultatif, pour le justificatif PDF</span></label>
+            <input id="dossier" type="text" value="EXEMPLE EI">
+          </div>
+          <div class="champ">
+            <label for="annee">Année des revenus</label>
+            <input id="annee" type="number" min="2024" max="2099" step="1" value="2025">
+          </div>
+          <div class="champ">
+            <label for="resultat">Résultat fiscal<span class="aide">Bénéfice CP, ou déficit CR précédé du signe −</span></label>
+            <input id="resultat" class="droite" type="text" inputmode="decimal" value="60000,00">
+          </div>
+          <div class="champ">
+            <label for="bk">Cotisations sociales personnelles (BK)</label>
+            <input id="bk" class="droite" type="text" inputmode="decimal" value="15000,00">
+          </div>
+          <div class="champ">
+            <label for="bv">CSG déductible (BV)</label>
+            <input id="bv" class="droite" type="text" inputmode="decimal" value="3400,00">
+          </div>
+          <div class="champ">
+            <label for="dg">Déduction de 3 % des médecins du secteur 1 (DG)</label>
+            <input id="dg" class="droite" type="text" inputmode="decimal" value="450,00">
+          </div>
+          <div class="champ">
+            <label for="cs">Exonération zone franche urbaine (CS)</label>
+            <input id="cs" class="droite" type="text" inputmode="decimal">
+          </div>
+          <div class="champ">
+            <label for="aw">Exonération entreprise nouvelle (AW)</label>
+            <input id="aw" class="droite" type="text" inputmode="decimal">
+          </div>
+          <div class="champ">
+            <label for="cu">Exonération jeune entreprise innovante (CU)</label>
+            <input id="cu" class="droite" type="text" inputmode="decimal">
+          </div>
+          <div class="champ">
+            <label for="ci">Exonération médecins en zone déficitaire (CI)</label>
+            <input id="ci" class="droite" type="text" inputmode="decimal">
+          </div>
+          <div class="champ">
+            <label for="co">Exonération jeunes artistes (CO)</label>
+            <input id="co" class="droite" type="text" inputmode="decimal">
+          </div>
+          <div class="champ">
+            <label for="cj">Exonération France ruralités revitalisation (CJ)</label>
+            <input id="cj" class="droite" type="text" inputmode="decimal">
+          </div>
+          <div class="champ">
+            <label for="societe">Société ou groupement<span class="aide">Hors exercice individuel</span></label>
+            <input id="societe" type="checkbox" class="bascule" role="switch">
+          </div>
+          <div class="champ societe">
+            <label for="cc">Sommes des associés incluses en CC<span class="aide">Rémunérations, avantages non déductibles, intérêts excédentaires</span></label>
+            <input id="cc" class="droite" type="text" inputmode="decimal">
+          </div>
+          <div class="champ">
+            <label for="assiette">Estimer l'assiette des cotisations<span class="aide">Abattement de 26 %, revenus 2025 et suivants</span></label>
+            <input id="assiette" type="checkbox" class="bascule" role="switch" checked>
+          </div>
+          <div class="champ total">
+            <span class="etiquette">Revenu brut social</span>
+            <span class="valeur" id="total"></span>
+          </div>
+          <ul class="alertes" id="alertes"></ul>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">02 — Sommes à réintégrer (case DE)</p>
+          <div class="champ">
+            <label for="de1">Plus-values à court terme exonérées<span class="aide">151 septies, 151 septies A, 238 quindecies, déduites en CL</span></label>
+            <input id="de1" class="droite" type="text" inputmode="decimal">
+          </div>
+          <div class="champ">
+            <label for="de2">Revenus de brevets taxés à 10 %<span class="aide">Déduits en CL</span></label>
+            <input id="de2" class="droite" type="text" inputmode="decimal">
+          </div>
+          <div class="champ">
+            <label for="de3">Participation et intéressement de l'exploitant</label>
+            <input id="de3" class="droite" type="text" inputmode="decimal">
+          </div>
+          <div class="champ">
+            <label for="de4">Bénéfices non professionnels<span class="aide">Page 1 de la 2035, activité d'indépendant</span></label>
+            <input id="de4" class="droite" type="text" inputmode="decimal">
+          </div>
+          <div class="champ">
+            <label for="de5">Moins-values à long terme<span class="aide">Page 1 de la 2035</span></label>
+            <input id="de5" class="droite" type="text" inputmode="decimal">
+          </div>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">03 — Sommes à retirer (case DB)</p>
+          <div class="champ">
+            <label for="db1">Plus-values à long terme<span class="aide">Page 1 de la 2035</span></label>
+            <input id="db1" class="droite" type="text" inputmode="decimal">
+          </div>
+          <div class="champ">
+            <label for="db2">Indemnités journalières en gains divers<span class="aide">Sécurité sociale, caisse de retraite ou contrat Madelin</span></label>
+            <input id="db2" class="droite" type="text" inputmode="decimal" value="2000,00">
+          </div>
+          <div class="champ">
+            <label for="db3">Déficits non professionnels<span class="aide">Page 1 de la 2035, activité d'indépendant</span></label>
+            <input id="db3" class="droite" type="text" inputmode="decimal">
+          </div>
+        </section>
+      </div>
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">04 — Cadre 8 de la 2035-B</p>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr><th>Case</th><th>Élément</th><th class="droite">Montant</th></tr>
+              </thead>
+              <tbody id="detail"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel" id="panneauAssiette">
+          <p class="eyebrow">05 — Assiette des cotisations</p>
+          <div class="cadre-table">
+            <table>
+              <tbody id="calculAssiette"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">06 — Note de calcul</p>
+            <div class="actions">
+              <span class="etat" id="etat" role="status"></span>
+              <button class="btn" id="copier" type="button">Copier la note</button>
+              <button class="btn ghost" id="pdf" type="button">Télécharger le justificatif PDF</button>
+            </div>
+          </div>
+          <p class="note" id="note"></p>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>CP − CR + BK + BV + CS + AW + CU + CI + DG + CO + CJ + DE − DB (notice 2035, guide fiscal 2035 n° 396)</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script src="pdf.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  // Éléments ajoutés au résultat, dans l'ordre de la formule de la notice : [id, case, libellé].
+  var AJOUTS = [["bk", "BK", "Cotisations sociales personnelles"], ["bv", "BV", "CSG déductible"],
+                ["cs", "CS", "Exonération zone franche urbaine"], ["aw", "AW", "Exonération entreprise nouvelle"],
+                ["cu", "CU", "Exonération jeune entreprise innovante"], ["ci", "CI", "Exonération médecins en zone déficitaire"],
+                ["dg", "DG", "Déduction de 3 % des médecins du secteur 1"], ["co", "CO", "Exonération jeunes artistes"],
+                ["cj", "CJ", "Exonération France ruralités revitalisation"]];
+  var DE = [["de1", "Plus-values à court terme exonérées"], ["de2", "Revenus de brevets taxés à 10 %"],
+            ["de3", "Participation et intéressement"], ["de4", "Bénéfices non professionnels"], ["de5", "Moins-values à long terme"]];
+  var DB = [["db1", "Plus-values à long terme"], ["db2", "Indemnités journalières"], ["db3", "Déficits non professionnels"]];
+  var ids = ["dossier", "annee", "resultat", "societe", "cc", "assiette"]
+    .concat(AJOUTS.map(function (a) { return a[0]; }), DE.map(function (a) { return a[0]; }), DB.map(function (a) { return a[0]; }));
+  var note = "";
+  var dernier = null;   // dernier calcul valide, repris par le justificatif PDF
+
+  // Abattement forfaitaire de 26 % sur le revenu brut social (LFSS 2024, décret 2024-688), au
+  // moins 1,76 % et au plus 130 % du plafond annuel de la sécurité sociale (PASS) de l'année
+  // des revenus. Quand un nouveau PASS paraît : l'ajouter ici.
+  var PREMIERE_ANNEE_ABATTEMENT = 2025;
+  var PASS = { 2025: 47100, 2026: 48060 };
+  var DERNIER_PASS = 2026;
+
+  function calcule() {
+    var v = {};
+    ids.forEach(function (id) { v[id] = $(id).type === "checkbox" ? $(id).checked : $(id).value.trim(); });
+    Array.prototype.forEach.call(document.querySelectorAll(".champ.societe"), function (c) { c.hidden = !v.societe; });
+    var alertes = [], blocage = "";
+
+    var annee = /^\d{4}$/.test(v.annee) ? parseInt(v.annee, 10) : NaN;
+    $("annee").classList.toggle("erreur", isNaN(annee));
+    var resultat = M.centimes(v.resultat);
+    $("resultat").classList.toggle("erreur", isNaN(resultat));
+    var invalide = isNaN(resultat);
+    var lire = function (id) {
+      var n = M.centimes(v[id]), faux = isNaN(n) || n < 0;
+      $(id).classList.toggle("erreur", faux);
+      if (faux) invalide = true;
+      return faux ? 0 : n;
+    };
+    var ajouts = AJOUTS.map(function (a) { return { cas: a[1], nom: a[2], montant: lire(a[0]) }; });
+    var de = DE.map(function (a) { return { nom: a[1], montant: lire(a[0]) }; });
+    var db = DB.map(function (a) { return { nom: a[1], montant: lire(a[0]) }; });
+    var cc = v.societe ? lire("cc") : 0;
+
+    if (isNaN(annee)) blocage = "Renseignez l'année des revenus sur quatre chiffres.";
+    else if (isNaN(resultat)) blocage = "Le résultat fiscal n'est pas un nombre valide (signe − pour un déficit).";
+    else if (invalide) blocage = "Un montant n'est pas un nombre positif valide.";
+
+    var corps = $("detail"), corpsAssiette = $("calculAssiette");
+    corps.textContent = "";
+    corpsAssiette.textContent = "";
+    note = "";
+    dernier = null;
+    var assiette = null;
+    if (!blocage) {
+      var somme = function (l) { return l.reduce(function (s, x) { return s + x.montant; }, 0); };
+      var totalDE = somme(de), totalDB = somme(db);
+      var rbs = resultat + somme(ajouts) + totalDE - totalDB - cc;
+      var lignes = [{ cas: resultat < 0 ? "CR" : "CP", nom: resultat < 0 ? "Déficit" : "Bénéfice", montant: resultat }]
+        .concat(ajouts.filter(function (a) { return a.montant; }))
+        .concat([{ cas: "DE", nom: "Sommes à réintégrer pour le revenu brut social", montant: totalDE, detail: de },
+                 { cas: "DB", nom: "Sommes à retirer pour le revenu brut social", montant: -totalDB, detail: db }])
+        .concat(v.societe ? [{ cas: "CC", nom: "Sommes des associés incluses en divers à réintégrer", montant: -cc }] : []);
+      var caseFinale = rbs < 0 ? "DC" : "DD";
+      lignes.concat([{ cas: caseFinale, nom: "Revenu brut social " + (rbs < 0 ? "négatif" : "positif"), montant: Math.abs(rbs), total: true }]).forEach(function (l) {
+        var tr = document.createElement("tr");
+        if (l.total) tr.className = "debut";
+        var aide = l.detail ? l.detail.filter(function (x) { return x.montant; }).map(function (x) { return x.nom.toLowerCase() + " " + M.affiche(x.montant); }).join(", ") : "";
+        [[l.cas, "compte"], [l.nom + (aide ? " (" + aide + ")" : ""), "lib"], [M.affiche(l.montant), "droite"]].forEach(function (c) {
+          var td = document.createElement("td");
+          td.textContent = c[0];
+          td.className = c[1];
+          tr.appendChild(td);
+        });
+        corps.appendChild(tr);
+      });
+      $("total").textContent = M.affiche(rbs) + " €";
+
+      // Assiette des cotisations : revenu brut social moins l'abattement de 26 % borné.
+      if (v.assiette) {
+        if (annee < PREMIERE_ANNEE_ABATTEMENT) {
+          alertes.push("L'abattement de 26 % s'applique aux revenus de " + PREMIERE_ANNEE_ABATTEMENT + " et des années suivantes : pas d'estimation pour " + annee + ".");
+        } else {
+          var anneePass = Math.min(annee, DERNIER_PASS), pass = PASS[anneePass] * 100;
+          if (annee > DERNIER_PASS) alertes.push("Le PASS de l'année " + annee + " n'est pas repris dans l'outil : celui de " + DERNIER_PASS + " est appliqué.");
+          var plancher = Math.round(pass * 176 / 10000), plafond = Math.round(pass * 130 / 100);
+          var brut = Math.round(Math.max(rbs, 0) * 26 / 100);
+          var abattement = rbs > 0 ? Math.min(plafond, Math.max(plancher, brut)) : 0;
+          var borne = rbs <= 0 ? "" : brut < plancher ? "plancher" : brut > plafond ? "plafond" : "";
+          var base = Math.max(0, rbs - abattement);
+          assiette = { pass: pass, anneePass: anneePass, plancher: plancher, plafond: plafond, brut: brut, abattement: abattement, borne: borne, base: base };
+          [["Revenu brut social", M.affiche(rbs)],
+           ["Abattement de 26 %" + (borne ? ", porté au " + borne : ""), "− " + M.affiche(abattement)],
+           ["Assiette des cotisations et de la CSG-CRDS", M.affiche(base)],
+           ["Bornes de l'abattement (PASS " + anneePass + " de " + M.affiche(pass) + " €)", M.affiche(plancher) + " à " + M.affiche(plafond)]]
+            .forEach(function (c, i) {
+              var tr = document.createElement("tr");
+              if (i === 2) tr.className = "debut";
+              [[c[0], "lib"], [c[1] + " €", "droite"]].forEach(function (x) {
+                var td = document.createElement("td");
+                td.textContent = x[0];
+                td.className = x[1];
+                tr.appendChild(td);
+              });
+              corpsAssiette.appendChild(tr);
+            });
+          if (rbs <= 0) alertes.push("Revenu brut social nul ou négatif : l'assiette est nulle et les cotisations minimales s'appliquent.");
+          alertes.push("Estimation : l'Urssaf calcule elle-même l'assiette à partir de la déclaration ; les cotisations minimales et les régimes particuliers ne sont pas repris.");
+        }
+      }
+      if (v.societe) alertes.push("Société ou groupement : le revenu brut social est déterminé au niveau de la société, avant sa répartition entre les associés.");
+
+      note = "Revenu brut social " + annee + " (cadre 8 de la 2035-B) : résultat fiscal " + M.affiche(resultat) + " Euros" +
+             ajouts.filter(function (a) { return a.montant; }).map(function (a) { return " + " + a.cas + " " + M.affiche(a.montant); }).join("") +
+             (totalDE ? " + DE " + M.affiche(totalDE) : "") + (totalDB ? " - DB " + M.affiche(totalDB) : "") + (cc ? " - sommes des associés " + M.affiche(cc) : "") +
+             " = " + M.affiche(rbs) + " Euros, à porter case " + caseFinale + " pour " + M.affiche(Math.abs(rbs)) + " Euros" +
+             (totalDE ? " ; case DE " + M.affiche(totalDE) + " Euros" : "") + (totalDB ? " ; case DB " + M.affiche(totalDB) + " Euros" : "") + "." +
+             (assiette ? " Assiette estimée des cotisations : " + M.affiche(rbs) + " - abattement de 26 %" + (assiette.borne ? " porté au " + assiette.borne : "") + " " +
+                         M.affiche(assiette.abattement) + " = " + M.affiche(assiette.base) + " Euros." : "");
+      dernier = { dossier: v.dossier, annee: annee, lignes: lignes, rbs: rbs, caseFinale: caseFinale, totalDE: totalDE, totalDB: totalDB,
+                  de: de, db: db, assiette: assiette };
+    } else {
+      $("total").textContent = "—";
+      alertes.unshift(blocage);
+    }
+    $("panneauAssiette").hidden = !assiette;
+
+    $("note").textContent = note || "La note s'affichera une fois les montants complets.";
+    $("copier").disabled = !note;
+    $("pdf").disabled = !dernier;
+    $("etat").textContent = "";
+    var ul = $("alertes");
+    ul.textContent = "";
+    alertes.forEach(function (a) {
+      var li = document.createElement("li");
+      li.textContent = a;
+      ul.appendChild(li);
+    });
+  }
+
+  // Justificatif PDF d'une page : composantes du cadre 8, détail de DE et DB, assiette.
+  function justificatif(d) {
+    var f = window.MiniPdf.fiche("Revenu brut social " + d.annee);
+    f.section("Identification");
+    f.ligne("Dossier", d.dossier).ligne("Année des revenus", String(d.annee));
+    f.section("Cadre 8 de la 2035-B");
+    var corps = d.lignes.map(function (l) { return [l.cas, l.nom, M.affiche(l.montant)]; });
+    var total = [d.caseFinale, "Revenu brut social", M.affiche(d.rbs)];
+    total.gras = true;
+    f.tableau([{ nom: "Case", largeur: 50 }, { nom: "Élément", largeur: 339 }, { nom: "Montant", largeur: 110, droite: true }], corps.concat([total]));
+    f.total("Case " + d.caseFinale, M.affiche(Math.abs(d.rbs)) + " €");
+    var detail = function (titre, liste) {
+      var l = liste.filter(function (x) { return x.montant; });
+      if (!l.length) return;
+      f.section(titre);
+      l.forEach(function (x) { f.ligne(x.nom, M.affiche(x.montant) + " €"); });
+    };
+    detail("Détail de la case DE", d.de);
+    detail("Détail de la case DB", d.db);
+    if (d.assiette) {
+      var a = d.assiette;
+      f.section("Assiette estimée des cotisations");
+      f.ligne("Abattement de 26 %" + (a.borne ? ", porté au " + a.borne : ""), M.affiche(a.abattement) + " €")
+       .ligne("Bornes (1,76 % et 130 % du PASS " + a.anneePass + ")", M.affiche(a.plancher) + " € à " + M.affiche(a.plafond) + " €")
+       .ligne("Assiette des cotisations et de la CSG-CRDS", M.affiche(a.base) + " €", { gras: true });
+    }
+    f.texte("Revenu brut social = CP - CR + BK + BV + CS + AW + CU + CI + DG + CO + CJ + DE - DB, diminué pour une société des sommes " +
+            "des associés incluses en CC (notice 2035 ; guide fiscal 2035, n° 396). L'assiette est une estimation : l'Urssaf la calcule " +
+            "à partir de la déclaration.");
+    return f;
+  }
+
+  $("pdf").addEventListener("click", function () {
+    if (!dernier) return;
+    var nom = window.MiniPdf.nomFichier(["Revenu brut social", dernier.annee, dernier.dossier].filter(Boolean).join(" "));
+    justificatif(dernier).telecharger(nom + ".pdf");
+    $("etat").textContent = "Justificatif téléchargé";
+  });
+  window.justificatifPdf = function () { return dernier ? justificatif(dernier) : null; };   // pour les contrôles
+  ids.forEach(function (id) {
+    $(id).addEventListener("input", calcule);
+    $(id).addEventListener("change", calcule);
+  });
+  $("copier").addEventListener("click", function () { M.copierTexte(note, "Note copiée"); });
+  calcule();
+})();
+</script>
+</body>
+</html>

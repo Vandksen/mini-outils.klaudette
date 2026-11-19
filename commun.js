@@ -12,21 +12,26 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.18.0";
+  var VERSION = "1.18.1";
 
-  // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
-  var OUTILS = [
-    { fichier: "fnp.html", nom: "Calcul de FNP" },
+  // Catégorie « Outils de production » du menu : écritures courantes de la tenue.
+  // Pour ajouter un outil : une ligne ici, à sa place dans l'ordre d'affichage.
+  var PRODUCTION = [
+    { fichier: "extournes.html", nom: "Écritures d'extourne" },
     { fichier: "abo-mensuel.html", nom: "Abonnement mensuel" },
     { fichier: "rem-gerance.html", nom: "Rémunération gérance" },
     { fichier: "indemnites-km.html", nom: "Indemnités kilométriques" },
-    { fichier: "avantage-nature.html", nom: "Avantage en nature" },
-    { fichier: "tva-avantages-nature.html", nom: "TVA avantages en nature" },
-    { fichier: "forfait-blanchisserie.html", nom: "Forfait blanchisserie" },
-    { fichier: "decomposition-immeuble.html", nom: "Décomposition immeuble" },
-    { fichier: "extournes.html", nom: "Extournes" },
     { fichier: "import-banque.html", nom: "Import banque" }
   ];
+  // Catégorie « Outils de révision » du menu : calculs et écritures de clôture.
+  var REVISION = [
+    { fichier: "fnp.html", nom: "Calcul de FNP" },
+    { fichier: "avantage-nature.html", nom: "Avantage en nature" },
+    { fichier: "tva-avantages-nature.html", nom: "TVA sur avantages en nature" },
+    { fichier: "forfait-blanchisserie.html", nom: "Forfait blanchisserie" },
+    { fichier: "decomposition-immeuble.html", nom: "Décomposition d'un immeuble" }
+  ];
+  var OUTILS = PRODUCTION.concat(REVISION);
   // Catégorie « Dashboard » du menu : outils qui s'appuient sur les comptes 4886 et 4887
   // tenus par cycle. Pour y ajouter une page :
   // une ligne ici, de la même forme que dans OUTILS.
@@ -137,7 +142,7 @@ window.MiniOutils = (function () {
     if (!nav) return;
     var page = location.pathname.split("/").pop() || "index.html";
     // Chaque catégorie du menu est un accordéon : son titre est un bouton qui déplie ses
-    // entrées. « Outils », « Dashboard » et « Référentiel » sont dépliées à chaque
+    // entrées. Les deux catégories d'outils, « Dashboard » et « Référentiel » sont dépliées à chaque
     // chargement ; « À propos » est repliée, sauf sur l'une de ses pages. Un clic sur un
     // titre replie ou déplie sa seule catégorie.
     var rubrique = function (cle, titre, contenu, classe) {
@@ -153,7 +158,11 @@ window.MiniOutils = (function () {
       ' title="Accueil"><span class="num">' + ICONE_ACCUEIL + '</span><span class="lib">Accueil</span></a>' +
       '<a class="entree" href="manifeste.html"' + (page === "manifeste.html" ? ' aria-current="page"' : '') +
       ' title="Manifeste"><span class="num">' + ICONE_MANIFESTE + '</span><span class="lib">Manifeste</span></a>' +
-      rubrique("outils", "Outils", OUTILS.map(function (o, i) {
+      rubrique("production", "Outils de production", PRODUCTION.map(function (o, i) {
+        return '<a class="entree outil" href="' + o.fichier + '"' + (o.fichier === page ? ' aria-current="page"' : '') +
+               ' title="' + o.nom + '"><span class="num">' + deux(i + 1) + '</span><span class="lib">' + o.nom + '</span></a>';
+      }).join(""), "outil") +
+      rubrique("revision", "Outils de révision", REVISION.map(function (o, i) {
         return '<a class="entree outil" href="' + o.fichier + '"' + (o.fichier === page ? ' aria-current="page"' : '') +
                ' title="' + o.nom + '"><span class="num">' + deux(i + 1) + '</span><span class="lib">' + o.nom + '</span></a>';
       }).join(""), "outil") +

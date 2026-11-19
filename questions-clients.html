@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1136DB">
+<meta name="description" content="Questions types à poser aux clients dans les notes de compte : fournisseurs, ventes, social, compte d'attente et compte courant. Recherche, filtre par cycle et copie d'un clic.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/icone-180.png">
+<title>Questions aux clients pour les notes de compte — Mini-outils</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mini-outils">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Questions aux clients pour les notes de compte — Mini-outils">
+<meta property="og:description" content="Questions types à poser aux clients dans les notes de compte : fournisseurs, ventes, social, compte d'attente et compte courant. Recherche, filtre par cycle et copie d'un clic.">
+<meta property="og:url" content="https://mini-outils-compta.fr/questions-clients.html">
+<link rel="canonical" href="https://mini-outils-compta.fr/questions-clients.html">
+<meta property="og:image" content="https://mini-outils-compta.fr/images/og-tempete.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Un navire dans la tempête, avec le slogan « Quand la période fiscale se déchaîne, gardez le cap. »">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="commun.css">
+</head>
+<body class="avec-filtres">
+
+<nav id="menu" aria-label="Outils"></nav>
+
+<!-- Second menu : recherche et filtre par cycle, comme sur le plan de comptes. Toujours une
+     colonne à gauche ; sur téléphone, un volet ouvert par le bouton « Filtres ». -->
+<aside id="filtres" aria-label="Recherche et filtres">
+  <header>
+    <div><span class="eyebrow">Questions</span><span class="etat" id="compteur" role="status"></span></div>
+    <strong id="titre-filtre"></strong>
+  </header>
+  <div class="defile">
+    <label class="titre" for="recherche">Rechercher</label>
+    <input id="recherche" type="search" autocomplete="off" spellcheck="false" placeholder="avoir, solde, C4…">
+    <p class="titre" id="titre-cycles">Cycles</p>
+    <div class="pcg-categories" id="cycles" role="group" aria-labelledby="titre-cycles"></div>
+  </div>
+  <footer><button id="effacer" type="button" disabled>Tout afficher</button></footer>
+</aside>
+
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+  <button id="ouvrir-filtres" type="button" aria-controls="filtres" aria-expanded="false">Filtres</button>
+</div>
+
+<main>
+  <div class="conteneur prose pcg questions" id="page">
+    <p class="eyebrow">Référentiel</p>
+    <h1>Questions aux <em>clients.</em></h1>
+    <p class="lead"><strong>But de la page :</strong> retrouver la question type à poser au client quand un compte ne peut pas être justifié, pour la coller dans la note du compte.</p>
+    <p class="lead">Tapez un mot de la situation ou de la question, ou son code, ou choisissez un cycle. Le bouton placé après chaque question la copie. Remplacez ensuite les « XX » par le montant et la date du dossier.</p>
+
+    <div id="liste"></div>
+    <p class="vide" id="aucun" hidden>Aucune question ne correspond à cette recherche.</p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Mini-outils — générateurs d'écritures pour ACDCompta</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+<div id="message-copie" role="status" aria-live="polite"></div>
+
+<script src="commun.js"></script>
+<script>
+// Le fichier de données est demandé avec le numéro de version de commun.js, comme celui du
+// plan de comptes : son adresse change à chaque publication.
+(function () {
+  var donnees = document.createElement("script");
+  donnees.src = "questions-donnees.js?v=" + window.MiniOutils.VERSION;
+  donnees.onload = demarre;
+  donnees.onerror = function () {
+    var p = document.getElementById("aucun");
+    p.textContent = "Les questions n'ont pas pu être chargées. Vérifiez la connexion, puis rechargez la page.";
+    p.hidden = false;
+  };
+  document.head.appendChild(donnees);
+})();
+
+function demarre() {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var CYCLES = window.QUESTIONS.cycles;
+  var QUESTIONS = window.QUESTIONS.questions;   // [rang du cycle, situation, question, code]
+  var cycle = -1;                                // -1 = tous les cycles
+  var ICONE_COPIER = '<svg width="16" height="16" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M26.7075 8.2925L21.7075 3.2925C21.6146 3.19967 21.5042 3.12605 21.3829 3.07586C21.2615 3.02568 21.1314 2.9999 21 3H11C10.4696 3 9.96086 3.21071 9.58579 3.58579C9.21071 3.96086 9 4.46957 9 5V7H7C6.46957 7 5.96086 7.21071 5.58579 7.58579C5.21071 7.96086 5 8.46957 5 9V27C5 27.5304 5.21071 28.0391 5.58579 28.4142C5.96086 28.7893 6.46957 29 7 29H21C21.5304 29 22.0391 28.7893 22.4142 28.4142C22.7893 28.0391 23 27.5304 23 27V25H25C25.5304 25 26.0391 24.7893 26.4142 24.4142C26.7893 24.0391 27 23.5304 27 23V9C27.0001 8.86864 26.9743 8.73855 26.9241 8.61715C26.8739 8.49576 26.8003 8.38544 26.7075 8.2925ZM21 27H7V9H16.5863L21 13.4137V23.98C21 23.9875 21 23.9937 21 24C21 24.0063 21 24.0125 21 24.02V27ZM25 23H23V13C23.0001 12.8686 22.9743 12.7385 22.9241 12.6172C22.8739 12.4958 22.8003 12.3854 22.7075 12.2925L17.7075 7.2925C17.6146 7.19967 17.5042 7.12605 17.3829 7.07586C17.2615 7.02568 17.1314 6.9999 17 7H11V5H20.5863L25 9.41375V23ZM18 19C18 19.2652 17.8946 19.5196 17.7071 19.7071C17.5196 19.8946 17.2652 20 17 20H11C10.7348 20 10.4804 19.8946 10.2929 19.7071C10.1054 19.5196 10 19.2652 10 19C10 18.7348 10.1054 18.4804 10.2929 18.2929C10.4804 18.1054 10.7348 18 11 18H17C17.2652 18 17.5196 18.1054 17.7071 18.2929C17.8946 18.4804 18 18.7348 18 19ZM18 23C18 23.2652 17.8946 23.5196 17.7071 23.7071C17.5196 23.8946 17.2652 24 17 24H11C10.7348 24 10.4804 23.8946 10.2929 23.7071C10.1054 23.5196 10 23.2652 10 23C10 22.7348 10.1054 22.4804 10.2929 22.2929C10.4804 22.1054 10.7348 22 11 22H17C17.2652 22 17.5196 22.1054 17.7071 22.2929C17.8946 22.4804 18 22.7348 18 23Z"/></svg>';
+
+  // Texte comparable : minuscules, sans accents, pour que « reglement » trouve « Règlement ».
+  function simple(s) {
+    return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  }
+  function echappe(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function pluriel(n, mot) { return n + " " + mot + (n > 1 ? "s" : ""); }
+
+  // Le texte de recherche de chaque question est préparé une seule fois : cycle, situation,
+  // question et code.
+  var INDEX = QUESTIONS.map(function (q) { return simple(CYCLES[q[0]] + " " + q[1] + " " + q[2] + " " + q[3]); });
+
+  function boutonsCycles() {
+    var bouton = function (rang, nom) {
+      return '<button type="button" class="pcg-categorie" data-rang="' + rang + '" aria-pressed="' + (rang === -1) + '">' +
+             '<span class="lib">' + echappe(nom) + '</span><span class="nb"></span></button>';
+    };
+    $("cycles").innerHTML = bouton(-1, "Tous") + CYCLES.map(function (nom, i) { return bouton(i, nom); }).join("");
+  }
+
+  function affiche() {
+    // Chaque mot saisi doit se retrouver dans la situation, la question, le cycle ou le code.
+    var mots = simple($("recherche").value).split(/\s+/).filter(Boolean);
+    var parCycle = CYCLES.map(function () { return []; }), compte = CYCLES.map(function () { return 0; });
+    var trouvees = 0, nombre = 0;
+    QUESTIONS.forEach(function (q, i) {
+      for (var m = 0; m < mots.length; m++) if (INDEX[i].indexOf(mots[m]) === -1) return;
+      // Les compteurs des cycles suivent la recherche, pas le cycle choisi.
+      compte[q[0]]++; trouvees++;
+      if (cycle !== -1 && q[0] !== cycle) return;
+      parCycle[q[0]].push([q, i]);
+      nombre++;
+    });
+
+    $("liste").innerHTML = parCycle.map(function (lignes, rang) {
+      if (!lignes.length) return "";
+      return '<section class="pcg-groupe"><h2><span class="numero">' + echappe(CYCLES[rang]) + '</span> ' +
+        pluriel(lignes.length, "question") + '</h2><div class="cadre-table"><table><tbody>' +
+        lignes.map(function (l) {
+          var q = l[0], situation = echappe(q[1]);
+          return '<tr><td class="compte">' + echappe(q[3]) + '</td><td class="libelle"><strong class="situation">' + situation +
+                 '</strong><span class="question">' + echappe(q[2]) + '</span></td>' +
+                 '<td class="copie"><button type="button" class="pcg-copier" data-rang="' + l[1] +
+                 '" title="Copier la question" aria-label="Copier la question « ' + situation + ' »">' + ICONE_COPIER + '</button></td></tr>';
+        }).join("") + '</tbody></table></div></section>';
+    }).join("");
+
+    Array.prototype.forEach.call($("cycles").children, function (b) {
+      var rang = Number(b.getAttribute("data-rang")), n = rang === -1 ? trouvees : compte[rang];
+      b.querySelector(".nb").textContent = n;
+      b.classList.toggle("vide", n === 0);
+    });
+
+    if (!nombre) {
+      $("aucun").textContent = mots.length && cycle !== -1
+        ? "Aucune question ne réunit à la fois la recherche « " + $("recherche").value.trim() + " » et le cycle « " + CYCLES[cycle] + " »."
+        : "Aucune question ne correspond à cette recherche.";
+    }
+    var filtre = mots.length > 0 || cycle !== -1;
+    $("compteur").textContent = filtre ? nombre + " / " + QUESTIONS.length : String(QUESTIONS.length);
+    $("titre-filtre").textContent = cycle === -1 ? "Tous les cycles" : CYCLES[cycle];
+    $("aucun").hidden = nombre > 0;
+    $("effacer").disabled = !filtre;
+  }
+
+  function choisit(rang) {
+    cycle = rang;
+    Array.prototype.forEach.call($("cycles").children, function (b) {
+      b.setAttribute("aria-pressed", String(Number(b.getAttribute("data-rang")) === rang));
+    });
+    affiche();
+  }
+
+  // ---------- Copie d'une question ----------
+  var minuterie;
+  function annonce(texte) {
+    var m = $("message-copie");
+    m.textContent = texte;
+    m.classList.add("visible");
+    clearTimeout(minuterie);
+    minuterie = setTimeout(function () { m.classList.remove("visible"); }, 1600);
+  }
+  function copie(q, bouton) {
+    var ok = function () {
+      annonce("Question copiée : " + q[1]);
+      bouton.classList.add("fait");
+      setTimeout(function () { bouton.classList.remove("fait"); }, 1600);
+    };
+    var secours = function () {
+      var ta = document.createElement("textarea");
+      ta.value = q[2];
+      ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      var reussi = false;
+      try { reussi = document.execCommand("copy"); } catch (e) { reussi = false; }
+      document.body.removeChild(ta);
+      if (reussi) ok(); else annonce("Copie impossible dans ce navigateur");
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(q[2]).then(ok, secours);
+    else secours();
+  }
+  $("liste").addEventListener("click", function (e) {
+    var b = e.target.closest(".pcg-copier");
+    if (b) copie(QUESTIONS[Number(b.getAttribute("data-rang"))], b);
+  });
+
+  $("cycles").addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (!b) return;
+    var rang = Number(b.getAttribute("data-rang"));
+    // Recliquer sur le cycle actif revient à « Tous ».
+    choisit(rang === cycle ? -1 : rang);
+  });
+  $("recherche").addEventListener("input", affiche);
+  $("effacer").addEventListener("click", function () {
+    $("recherche").value = "";
+    choisit(-1);
+    $("recherche").focus();
+  });
+
+  // Téléphone : le second menu est un volet, ouvert par le bouton « Filtres ».
+  function volet(etat) {
+    if (etat) document.body.classList.remove("menu-ouvert");   // un seul volet à la fois
+    document.body.classList.toggle("filtres-ouverts", etat);
+    $("ouvrir-filtres").setAttribute("aria-expanded", String(etat));
+  }
+  $("ouvrir-filtres").addEventListener("click", function () { volet(!document.body.classList.contains("filtres-ouverts")); });
+  $("fond").addEventListener("click", function () { volet(false); });
+  $("ouvrir").addEventListener("click", function () { volet(false); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") volet(false); });
+
+  boutonsCycles();
+  affiche();
+}
+</script>
+</body>
+</html>

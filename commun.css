@@ -522,6 +522,13 @@ body.avec-filtres { grid-template-columns: 276px 300px minmax(0, 1fr); }
 .pcg-copier:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 .pcg-copier.fait { background: var(--blue); border-color: var(--blue); color: var(--on-blue); }
 .pcg .vide { margin-top: 28px; }
+/* Questions aux clients (questions-clients.html) : même tableau que le plan de comptes,
+   avec le code à gauche, puis la situation au-dessus de sa question. */
+.questions tbody td { vertical-align: top; padding-top: 12px; padding-bottom: 12px; }
+.questions tbody td.compte { width: 60px; padding-top: 14px; }
+.questions tbody td.copie { padding-top: 8px; }
+.questions .situation { display: block; margin-bottom: 3px; font-weight: 500; color: var(--blue); }
+.questions .question { display: block; white-space: pre-line; }
 #message-copie {
   position: fixed; z-index: 30; right: 24px; top: 20px; max-width: min(420px, calc(100vw - 48px)); padding: 9px 16px; border-radius: 9999px;
   background: var(--blue); color: var(--on-blue); font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;

@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.13.8";
+  var VERSION = "1.14.0";
 
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [
@@ -32,7 +32,8 @@ window.MiniOutils = (function () {
   // Catégorie « Référentiel » du menu : pages de consultation, lisibles aussi sur téléphone.
   // Pour y ajouter une page : une ligne ici, de la même forme que dans OUTILS.
   var REFERENTIEL = [
-    { fichier: "pcg.html", nom: "Plan de comptes" }
+    { fichier: "pcg.html", nom: "Plan de comptes" },
+    { fichier: "questions-clients.html", nom: "Questions aux clients" }
   ];
   // Logo : clé plate dessinée sur une grille de 24 × 24 pixels, dans l'esprit de la cape
   // de capedinvisibilite.fr. "1" = couleur principale, "3" = ombre, "." = vide.

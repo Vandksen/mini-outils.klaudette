@@ -455,6 +455,8 @@ body.avec-filtres { grid-template-columns: 276px 300px minmax(0, 1fr); }
 .pcg-categorie .lib { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pcg-categorie .nb { font-family: var(--mono); font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .pcg-categorie:hover { background: var(--chip); }
+/* Choix qui ne donnerait aucun compte avec l'autre filtre en cours. */
+.pcg-categorie.vide:not([aria-pressed="true"]) { opacity: .4; }
 .pcg-categorie[aria-pressed="true"] { background: var(--blue); color: var(--on-blue); font-weight: 500; }
 .pcg-categorie[aria-pressed="true"] .nb { color: var(--on-blue-muted); }
 .pcg-categorie:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }

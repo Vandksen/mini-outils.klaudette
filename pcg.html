@@ -121,10 +121,19 @@
     // Chaque mot saisi doit se retrouver dans le numéro ou le libellé.
     var mots = simple($("recherche").value).split(/\s+/).filter(Boolean);
     var groupes = [], parRacine = {}, nombre = 0;
+    // Les compteurs des deux filtres tiennent compte l'un de l'autre et de la recherche :
+    // celui d'une catégorie compte ses comptes dans le choix de réforme en cours, et
+    // inversement. On voit ainsi d'avance qu'une combinaison ne donnera rien.
+    var parCategorie = CATEGORIES.map(function () { return 0; }), toutesCategories = 0;
+    var parReforme = [0, 0, 0], tousReforme = 0;
     COMPTES.forEach(function (c, i) {
-      if (categorie !== -1 && c[2] !== categorie) return;
-      if (reforme !== -1 && (c[3] || 0) !== reforme) return;
       for (var m = 0; m < mots.length; m++) if (INDEX[i].indexOf(mots[m]) === -1) return;
+      var ref = c[3] || 0;
+      var dansCategorie = categorie === -1 || c[2] === categorie;
+      var dansReforme = reforme === -1 || ref === reforme;
+      if (dansReforme) { parCategorie[c[2]]++; toutesCategories++; }
+      if (dansCategorie) { parReforme[ref]++; tousReforme++; }
+      if (!dansCategorie || !dansReforme) return;
       var r = racine(c[0]);
       if (!parRacine[r]) { parRacine[r] = []; groupes.push(r); }
       parRacine[r].push(c);
@@ -144,11 +153,35 @@
         }).join("") + '</tbody></table></div></section>';
     }).join("");
 
+    compteurs($("categories"), function (rang) { return rang === -1 ? toutesCategories : parCategorie[rang]; });
+    compteurs($("reforme"), function (code) { return code === -1 ? tousReforme : parReforme[code]; });
+
+    // Quand rien ne correspond, le message rappelle les filtres actifs.
+    if (!nombre) {
+      var actifs = [];
+      if ($("recherche").value.trim()) actifs.push("la recherche « " + $("recherche").value.trim() + " »");
+      if (categorie !== -1) actifs.push("la catégorie « " + CATEGORIES[categorie] + " »");
+      if (reforme === 1) actifs.push("le nouveau plan (PCG 2025)");
+      if (reforme === 2) actifs.push("l’ancien plan (avant 2025)");
+      $("aucun").textContent = actifs.length > 1
+        ? "Aucun compte ne réunit à la fois " + actifs.join(actifs.length > 2 ? ", " : " et ") + "."
+        : "Aucun compte ne correspond à cette recherche.";
+    }
+
     var filtre = mots.length > 0 || categorie !== -1 || reforme !== -1;
     $("compteur").textContent = filtre ? nombre + " / " + COMPTES.length : String(COMPTES.length);
     $("titre-filtre").textContent = categorie === -1 ? "Toutes les catégories" : CATEGORIES[categorie];
     $("aucun").hidden = nombre > 0;
     $("effacer").disabled = !filtre;
+  }
+
+  // Met à jour le nombre affiché sur chaque bouton d'un filtre, et estompe ceux à zéro.
+  function compteurs(groupe, nombrePour) {
+    Array.prototype.forEach.call(groupe.children, function (b) {
+      var n = nombrePour(Number(b.getAttribute("data-rang")));
+      b.querySelector(".nb").textContent = n;
+      b.classList.toggle("vide", n === 0);
+    });
   }
 
   function choisit(rang) {

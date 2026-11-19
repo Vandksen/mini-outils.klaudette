@@ -60,7 +60,7 @@
 
         <section class="panel">
           <p class="eyebrow">02 — Contenu du compte</p>
-          <p class="aide-bloc">Une ligne par écriture, colonnes séparées par des tabulations : date, journal, compte, pièce, libellé, débit, crédit.</p>
+          <p class="aide-bloc">Copiez la consultation du compte dans ACD (avec ou sans la ligne de titres) et collez-la ici. Autre format accepté : une ligne par écriture, colonnes séparées par des tabulations : date, journal, compte, pièce, libellé, débit, crédit.</p>
           <textarea id="source" class="saisie" spellcheck="false" wrap="off" aria-label="Contenu du compte à coller"></textarea>
         </section>
       </div>
@@ -153,6 +153,29 @@
     ["31/12/2026", "OD", "445660", "FNP", "TVA sur factures non parvenues", "58,00", ""]
   ].map(function (l) { return l.join(TAB); }).join(SAUT);
 
+  // Place des colonnes (à partir de 0) ; -1 : colonne absente.
+  // Format de l'outil : date, journal, compte, pièce, libellé, débit, crédit.
+  var SEPT_COLONNES = { date: 0, journal: 1, compte: 2, debit: 5, credit: 6 };
+  // Consultation de compte ACD : Date>, Jnl, Pièce, Facture, Libellé, Débit, Lettrage, Crédit, Solde cumulé…
+  // Le compte n'y figure pas : c'est celui que l'on consulte.
+  var CONSULTATION_ACD = { date: 0, journal: 1, compte: -1, debit: 5, credit: 7 };
+
+  // Lit une ligne de titres et repère chaque colonne par son nom, quel que soit l'ordre.
+  function lireTitres(c) {
+    var p = { date: -1, journal: -1, compte: -1, debit: -1, credit: -1, manque: "" };
+    c.forEach(function (t, k) {
+      var n = t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z ]/g, "").trim();
+      if (p.date === -1 && /^date/.test(n)) p.date = k;
+      else if (p.journal === -1 && /^(jnl|journal|code journal|jal)$/.test(n)) p.journal = k;
+      else if (p.compte === -1 && /^(compte|comptes|n compte|numero de compte)$/.test(n)) p.compte = k;
+      else if (p.debit === -1 && n === "debit") p.debit = k;
+      else if (p.credit === -1 && n === "credit") p.credit = k;
+    });
+    p.manque = p.journal === -1 ? "Journal" : (p.debit === -1 ? "Débit" : (p.credit === -1 ? "Crédit" : ""));
+    return p;
+  }
+  var SANS_COMPTE = "(sans compte)";
+
   function retenu(journal) {
     return journal in choix ? choix[journal] : D_OFFICE.indexOf(journal) !== -1;
   }
@@ -180,26 +203,29 @@
     var alertes = [], lues = 0, ignorees = 0, journaux = {}, ordre = [];
     var lignes = [];
 
+    var titres = null;   // colonnes lues sur la ligne de titres collée, s'il y en a une
     $("source").value.split(/\r?\n/).forEach(function (ligne, i) {
       if (!ligne.trim()) return;
       var c = ligne.split(TAB).map(function (x) { return x.trim(); });
-      // Ligne de titres recopiée avec les écritures : ignorée.
-      if (/^date$/i.test(c[0])) return;
+      // Ligne de titres (« Date », « Date> » dans ACD) : elle donne la place de chaque colonne.
+      if (/^date\b/i.test(c[0])) { titres = lireTitres(c); return; }
       lues++;
-      // Une dernière case vide (crédit) peut disparaître au collage : on la rétablit.
-      if (c.length === 6) c.push("");
+      var p = titres || (c.length >= 8 ? CONSULTATION_ACD : SEPT_COLONNES);
       var refus = "";
-      if (c.length !== 7) refus = c.length + " colonne" + (c.length > 1 ? "s" : "") + " au lieu de 7";
-      else if (!c[1]) refus = "journal manquant";
-      else if (isNaN(M.centimes(c[5])) || isNaN(M.centimes(c[6]))) refus = "le débit ou le crédit n'est pas un nombre";
+      if (titres && titres.manque) refus = "colonne « " + titres.manque + " » absente de la ligne de titres";
+      else if (!titres && c.length < 6) refus = c.length + " colonne" + (c.length > 1 ? "s" : "") + " au lieu de 7";
+      else if (!c[p.journal]) refus = "journal manquant";
+      else if (isNaN(M.centimes(c[p.debit] || "")) || isNaN(M.centimes(c[p.credit] || ""))) refus = "le débit ou le crédit n'est pas un nombre";
       if (refus) {
         ignorees++;
         if (ignorees <= 5) alertes.push("Ligne " + (i + 1) + " ignorée : " + refus + ".");
         return;
       }
-      var journal = c[1].toUpperCase();
+      var journal = c[p.journal].toUpperCase();
       if (!journaux[journal]) { journaux[journal] = { nom: journal, lignes: 0, debit: 0, credit: 0 }; ordre.push(journal); }
-      var l = { date: M.lireDate(c[0]), journal: journal, compte: c[2], debit: M.centimes(c[5]), credit: M.centimes(c[6]) };
+      // Les cases vides de fin de ligne peuvent disparaître au collage : une case absente vaut vide.
+      var l = { date: M.lireDate(c[p.date] || ""), journal: journal, compte: p.compte === -1 ? "" : (c[p.compte] || ""),
+                debit: M.centimes(c[p.debit] || ""), credit: M.centimes(c[p.credit] || "") };
       journaux[journal].lignes++;
       journaux[journal].debit += l.debit;
       journaux[journal].credit += l.credit;
@@ -245,7 +271,7 @@
         if (!premiere || rang(l.date) < rang(premiere)) premiere = l.date;
         if (!derniere || rang(l.date) > rang(derniere)) derniere = l.date;
       }
-      var k = l.compte || "(sans compte)";
+      var k = l.compte || SANS_COMPTE;
       if (!comptes[k]) { comptes[k] = { nom: k, lignes: 0, debit: 0, credit: 0 }; ordreComptes.push(k); }
       comptes[k].lignes++; comptes[k].debit += l.debit; comptes[k].credit += l.credit;
     });
@@ -282,7 +308,7 @@
       var sens = totD > totC ? "solde débiteur" : (totD < totC ? "solde créditeur" : "solde nul");
       if (total < 0) alertes.push("Le compte a un " + sens + ", inhabituel pour de la " + nomTva +
                                   " : vérifiez la nature choisie et les journaux retenus.");
-      note = nomTva + " de l'année" + (ordreComptes.length === 1 ? " - compte " + ordreComptes[0] : "") + (dossier ? " - " + dossier : "") + " : " +
+      note = nomTva + " de l'année" + (ordreComptes.length === 1 && ordreComptes[0] !== SANS_COMPTE ? " - compte " + ordreComptes[0] : "") + (dossier ? " - " + dossier : "") + " : " +
              nb + " ligne" + (nb > 1 ? "s" : "") + (periode ? " " + periode : "") + ", journa" + (retenus.length > 1 ? "ux " : "l ") + retenus.join(", ") +
              (ecartes.length ? " (non retenu" + (ecartes.length > 1 ? "s" : "") + " : " + ecartes.join(", ") + ")" : "") +
              (collectee ? ". Somme des crédits " + M.affiche(totC) + " Euros - somme des débits " + M.affiche(totD)
@@ -320,7 +346,7 @@
     var f = window.MiniPdf.fiche(d.nomTva + " de l'année");
     var m = function (x) { return solde(d.collectee ? x.credit - x.debit : x.debit - x.credit); };
     f.section("Identification");
-    f.ligne("Dossier", d.dossier).ligne("Compte", d.comptes.length === 1 ? d.comptes[0].nom : "")
+    f.ligne("Dossier", d.dossier).ligne("Compte", d.comptes.length === 1 && d.comptes[0].nom !== SANS_COMPTE ? d.comptes[0].nom : "")
      .ligne("Période des lignes retenues", d.periode).ligne("Lignes retenues", String(d.nb));
     f.section("Total par journal");
     var corps = d.journaux.map(function (j) {

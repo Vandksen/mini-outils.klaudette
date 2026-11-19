@@ -57,8 +57,7 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
   color: var(--on-blue); font-size: 20px; font-weight: 500; letter-spacing: 0.06em; text-decoration: none;
 }
 .logo svg { width: 36px; height: 36px; flex: none; }
-.logo b { font-weight: inherit; }
-.logo span { font-family: var(--serif); font-style: italic; font-weight: 400; }
+.logo svg.mot { width: auto; height: 16px; }
 #menu h2:not(:first-child) { margin-top: 22px; }
 /* Titre de catégorie : un bouton qui replie ou déplie ses entrées (accordéon). */
 #menu .rubrique {
@@ -268,6 +267,20 @@ h1 em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-
 .champ input::placeholder { color: var(--muted); opacity: .6; }
 .champ input.erreur { border-color: var(--blue); background: var(--chip); }
 .champ input[type="checkbox"] { width: 20px; height: 20px; margin: 9px 0; accent-color: var(--blue); justify-self: start; }
+/* Interrupteur : une case à cocher (classe « bascule ») dessinée comme un bouton à glissière.
+   Elle reste une vraie case : clavier, clic sur le libellé et « Réinitialiser » fonctionnent pareil. */
+.champ input[type="checkbox"].bascule {
+  -webkit-appearance: none; appearance: none; position: relative; width: 46px; height: 26px; margin: 6px 0; padding: 0;
+  border-radius: 9999px; background: var(--chip); border: 1px solid var(--line); cursor: pointer;
+  transition: background .18s ease, border-color .18s ease;
+}
+.champ input[type="checkbox"].bascule::before {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--paper); box-shadow: 0 1px 3px rgba(27, 36, 80, .28); transition: transform .18s ease;
+}
+.champ input[type="checkbox"].bascule:checked { background: var(--blue); border-color: var(--blue); }
+.champ input[type="checkbox"].bascule:checked::before { transform: translateX(20px); background: var(--on-blue); }
+.champ input[type="checkbox"].bascule:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 .champ .valeur { font-family: var(--mono); font-size: 13px; color: var(--ink); }
 .champ .valeur.code { color: var(--blue); }
 .champ.total .valeur { font-family: var(--sans); font-size: 26px; font-weight: 500; letter-spacing: -0.02em; color: var(--blue); text-align: right; }

@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.19.0";
+  var VERSION = "1.19.1";
 
   // Catégorie « Outils de production » du menu : écritures courantes de la tenue.
   // Pour ajouter un outil : une ligne ici, à sa place dans l'ordre d'affichage.
@@ -90,12 +90,11 @@ window.MiniOutils = (function () {
         if (ligne[x] !== "3") principal += caseSvg;
       }
     });
-    // Cadré sur le dessin (21 × 20 cases) : affiché en 31,5 × 30 px, une case vaut 1,5 px
-    // (celles du nom du site, à côté, valent 2 px).
+    // Cadré sur le dessin (21 × 20 cases). La clé ne sert plus qu'à l'icône d'onglet :
+    // le logo du menu est le nom du site seul.
     return '<svg class="cle" xmlns="http://www.w3.org/2000/svg" viewBox="2 2 21 20" aria-hidden="true">' +
       '<path fill="' + ombre + '" d="' + forme + '"/><path fill="' + couleur + '" d="' + principal + '"/></svg>';
   }
-  var CLE_PLATE = clePlate("#ffffff", "#9bb0ff");
 
   // Le nom du site en lettres de 7 cases de haut, dessinées case par case comme la clé.
   // « OUTILS » est penché (les lignes du haut décalées vers la droite) pour garder
@@ -156,7 +155,7 @@ window.MiniOutils = (function () {
              '<div class="groupe' + (classe ? ' ' + classe : '') + '" id="rubrique-' + cle + '"' + (ouverte ? '' : ' hidden') + '>' + contenu + '</div>';
     };
     nav.innerHTML =
-      '<a class="logo" href="index.html" title="Accueil" aria-label="Mini-outils, accueil">' + CLE_PLATE + MOT_LOGO + '</a>' +
+      '<a class="logo" href="index.html" title="Accueil" aria-label="Mini-outils, accueil">' + MOT_LOGO + '</a>' +
       '<div class="defile">' +
       '<a class="entree" href="index.html"' + (page === "index.html" ? ' aria-current="page"' : '') +
       ' title="Accueil"><span class="num">' + ICONE_ACCUEIL + '</span><span class="lib">Accueil</span></a>' +

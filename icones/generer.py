@@ -63,9 +63,9 @@ def png(chemin, taille, case):
 
 
 ici = os.path.dirname(os.path.abspath(__file__))
-png(os.path.join(ici, "icone-192.png"), 192, 7)
-png(os.path.join(ici, "icone-512.png"), 512, 18)
+png(os.path.join(ici, "icone-m-192.png"), 192, 7)
+png(os.path.join(ici, "icone-m-512.png"), 512, 18)
 # Icône « maskable » : dessin plus petit, pour rester dans la zone sûre une fois rognée en rond.
-png(os.path.join(ici, "icone-512-maskable.png"), 512, 14)
-png(os.path.join(ici, "icone-180.png"), 180, 6)   # écran d'accueil iPhone / iPad
+png(os.path.join(ici, "icone-m-512-maskable.png"), 512, 14)
+png(os.path.join(ici, "icone-m-180.png"), 180, 6)   # écran d'accueil iPhone / iPad
 print("Icônes générées dans", ici)

@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#1136DB">
-<meta name="description" content="Calcul de l'avantage en nature annuel à partir des dépenses réelles et d'un taux, avec la note de calcul et l'écriture comptable à coller dans ACDCompta. Gratuit, sans envoi de données.">
+<meta name="description" content="Calcul de l'avantage en nature annuel d'un véhicule mis à disposition : forfait selon le mode de détention, l'âge et le carburant, abattement des véhicules électriques, note de calcul et écriture à coller dans ACDCompta. Gratuit, sans envoi de données.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icones/icone-180.png">
-<title>Avantage en nature — Mini-outils</title>
+<title>Avantage en nature véhicule — Mini-outils</title>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Mini-outils">
 <meta property="og:locale" content="fr_FR">
-<meta property="og:title" content="Avantage en nature — Mini-outils">
-<meta property="og:description" content="Calcul de l'avantage en nature annuel à partir des dépenses réelles et d'un taux, avec la note de calcul et l'écriture comptable à coller dans ACDCompta. Gratuit, sans envoi de données.">
+<meta property="og:title" content="Avantage en nature véhicule — Mini-outils">
+<meta property="og:description" content="Calcul de l'avantage en nature annuel d'un véhicule mis à disposition : forfait selon le mode de détention, l'âge et le carburant, abattement des véhicules électriques, note de calcul et écriture à coller dans ACDCompta. Gratuit, sans envoi de données.">
 <meta property="og:url" content="https://mini-outils-compta.fr/avantage-nature.html">
 <link rel="canonical" href="https://mini-outils-compta.fr/avantage-nature.html">
 <meta property="og:image" content="https://mini-outils-compta.fr/images/og-tempete.jpg">
@@ -34,10 +34,10 @@
 
 <main>
   <div class="conteneur">
-    <p class="eyebrow">Dépenses réelles — comptes 644</p>
+    <p class="eyebrow">Véhicule mis à disposition — évaluation forfaitaire</p>
     <h1>Avantage en <em>nature.</em></h1>
-    <p class="lead"><strong>But de la page :</strong> évaluer l'avantage en nature de l'année (un véhicule, par exemple) en appliquant un taux au total des dépenses réelles relevées dans la balance, rédiger la note de calcul qui le justifie et passer l'écriture de fin d'année.</p>
-    <p class="lead">Collez les dépenses de l'année, indiquez le taux. Le résultat est calculé aussitôt.</p>
+    <p class="lead"><strong>But de la page :</strong> évaluer au forfait l'avantage en nature de l'année pour un véhicule mis à la disposition d'un salarié ou d'un dirigeant. Le taux dépend du mode de détention, de l'âge du véhicule et de la prise en charge du carburant ; un abattement s'applique aux véhicules 100 % électriques. La page rédige la note de calcul et passe l'écriture de fin d'année.</p>
+    <p class="lead">Renseignez le véhicule et son coût. Le résultat est calculé aussitôt.</p>
 
     <div class="grille">
 
@@ -46,11 +46,50 @@
           <p class="eyebrow">01 — Configuration</p>
           <div class="champ">
             <label for="annee">Année</label>
-            <input id="annee" type="number" min="2000" max="2099" step="1" value="2025">
+            <input id="annee" type="number" min="2025" max="2099" step="1" value="2026">
           </div>
           <div class="champ">
-            <label for="taux">Taux de l'avantage<span class="aide">En % des dépenses, à adapter au cas</span></label>
-            <input id="taux" class="droite" type="text" inputmode="decimal" value="30">
+            <label for="beneficiaire">Bénéficiaire<span class="aide">Facultatif</span></label>
+            <input id="beneficiaire" type="text" value="DUPONT Camille">
+          </div>
+          <div class="champ">
+            <label for="vehicule">Marque et modèle<span class="aide">Facultatif</span></label>
+            <input id="vehicule" type="text" value="Citadine électrique">
+          </div>
+          <div class="champ">
+            <label for="immat">Immatriculation<span class="aide">Facultatif</span></label>
+            <input id="immat" type="text" value="AB-123-CD">
+          </div>
+          <div class="champ pleine">
+            <label for="mode">Mode de détention</label>
+            <select id="mode" class="segments">
+              <option value="achat">Achat</option>
+              <option value="lld">LLD</option>
+              <option value="cb" selected>Crédit-bail</option>
+            </select>
+          </div>
+          <div class="champ pleine achat">
+            <label for="age">Âge du véhicule</label>
+            <select id="age" class="segments">
+              <option value="recent">5 ans au plus</option>
+              <option value="ancien">Plus de 5 ans</option>
+            </select>
+          </div>
+          <div class="champ">
+            <label for="carburant">Carburant pris en charge</label>
+            <input id="carburant" type="checkbox" class="bascule" role="switch">
+          </div>
+          <div class="champ">
+            <label for="electrique">Véhicule 100 % électrique<span class="aide">Abattement de 70 %, plafonné à 4 582 €</span></label>
+            <input id="electrique" type="checkbox" class="bascule" role="switch" checked>
+          </div>
+          <div class="champ achat">
+            <label for="coutAchat">Coût d'acquisition TTC</label>
+            <input id="coutAchat" class="droite" type="text" inputmode="decimal" value="42000,00">
+          </div>
+          <div class="champ location">
+            <label for="coutAnnuel">Coût annuel TTC<span class="aide">Coût de l'année en location ou crédit-bail</span></label>
+            <input id="coutAnnuel" class="droite" type="text" inputmode="decimal" value="7200,00">
           </div>
           <div class="champ">
             <label for="cptDebit">Compte débité</label>
@@ -72,18 +111,7 @@
         </section>
 
         <section class="panel">
-          <p class="eyebrow">02 — Dépenses réelles</p>
-          <p class="aide-bloc">Une ligne par compte, colonnes séparées par des tabulations ou des points-virgules : compte, libellé, solde. Un collage depuis la balance convient ; une ligne ne contenant qu'un montant aussi.</p>
-          <textarea id="source" class="saisie" spellcheck="false" wrap="off" aria-label="Dépenses réelles à coller">606140&#9;Carburant&#9;1850,00
-615500&#9;Entretien du véhicule&#9;640,00
-616300&#9;Assurance du véhicule&#9;780,00
-612200&#9;Crédit-bail du véhicule&#9;4320,00</textarea>
-        </section>
-
-        <section class="panel">
-          <p class="eyebrow">03 — Vérification</p>
-          <div class="champ"><span class="etiquette">Lignes lues</span><span class="valeur droite" id="nbLues"></span></div>
-          <div class="champ"><span class="etiquette">Total des dépenses</span><span class="valeur droite" id="totalDepenses"></span></div>
+          <p class="eyebrow">02 — Vérification</p>
           <div class="champ"><span class="etiquette">Total débit</span><span class="valeur droite" id="totDebit"></span></div>
           <div class="champ"><span class="etiquette">Total crédit</span><span class="valeur droite" id="totCredit"></span></div>
           <div class="champ"><span class="etiquette">Équilibre</span><span class="valeur droite"><span id="equilibre"></span></span></div>
@@ -93,11 +121,11 @@
 
       <div class="colonne">
         <section class="panel">
-          <p class="eyebrow">04 — Détail du calcul</p>
+          <p class="eyebrow">03 — Détail du calcul</p>
           <div class="cadre-table">
             <table>
               <thead>
-                <tr><th>Compte</th><th>Libellé</th><th class="droite">Solde</th></tr>
+                <tr><th>Élément</th><th class="droite">Montant</th></tr>
               </thead>
               <tbody id="detail"></tbody>
             </table>
@@ -106,7 +134,7 @@
 
         <section class="panel">
           <div class="barre">
-            <p class="eyebrow">05 — Note de calcul</p>
+            <p class="eyebrow">04 — Note de calcul</p>
             <div class="actions">
               <span class="etat" id="etatNote" role="status"></span>
               <button class="btn ghost" id="copierNote" type="button">Copier la note</button>
@@ -117,7 +145,7 @@
 
         <section class="panel">
           <div class="barre">
-            <p class="eyebrow">06 — Écriture</p>
+            <p class="eyebrow">05 — Écriture</p>
             <div class="actions">
               <span class="etat" id="etat" role="status"></span>
               <button class="btn" id="copier" type="button">Copier pour ACDCompta</button>
@@ -155,94 +183,84 @@
 (function () {
   "use strict";
   var M = window.MiniOutils, $ = M.$;
-  var ids = ["annee", "taux", "cptDebit", "cptCredit", "piece", "source"];
+  var ids = ["annee", "beneficiaire", "vehicule", "immat", "mode", "age", "carburant", "electrique",
+             "coutAchat", "coutAnnuel", "cptDebit", "cptCredit", "piece"];
   var note = "";
-
-  function cellule(tr, texte, classe) {
-    var td = document.createElement("td");
-    td.textContent = texte;
-    if (classe) td.className = classe;
-    tr.appendChild(td);
-  }
-
-  // Une ligne collée : compte, libellé, solde. Le solde est la dernière cellule ; une ligne
-  // d'une seule cellule est un montant seul.
-  function lire(texte) {
-    var lues = [], rejets = 0;
-    texte.split(/\r?\n/).forEach(function (ligne) {
-      if (!ligne.trim()) return;
-      var c = ligne.split(/\t|;/).map(function (x) { return x.trim(); });
-      while (c.length > 1 && c[c.length - 1] === "") c.pop();
-      var montant = M.centimes(c[c.length - 1]);
-      if (isNaN(montant) || c[c.length - 1] === "") { rejets++; return; }
-      lues.push({
-        compte: c.length > 1 ? c[0] : "",
-        libelle: c.length > 2 ? c.slice(1, -1).filter(Boolean).join(" ") : "",
-        montant: montant
-      });
-    });
-    return { lues: lues, rejets: rejets };
-  }
+  // Abattement des véhicules 100 % électriques : 70 % de l'avantage, plafonné (en centimes).
+  var ABATTEMENT = 70, PLAFOND = 458200;
+  var MODES = { achat: "achat", lld: "location longue durée", cb: "crédit-bail" };
 
   function calcule() {
     var v = {};
     ids.forEach(function (id) { v[id] = $(id).value.trim(); });
     v.cptDebit = v.cptDebit || "644006";
     v.cptCredit = v.cptCredit || "644007";
+    var achat = v.mode === "achat", recent = v.age !== "ancien";
+    var carburant = $("carburant").checked, electrique = $("electrique").checked;
     var alertes = [], ecritures = [], blocage = "";
 
-    var annee = /^\d{4}$/.test(v.annee) ? parseInt(v.annee, 10) : NaN;
-    var taux = v.taux === "" ? NaN : M.centimes(v.taux);   // en centièmes de pour cent : 30 % -> 3000
-    $("annee").classList.toggle("erreur", isNaN(annee));
-    $("taux").classList.toggle("erreur", isNaN(taux) || taux < 0);
+    // Seuls les réglages utiles au mode de détention sont affichés : l'âge et le coût
+    // d'acquisition pour un achat, le coût annuel pour une location ou un crédit-bail.
+    Array.prototype.forEach.call(document.querySelectorAll(".champ.achat"), function (c) { c.hidden = !achat; });
+    Array.prototype.forEach.call(document.querySelectorAll(".champ.location"), function (c) { c.hidden = achat; });
 
-    var r = lire($("source").value), total = 0;
+    var annee = /^\d{4}$/.test(v.annee) ? parseInt(v.annee, 10) : NaN;
+    var base = M.centimes(achat ? v.coutAchat : v.coutAnnuel);
+    $("annee").classList.toggle("erreur", isNaN(annee));
+    $("coutAchat").classList.toggle("erreur", achat && (isNaN(base) || base < 0));
+    $("coutAnnuel").classList.toggle("erreur", !achat && (isNaN(base) || base < 0));
+
+    // Taux du forfait, en pour cent. Achat : 15 % (20 % avec carburant) jusqu'à 5 ans,
+    // 10 % (15 %) au-delà. Location ou crédit-bail : 50 % du coût annuel (67 % avec carburant).
+    var taux = achat ? (recent ? (carburant ? 20 : 15) : (carburant ? 15 : 10)) : (carburant ? 67 : 50);
+    var nomBase = achat ? "Coût d'acquisition TTC" : "Coût annuel TTC";
+
+    if (isNaN(annee)) blocage = "Renseignez l'année sur quatre chiffres.";
+    else if (isNaN(base) || base < 0) blocage = "Le coût du véhicule n'est pas un nombre valide.";
+    else if (base === 0) blocage = achat ? "Renseignez le coût d'acquisition du véhicule." : "Renseignez le coût annuel du véhicule.";
+
     var corps = $("detail");
     corps.textContent = "";
-    r.lues.forEach(function (l) {
-      total += l.montant;
-      var tr = document.createElement("tr");
-      cellule(tr, l.compte, "compte"); cellule(tr, l.libelle, "lib"); cellule(tr, M.affiche(l.montant), "droite");
-      corps.appendChild(tr);
-    });
-    if (r.rejets) alertes.push(r.rejets + (r.rejets > 1 ? " lignes ignorées : leur" : " ligne ignorée : sa") + " dernière colonne n'est pas un montant.");
-
-    if (!r.lues.length) blocage = "Collez les dépenses réelles de l'année.";
-    else if (isNaN(annee)) blocage = "Renseignez l'année sur quatre chiffres.";
-    else if (isNaN(taux) || taux < 0) blocage = "Renseignez le taux de l'avantage en nature.";
-
-    $("nbLues").textContent = r.lues.length;
-    $("totalDepenses").textContent = r.lues.length ? M.affiche(total) + " €" : "—";
-
     note = "";
     if (!blocage) {
-      // Avantage = arrondi au centime de total × taux.
-      var montant = Math.round(total * taux / 10000);
-      var tauxTexte = M.affiche(taux).replace(/,00$/, "") + " %";
-      $("avantage").textContent = M.affiche(montant) + " €";
-      [["Total des dépenses réelles", M.affiche(total)], ["Taux de l'avantage en nature", tauxTexte],
-       ["Avantage en nature à comptabiliser", M.affiche(montant)]].forEach(function (p) {
+      var brut = Math.round(base * taux / 100);
+      var abattement = electrique ? Math.min(Math.round(brut * ABATTEMENT / 100), PLAFOND) : 0;
+      var montant = brut - abattement;
+      var lignes = [[nomBase, M.affiche(base)], ["Taux applicable", taux + " %"], ["Avantage en nature annuel", M.affiche(brut)]];
+      if (electrique) lignes.push(["Abattement véhicule électrique", "- " + M.affiche(abattement)]);
+      lignes.push(["Total avantage " + annee, M.affiche(montant), true]);
+      lignes.forEach(function (l) {
         var tr = document.createElement("tr");
-        tr.className = "debut";
-        cellule(tr, ""); cellule(tr, p[0], "lib"); cellule(tr, p[1], "droite");
+        if (l[2]) tr.className = "debut";
+        [[l[0], "lib"], [l[1], "droite"]].forEach(function (c) {
+          var td = document.createElement("td");
+          td.textContent = c[0];
+          td.className = c[1];
+          tr.appendChild(td);
+        });
         corps.appendChild(tr);
       });
+      $("avantage").textContent = M.affiche(montant) + " €";
 
-      note = "Avantage en nature " + annee + " : dépenses réelles de l'année " +
-             r.lues.map(function (l) { return (l.libelle || l.compte || "dépense") + " " + M.affiche(l.montant); }).join(" + ") +
-             (r.lues.length > 1 ? " = " + M.affiche(total) : "") + " Euros, retenues pour " + tauxTexte +
-             ", soit un avantage en nature de " + M.affiche(montant) + " Euros, porté au débit du compte " + v.cptDebit +
-             " par le crédit du compte " + v.cptCredit + ".";
+      var designation = [v.vehicule, v.immat].filter(Boolean).join(" ");
+      note = "Avantage en nature véhicule " + annee + (v.beneficiaire ? " - " + v.beneficiaire : "") +
+             (designation ? " - " + designation : "") + " : véhicule " + (electrique ? "100 % électrique " : "") +
+             "détenu en " + MODES[v.mode] + (achat ? (recent ? ", de 5 ans au plus" : ", de plus de 5 ans") : "") +
+             ", carburant " + (carburant ? "pris en charge" : "non pris en charge") + ". " + nomBase + " de " + M.affiche(base) +
+             " Euros x " + taux + " % = " + M.affiche(brut) + " Euros" +
+             (electrique ? ", moins l'abattement des véhicules électriques (" + ABATTEMENT + " % de l'avantage, plafonné à " +
+                           M.affiche(PLAFOND) + " Euros) de " + M.affiche(abattement) + " Euros, soit un avantage en nature de " +
+                           M.affiche(montant) + " Euros" : "") +
+             ", porté au débit du compte " + v.cptDebit + " par le crédit du compte " + v.cptCredit + ".";
 
       if (montant === 0) blocage = "L'avantage en nature est nul : aucune écriture à passer.";
       else {
-        // Montant négatif (dépenses créditrices) : l'écriture est passée dans l'autre sens.
-        var sens = montant > 0, abs = Math.abs(montant);
-        var piece = v.piece || M.code6(["avn", annee, taux, total, v.cptDebit, v.cptCredit].join("|"));
-        var date = "31/12/" + annee, libelle = "Avantage en nature " + annee;
+        var piece = v.piece || M.code6(["avn", annee, v.mode, v.age, carburant, electrique, base, v.immat, v.cptDebit, v.cptCredit].join("|"));
+        var date = "31/12/" + annee;
+        var libelle = "Avantage en nature véhicule " + annee + (v.immat ? " - " + v.immat : "");
         ecritures.push(
-          { date: date, piece: piece, compte: v.cptDebit, libelle: libelle, debit: sens ? abs : null, credit: sens ? null : abs, debut: true },
-          { date: date, piece: piece, compte: v.cptCredit, libelle: libelle, debit: sens ? null : abs, credit: sens ? abs : null }
+          { date: date, piece: piece, compte: v.cptDebit, libelle: libelle, debit: montant, credit: null, debut: true },
+          { date: date, piece: piece, compte: v.cptCredit, libelle: libelle, debit: null, credit: montant }
         );
       }
     } else {

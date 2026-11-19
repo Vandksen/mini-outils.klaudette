@@ -109,6 +109,8 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
   .encart small { font-size: 11px; }
 }
 @media (max-height: 840px) { .encart-zone { display: none; } }
+/* L'encart n'est affiché que si toutes les catégories du menu sont repliées. */
+#menu:has(.rubrique[aria-expanded="true"]) .encart-zone { display: none; }
 .encart::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8, 20, 110, .15) 0%, rgba(8, 20, 110, .82) 62%); }
 .encart strong, .encart small { position: relative; display: block; white-space: normal; }
 .encart strong { font-family: var(--sans); font-size: 17px; font-weight: 500; line-height: 1.15; letter-spacing: -0.02em; }

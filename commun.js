@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.11.1";
+  var VERSION = "1.11.2";
 
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [
@@ -316,12 +316,12 @@ window.MiniOutils = (function () {
   // Temps gagné à la copie : on part du principe qu'une ligne d'écriture saisie à la
   // main prend 25 secondes en moyenne. Renvoie le titre affiché dans le message.
   var SECONDES_PAR_LIGNE = 25;
+  // La durée est arrondie à la minute inférieure, avec un minimum d'une minute.
   function duree(secondes) {
-    var h = Math.floor(secondes / 3600), m = Math.floor((secondes % 3600) / 60), s = secondes % 60;
+    var minutes = Math.max(1, Math.floor(secondes / 60));
+    var h = Math.floor(minutes / 60), m = minutes % 60;
     if (h) return h + " h" + (m ? " " + deux(m) + " min" : "");
-    if (m && s) return m + " min " + deux(s) + " s";
-    if (m) return m + (m > 1 ? " minutes" : " minute");
-    return s + " secondes";
+    return m + (m > 1 ? " minutes" : " minute");
   }
   function tempsGagne(lignes) {
     if (!lignes) return null;

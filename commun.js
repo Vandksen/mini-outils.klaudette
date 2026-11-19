@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.10.3";
+  var VERSION = "1.11.0";
 
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [
@@ -310,24 +310,51 @@ window.MiniOutils = (function () {
   }
 
   function copie() {
-    copierTexte(texteACopier(), ecritures.length + " lignes copiées");
+    copierTexte(texteACopier(), ecritures.length + " lignes copiées", tempsGagne(ecritures.length));
+  }
+
+  // Temps gagné à la copie : on part du principe qu'une ligne d'écriture saisie à la
+  // main prend 25 secondes en moyenne. Renvoie le titre et le détail affichés dans le message.
+  var SECONDES_PAR_LIGNE = 25;
+  function duree(secondes) {
+    var h = Math.floor(secondes / 3600), m = Math.floor((secondes % 3600) / 60), s = secondes % 60;
+    if (h) return h + " h" + (m ? " " + deux(m) + " min" : "");
+    if (m && s) return m + " min " + deux(s) + " s";
+    if (m) return m + (m > 1 ? " minutes" : " minute");
+    return s + " secondes";
+  }
+  function tempsGagne(lignes) {
+    if (!lignes) return null;
+    return {
+      titre: "Bravo ! Vous venez de gagner environ " + duree(lignes * SECONDES_PAR_LIGNE) + ".",
+      detail: lignes + (lignes > 1 ? " lignes" : " ligne") + " × " + SECONDES_PAR_LIGNE + " secondes de saisie en moyenne"
+    };
   }
 
   // Copie réussie : petit jet de confettis depuis le bouton et message de félicitations.
+  // « message » vient de tempsGagne() ; sans lui, le message reste général.
   var bravo = null, bravoFin = null;
-  function fete(bouton) {
+  function fete(bouton, message) {
     if (!bravo) {
       bravo = document.createElement("div");
       bravo.className = "bravo";
       bravo.setAttribute("role", "status");
-      bravo.textContent = "Bravo ! Vous venez de gagner du temps !";
       document.body.appendChild(bravo);
+    }
+    bravo.textContent = "";
+    var titre = document.createElement("strong");
+    titre.textContent = message ? message.titre : "Bravo ! Vous venez de gagner du temps !";
+    bravo.appendChild(titre);
+    if (message && message.detail) {
+      var detail = document.createElement("small");
+      detail.textContent = message.detail;
+      bravo.appendChild(detail);
     }
     bravo.classList.remove("visible");
     void bravo.offsetWidth; // relance l'animation d'apparition à chaque copie
     bravo.classList.add("visible");
     clearTimeout(bravoFin);
-    bravoFin = setTimeout(function () { bravo.classList.remove("visible"); }, 3500);
+    bravoFin = setTimeout(function () { bravo.classList.remove("visible"); }, 4500);
 
     // Les confettis partent même si le système demande moins d'animations : ils sont
     // brefs et demandés expressément, et ce réglage est souvent actif sous Windows.
@@ -356,8 +383,8 @@ window.MiniOutils = (function () {
   }
 
   // Met un texte dans le presse-papiers et affiche le message dans #etat.
-  function copierTexte(txt, message) {
-    var ok = function () { $("etat").textContent = message; fete($("copier")); };
+  function copierTexte(txt, message, gain) {
+    var ok = function () { $("etat").textContent = message; fete($("copier"), gain); };
     var secours = function () {
       var ta = document.createElement("textarea");
       ta.value = txt;
@@ -765,5 +792,5 @@ window.MiniOutils = (function () {
   lienPage();
 
   return { $: $, centimes: centimes, deux: deux, code6: code6, affiche: affiche, lireDate: lireDate,
-           decale: decale, dateFr: dateFr, copierTexte: copierTexte, verifieVersion: verifieVersion, rendre: rendre, texteACopier: texteACopier, brancher: brancher };
+           decale: decale, dateFr: dateFr, copierTexte: copierTexte, fete: fete, tempsGagne: tempsGagne, verifieVersion: verifieVersion, rendre: rendre, texteACopier: texteACopier, brancher: brancher };
 })();

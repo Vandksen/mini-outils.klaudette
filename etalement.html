@@ -288,7 +288,10 @@
   $("copierCycles").addEventListener("click", function () {
     var texte = ouverture.map(function (l) { return l.join("\t"); }).join("\r\n");
     var etat = $("etatCycles");
-    var ok = function () { etat.textContent = ouverture.length + " lignes copiées"; };
+    var ok = function () {
+      etat.textContent = ouverture.length + " lignes copiées";
+      M.fete($("copierCycles"), M.tempsGagne(ouverture.length));
+    };
     var secours = function () {
       var ta = document.createElement("textarea");
       ta.value = texte;

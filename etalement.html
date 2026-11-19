@@ -43,9 +43,9 @@
       <div class="colonne">
         <section class="panel">
           <p class="eyebrow">01 — Configuration</p>
-          <div class="champ">
+          <div class="champ pleine">
             <label for="type">Type</label>
-            <select id="type">
+            <select id="type" class="segments">
               <option value="Charge reçue à étaler">Charge reçue à étaler</option>
               <option value="Charge à recevoir">Charge à recevoir</option>
             </select>
@@ -141,7 +141,7 @@
               <button class="btn" id="copierCycles" type="button">Copier pour ACDCompta</button>
             </div>
           </div>
-          <p class="aide-bloc">Collée une fois dans le dossier, cette écriture équilibrée crée les comptes 4886 de chaque cycle avec leur libellé. Elle est datée du jour ; ses montants symboliques sont à extourner ou à supprimer ensuite.</p>
+          <p class="aide-bloc"><strong>Écriture générique, à supprimer ensuite.</strong> Elle ne correspond à aucune opération réelle : collée une fois dans le dossier, elle sert uniquement à générer les comptes 4886 de chaque cycle avec leur libellé. Elle est datée du jour et équilibrée, avec des montants symboliques. Une fois les comptes créés, supprimez-la.</p>
           <div class="cadre-table">
             <table>
               <thead>

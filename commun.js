@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.13.5";
+  var VERSION = "1.13.6";
 
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [
@@ -795,6 +795,41 @@ window.MiniOutils = (function () {
     contenu.insertBefore(bloc, principal);
   }
 
+  // Sélecteur à segments : une liste déroulante de classe « segments » est remplacée à
+  // l'écran par des boutons accolés, un par choix. La liste reste dans la page, masquée :
+  // les calculs lisent toujours sa valeur et « Réinitialiser » agit sur elle comme avant.
+  function segments() {
+    Array.prototype.forEach.call(document.querySelectorAll("select.segments"), function (liste) {
+      var groupe = document.createElement("div");
+      groupe.className = "segments";
+      groupe.setAttribute("role", "group");
+      var libelle = liste.id && document.querySelector('label[for="' + liste.id + '"]');
+      if (libelle) groupe.setAttribute("aria-label", libelle.textContent.trim());
+      var boutons = Array.prototype.map.call(liste.options, function (option) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.textContent = option.textContent;
+        b.addEventListener("click", function () {
+          if (liste.value === option.value) return;
+          liste.value = option.value;
+          liste.dispatchEvent(new Event("input", { bubbles: true }));
+          liste.dispatchEvent(new Event("change", { bubbles: true }));
+        });
+        groupe.appendChild(b);
+        return b;
+      });
+      var accorde = function () {
+        boutons.forEach(function (b, i) { b.setAttribute("aria-pressed", String(i === liste.selectedIndex)); });
+      };
+      liste.addEventListener("input", accorde);
+      liste.addEventListener("change", accorde);
+      accorde();
+      liste.hidden = true;
+      liste.parentNode.insertBefore(groupe, liste.nextSibling);
+    });
+  }
+
+  segments();
   calendrier();
   menu();
   mobile();

@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.11.0";
+  var VERSION = "1.11.1";
 
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [
@@ -314,7 +314,7 @@ window.MiniOutils = (function () {
   }
 
   // Temps gagné à la copie : on part du principe qu'une ligne d'écriture saisie à la
-  // main prend 25 secondes en moyenne. Renvoie le titre et le détail affichés dans le message.
+  // main prend 25 secondes en moyenne. Renvoie le titre affiché dans le message.
   var SECONDES_PAR_LIGNE = 25;
   function duree(secondes) {
     var h = Math.floor(secondes / 3600), m = Math.floor((secondes % 3600) / 60), s = secondes % 60;
@@ -325,10 +325,8 @@ window.MiniOutils = (function () {
   }
   function tempsGagne(lignes) {
     if (!lignes) return null;
-    return {
-      titre: "Bravo ! Vous venez de gagner environ " + duree(lignes * SECONDES_PAR_LIGNE) + ".",
-      detail: lignes + (lignes > 1 ? " lignes" : " ligne") + " × " + SECONDES_PAR_LIGNE + " secondes de saisie en moyenne"
-    };
+    // Seule la durée est affichée, sans le détail du calcul.
+    return { titre: "Bravo ! Vous venez de gagner approximativement " + duree(lignes * SECONDES_PAR_LIGNE) + "." };
   }
 
   // Copie réussie : petit jet de confettis depuis le bouton et message de félicitations.

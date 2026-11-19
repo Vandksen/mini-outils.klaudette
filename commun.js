@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.19.1";
+  var VERSION = "1.19.2";
 
   // Catégorie « Outils de production » du menu : écritures courantes de la tenue.
   // Pour ajouter un outil : une ligne ici, à sa place dans l'ordre d'affichage.
@@ -48,36 +48,36 @@ window.MiniOutils = (function () {
     { fichier: "pcg.html", nom: "Plan de comptes" },
     { fichier: "questions-clients.html", nom: "Questions aux clients" }
   ];
-  // Logo : clé plate dessinée sur une grille de 24 × 24 pixels, dans l'esprit de la cape
-  // de capedinvisibilite.fr. "1" = couleur principale, "3" = ombre, "." = vide.
+  // Icône du site : le « M » du logo, agrandi deux fois, avec son ombre dure, sur une
+  // grille de 24 × 24 cases. "1" = couleur principale, "3" = ombre, "." = vide.
   // Le même dessin est recopié dans icones/generer.py pour les icônes de l'application.
   var PIXELS = [
     "........................",
     "........................",
-    "................133.....",
-    "..............1133......",
-    ".............1133.......",
-    ".............111.....3..",
-    ".............1111...13..",
-    ".............11111.133..",
-    ".............11111113...",
-    "............111111133...",
-    "...........111333333....",
-    "..........11133.........",
-    ".........11133..........",
-    "....111111133...........",
-    "...111111133............",
-    "...13111113.............",
-    "..133.11113.............",
-    "..33...1113.............",
-    "..3.....113.............",
-    ".......1133.............",
-    "......1333..............",
-    ".....333................",
+    "........................",
+    "........................",
+    "...1111........1111.....",
+    "...1111........1111.....",
+    "...111111....11111133...",
+    "...111111....11111133...",
+    "...111111111111111133...",
+    "...111111111111111133...",
+    "...111133111133111133...",
+    "...111133111133111133...",
+    "...111133..3333111133...",
+    "...111133..3333111133...",
+    "...111133......111133...",
+    "...111133......111133...",
+    "...111133......111133...",
+    "...111133......111133...",
+    ".....3333........3333...",
+    ".....3333........3333...",
+    "........................",
+    "........................",
     "........................",
     "........................"
   ];
-  function clePlate(couleur, ombre) {
+  function iconeM(couleur, ombre) {
     // Deux tracés superposés plutôt qu'un carré par case : toute la forme dans la
     // couleur d'ombre, puis les cases principales par-dessus. Le dessin reste ainsi
     // sans liseré entre les cases quand il est affiché à une taille non multiple de 24.
@@ -90,9 +90,9 @@ window.MiniOutils = (function () {
         if (ligne[x] !== "3") principal += caseSvg;
       }
     });
-    // Cadré sur le dessin (21 × 20 cases). La clé ne sert plus qu'à l'icône d'onglet :
+    // Cadré au plus près du dessin, dans un carré de 20 cases. Sert à l'icône d'onglet ;
     // le logo du menu est le nom du site seul.
-    return '<svg class="cle" xmlns="http://www.w3.org/2000/svg" viewBox="2 2 21 20" aria-hidden="true">' +
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="2 2 20 20" shape-rendering="crispEdges" aria-hidden="true">' +
       '<path fill="' + ombre + '" d="' + forme + '"/><path fill="' + couleur + '" d="' + principal + '"/></svg>';
   }
 
@@ -475,11 +475,11 @@ window.MiniOutils = (function () {
     });
   }
 
-  // Icône d'onglet : la même clé plate, en bleu.
+  // Icône d'onglet : le « M » du logo, en bleu.
   function icone() {
     var lien = document.createElement("link");
     lien.rel = "icon";
-    lien.href = "data:image/svg+xml," + encodeURIComponent(clePlate("#1136DB", "#7d93f0"));
+    lien.href = "data:image/svg+xml," + encodeURIComponent(iconeM("#1136DB", "#7d93f0"));
     document.head.appendChild(lien);
   }
 

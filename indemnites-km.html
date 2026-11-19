@@ -36,7 +36,7 @@
   <div class="conteneur">
     <p class="eyebrow">Barème kilométrique — compte 625110</p>
     <h1>Indemnités <em>kilométriques.</em></h1>
-    <p class="lead"><strong>But de la page :</strong> calculer l'indemnité kilométrique annuelle d'une voiture d'après le <a href="https://www.service-public.gouv.fr/particuliers/actualites/A14686" target="_blank" rel="noopener">barème kilométrique publié par l'administration</a>, rédiger la note de calcul qui la justifie et passer l'écriture par le crédit du compte courant du conducteur.</p>
+    <p class="lead"><strong>But de la page :</strong> calculer l'indemnité kilométrique annuelle d'une voiture d'après le <a href="https://www.service-public.gouv.fr/particuliers/actualites/A14686" target="_blank" rel="noopener">barème kilométrique publié par l'administration</a>, rédiger la note de calcul, éditer un justificatif en PDF et passer l'écriture par le crédit du compte courant du conducteur.</p>
     <p class="lead">Renseignez le véhicule, les kilomètres parcourus à titre professionnel et l'année. Le résultat est calculé aussitôt.</p>
 
     <div class="grille">
@@ -44,6 +44,14 @@
       <div class="colonne">
         <section class="panel">
           <p class="eyebrow">01 — Configuration</p>
+          <div class="champ">
+            <label for="dossier">Dossier<span class="aide">Facultatif, pour le justificatif PDF</span></label>
+            <input id="dossier" type="text" value="EXEMPLE SARL">
+          </div>
+          <div class="champ">
+            <label for="conducteur">Conducteur<span class="aide">Facultatif, pour le justificatif PDF</span></label>
+            <input id="conducteur" type="text" value="DUPONT Camille">
+          </div>
           <div class="champ">
             <label for="vehicule">Référence du véhicule<span class="aide">Immatriculation ou désignation</span></label>
             <input id="vehicule" type="text" value="AB-123-CD">
@@ -107,6 +115,7 @@
             <div class="actions">
               <span class="etat" id="etatNote" role="status"></span>
               <button class="btn ghost" id="copierNote" type="button">Copier la note</button>
+              <button class="btn ghost" id="pdf" type="button">Télécharger le justificatif PDF</button>
             </div>
           </div>
           <p class="note" id="note"></p>
@@ -148,12 +157,14 @@
 </div>
 
 <script src="commun.js"></script>
+<script src="pdf.js"></script>
 <script>
 (function () {
   "use strict";
   var M = window.MiniOutils, $ = M.$;
-  var ids = ["vehicule", "puissance", "electrique", "km", "annee", "cptConducteur", "cptCharge", "piece"];
+  var ids = ["dossier", "conducteur", "vehicule", "puissance", "electrique", "km", "annee", "cptConducteur", "cptCharge", "piece"];
   var note = "";
+  var dernier = null;   // dernier calcul valide, repris par le justificatif PDF
 
   // Barème kilométrique des voitures (les deux-roues ne sont pas repris) publié par l'administration (service-public.gouv.fr, actualité A14686,
   // 9 avril 2026) pour l'impôt 2026 sur les revenus 2025. Il n'a pas été revalorisé depuis la
@@ -196,6 +207,7 @@
     else if (annee < PREMIERE_ANNEE) blocage = "L'outil reprend le barème à partir de l'année " + PREMIERE_ANNEE + ".";
 
     note = "";
+    dernier = null;
     if (!blocage) {
       if (annee > DERNIERE_ANNEE) {
         alertes.push("Le barème de l'année " + annee + " n'est pas repris dans l'outil : le dernier barème connu (année " +
@@ -224,6 +236,9 @@
              ", tranche " + tranche + " : " + formule + " = " + M.affiche(baseCentimes) + " Euros" +
              (electrique ? ", majorés de 20 % pour un véhicule électrique, soit " + M.affiche(montant) + " Euros" : "") + ".";
 
+      dernier = { dossier: v.dossier, conducteur: v.conducteur, vehicule: v.vehicule, puissance: puissance[0], rangPuissance: bareme.puissances.indexOf(puissance),
+                  electrique: electrique, km: km, annee: annee, anneeBareme: Math.min(annee, DERNIERE_ANNEE), rang: rang, tranche: tranche,
+                  formule: formule, base: baseCentimes, montant: montant, ecritures: ecritures };
       if (!v.cptConducteur) blocage = "Renseignez le compte courant du conducteur.";
       else {
         note += " Montant porté au crédit du compte " + v.cptConducteur + " par le débit du compte " + v.cptCharge + ".";
@@ -243,6 +258,7 @@
 
     $("note").textContent = note || "La note s'affichera une fois la configuration complète.";
     $("copierNote").disabled = !note;
+    $("pdf").disabled = !dernier;
     $("etatNote").textContent = "";
     M.rendre(ecritures, blocage, alertes);
   }
@@ -253,6 +269,112 @@
       navigator.clipboard.writeText(note).then(fait, function () { $("etatNote").textContent = "Copie impossible dans ce navigateur"; });
     } else $("etatNote").textContent = "Copie impossible dans ce navigateur";
   });
+  // Justificatif PDF d'une page : identification, calcul, barème appliqué, écriture.
+  function justificatif(d) {
+    var doc = window.MiniPdf.creer(), G = 48, D = doc.largeur - 48, y;
+    var titre = function (texte) {
+      y += 30;
+      doc.texte(G, y, texte.toUpperCase(), { taille: 8, gras: true, couleur: "bleu" });
+      y += 7;
+      doc.trait(G, y, D, y, "bleu", 0.8);
+      y += 6;
+    };
+    var ligne = function (nom, valeur, o) {
+      y += 17;
+      doc.texte(G, y, nom, { couleur: "gris" });
+      doc.texte(D, y, valeur, { align: "droite", gras: o && o.gras, couleur: o && o.couleur });
+      doc.trait(G, y + 6, D, y + 6);
+    };
+
+    doc.rectangle(0, 0, doc.largeur, 5, "bleu");
+    doc.texte(G, 44, "MINI-OUTILS", { taille: 8, gras: true, couleur: "bleu" });
+    doc.texte(D, 44, "Justificatif de calcul", { taille: 8, couleur: "gris", align: "droite" });
+    doc.texte(G, 78, "Indemnités kilométriques " + d.annee, { taille: 22, gras: true });
+    y = 86;
+
+    titre("Identification");
+    if (d.dossier) ligne("Dossier", d.dossier);
+    if (d.conducteur) ligne("Conducteur", d.conducteur);
+    if (d.vehicule) ligne("Véhicule", d.vehicule);
+    ligne("Puissance administrative", d.puissance);
+    ligne("Motorisation", d.electrique ? "Électrique" : "Thermique ou hybride");
+
+    titre("Calcul");
+    ligne("Kilomètres parcourus à titre professionnel en " + d.annee, entier(d.km) + " km");
+    ligne("Barème appliqué", "Barème kilométrique des voitures, année " + d.anneeBareme);
+    ligne("Tranche", d.tranche.charAt(0).toUpperCase() + d.tranche.slice(1));
+    ligne("Formule", d.formule);
+    ligne("Indemnité selon le barème", M.affiche(d.base) + " €");
+    if (d.electrique) ligne("Majoration de 20 % pour un véhicule électrique", M.affiche(d.montant - d.base) + " €");
+    y += 12;
+    doc.rectangle(G, y, D - G, 34, "fond");
+    doc.texte(G + 12, y + 21, "Indemnité kilométrique annuelle", { taille: 11, gras: true });
+    doc.texte(D - 12, y + 22, M.affiche(d.montant) + " €", { taille: 15, gras: true, couleur: "bleu", align: "droite" });
+    y += 34;
+
+    // Le barème complet, avec la case appliquée en gras et en bleu.
+    titre("Barème kilométrique des voitures (d = distance parcourue en km)");
+    var colonnes = [G + 210, G + 355, D], seuils = BAREME.seuils;
+    y += 15;
+    doc.texte(G, y, "Puissance", { taille: 8, gras: true, couleur: "gris" });
+    ["Jusqu'à " + entier(seuils[0]) + " km", "De " + entier(seuils[0] + 1) + " à " + entier(seuils[1]) + " km", "Au-delà de " + entier(seuils[1]) + " km"]
+      .forEach(function (t, k) { doc.texte(colonnes[k], y, t, { taille: 8, gras: true, couleur: "gris", align: "droite" }); });
+    doc.trait(G, y + 5, D, y + 5);
+    BAREME.puissances.forEach(function (p, i) {
+      y += 15;
+      var laLigne = i === d.rangPuissance;
+      doc.texte(G, y, p[0], { taille: 9, gras: laLigne });
+      p[1].forEach(function (c, k) {
+        var applique = laLigne && k === d.rang;
+        doc.texte(colonnes[k], y, c[1] ? "(d x " + coef(c[0]) + ") + " + entier(c[1]) : "d x " + coef(c[0]),
+                  { taille: 9, gras: applique, couleur: applique ? "bleu" : "encre", align: "droite" });
+      });
+      doc.trait(G, y + 5, D, y + 5);
+    });
+    y += 8;
+    y = doc.paragraphe(G, y + 10, D - G, "Source : barème kilométrique publié par l'administration (service-public.gouv.fr). " +
+                       "Le montant est majoré de 20 % pour les véhicules électriques.", { taille: 8, couleur: "gris" }) - 10;
+
+    if (d.ecritures.length) {
+      titre("Écriture comptable");
+      y += 15;
+      var x = { date: G, piece: G + 62, compte: G + 112, libelle: G + 168, debit: D - 70, credit: D };
+      doc.texte(x.date, y, "Date", { taille: 8, gras: true, couleur: "gris" });
+      doc.texte(x.piece, y, "Pièce", { taille: 8, gras: true, couleur: "gris" });
+      doc.texte(x.compte, y, "Compte", { taille: 8, gras: true, couleur: "gris" });
+      doc.texte(x.libelle, y, "Libellé", { taille: 8, gras: true, couleur: "gris" });
+      doc.texte(x.debit, y, "Débit", { taille: 8, gras: true, couleur: "gris", align: "droite" });
+      doc.texte(x.credit, y, "Crédit", { taille: 8, gras: true, couleur: "gris", align: "droite" });
+      doc.trait(G, y + 5, D, y + 5);
+      d.ecritures.forEach(function (e) {
+        y += 15;
+        var libelle = e.libelle;
+        while (libelle.length > 4 && doc.mesure(libelle, 9) > x.debit - 62 - x.libelle) libelle = libelle.slice(0, -2) + "…";
+        doc.texte(x.date, y, e.date, { taille: 9 });
+        doc.texte(x.piece, y, e.piece, { taille: 9 });
+        doc.texte(x.compte, y, e.compte, { taille: 9 });
+        doc.texte(x.libelle, y, libelle, { taille: 9 });
+        if (e.debit !== null) doc.texte(x.debit, y, M.affiche(e.debit), { taille: 9, align: "droite" });
+        if (e.credit !== null) doc.texte(x.credit, y, M.affiche(e.credit), { taille: 9, align: "droite" });
+        doc.trait(G, y + 5, D, y + 5);
+      });
+    }
+
+    var jour = new Date();
+    doc.trait(G, 792, D, 792);
+    doc.texte(G, 806, "Document établi le " + M.deux(jour.getDate()) + "/" + M.deux(jour.getMonth() + 1) + "/" + jour.getFullYear() +
+              " avec mini-outils-compta.fr", { taille: 8, couleur: "gris" });
+    doc.texte(D, 806, "Calcul à contrôler avant utilisation", { taille: 8, couleur: "gris", align: "droite" });
+    return doc;
+  }
+
+  $("pdf").addEventListener("click", function () {
+    if (!dernier) return;
+    var nom = window.MiniPdf.nomFichier(["IK", dernier.annee, dernier.vehicule || dernier.conducteur].filter(Boolean).join(" "));
+    justificatif(dernier).telecharger(nom + ".pdf");
+    $("etatNote").textContent = "Justificatif téléchargé";
+  });
+  window.justificatifIK = function () { return dernier ? justificatif(dernier) : null; };   // pour les contrôles
   M.brancher(ids, calcule);
 })();
 </script>

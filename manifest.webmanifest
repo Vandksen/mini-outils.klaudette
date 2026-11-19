@@ -20,6 +20,7 @@
     { "name": "Calcul de FNP", "url": "./fnp.html" },
     { "name": "Abonnement mensuel", "url": "./abo-mensuel.html" },
     { "name": "Rémunération gérance 64x", "url": "./rem-gerance.html" },
+    { "name": "Indemnités kilométriques", "url": "./indemnites-km.html" },
     { "name": "Extournes", "url": "./extournes.html" },
     { "name": "Import banque", "url": "./import-banque.html" }
   ]

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1136DB">
+<meta name="description" content="Calcul des indemnités kilométriques annuelles d'une voiture selon le barème fiscal, avec la note de calcul et l'écriture comptable (625110) à coller dans ACDCompta. Gratuit, sans envoi de données.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/icone-180.png">
+<title>Indemnités kilométriques — Mini-outils</title>
+<link rel="stylesheet" href="commun.css">
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">Barème kilométrique — compte 625110</p>
+    <h1>Indemnités <em>kilométriques.</em></h1>
+    <p class="lead"><strong>But de la page :</strong> calculer l'indemnité kilométrique annuelle d'une voiture d'après le <a href="https://www.service-public.gouv.fr/particuliers/actualites/A14686" target="_blank" rel="noopener">barème kilométrique publié par l'administration</a>, rédiger la note de calcul qui la justifie et passer l'écriture par le crédit du compte courant du conducteur.</p>
+    <p class="lead">Renseignez le véhicule, les kilomètres parcourus à titre professionnel et l'année. Le résultat est calculé aussitôt.</p>
+
+    <div class="grille">
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">01 — Configuration</p>
+          <div class="champ">
+            <label for="vehicule">Référence du véhicule<span class="aide">Immatriculation ou désignation</span></label>
+            <input id="vehicule" type="text" value="AB-123-CD">
+          </div>
+          <div class="champ">
+            <label for="puissance">Puissance administrative</label>
+            <select id="puissance">
+              <option value="0">3 CV et moins</option>
+              <option value="1">4 CV</option>
+              <option value="2" selected>5 CV</option>
+              <option value="3">6 CV</option>
+              <option value="4">7 CV et plus</option>
+            </select>
+          </div>
+          <div class="champ">
+            <label for="electrique">Véhicule électrique<span class="aide">Majoration de 20 %</span></label>
+            <input id="electrique" type="checkbox" class="bascule" role="switch">
+          </div>
+          <div class="champ">
+            <label for="km">Nombre de kilomètres</label>
+            <input id="km" class="droite" type="text" inputmode="numeric" value="8000">
+          </div>
+          <div class="champ">
+            <label for="annee">Année</label>
+            <input id="annee" type="number" min="2022" max="2099" step="1" value="2025">
+          </div>
+          <div class="champ">
+            <label for="cptConducteur">Compte courant du conducteur</label>
+            <input id="cptConducteur" type="text" inputmode="numeric" value="455110">
+          </div>
+          <div class="champ">
+            <label for="cptCharge">Compte de charge</label>
+            <input id="cptCharge" type="text" inputmode="numeric" placeholder="625110" value="625110">
+          </div>
+          <div class="champ">
+            <label for="piece">Pièce<span class="aide">Vide : code automatique de 6 caractères</span></label>
+            <input id="piece" type="text">
+          </div>
+          <div class="champ total">
+            <span class="etiquette">Indemnité annuelle</span>
+            <span class="valeur" id="indemnite"></span>
+          </div>
+          <ul class="alertes" id="alertes"></ul>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">02 — Vérification</p>
+          <div class="champ"><span class="etiquette">Tranche du barème</span><span class="valeur droite" id="tranche"></span></div>
+          <div class="champ"><span class="etiquette">Formule</span><span class="valeur droite" id="formule"></span></div>
+          <div class="champ"><span class="etiquette">Total débit</span><span class="valeur droite" id="totDebit"></span></div>
+          <div class="champ"><span class="etiquette">Total crédit</span><span class="valeur droite" id="totCredit"></span></div>
+          <div class="champ"><span class="etiquette">Équilibre</span><span class="valeur droite"><span id="equilibre"></span></span></div>
+          <div class="champ"><span class="etiquette">Lignes générées</span><span class="valeur droite" id="nbLignes"></span></div>
+        </section>
+      </div>
+
+      <div class="colonne">
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">03 — Note de calcul</p>
+            <div class="actions">
+              <span class="etat" id="etatNote" role="status"></span>
+              <button class="btn ghost" id="copierNote" type="button">Copier la note</button>
+            </div>
+          </div>
+          <p class="note" id="note"></p>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">04 — Écriture</p>
+            <div class="actions">
+              <span class="etat" id="etat" role="status"></span>
+              <button class="btn" id="copier" type="button">Copier pour ACDCompta</button>
+            </div>
+          </div>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>N°</th><th>Date</th><th>Pièce</th><th>Compte</th><th>Libellé</th>
+                  <th class="droite">Débit</th><th class="droite">Crédit</th>
+                </tr>
+              </thead>
+              <tbody id="lignes"></tbody>
+            </table>
+          </div>
+          <div class="vide" id="vide" hidden></div>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Colonnes copiées : date · pièce · compte · libellé · débit · crédit</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var ids = ["vehicule", "puissance", "electrique", "km", "annee", "cptConducteur", "cptCharge", "piece"];
+  var note = "";
+
+  // Barème kilométrique des voitures (les deux-roues ne sont pas repris) publié par l'administration (service-public.gouv.fr, actualité A14686,
+  // 9 avril 2026) pour l'impôt 2026 sur les revenus 2025. Il n'a pas été revalorisé depuis la
+  // hausse de 2023 : les mêmes chiffres valent pour les kilomètres des années 2022 à 2025.
+  // Chaque tranche : [coefficient en millièmes d'euro par km, somme fixe en euros].
+  // Quand un nouveau barème paraît : ajouter ses chiffres et augmenter DERNIERE_ANNEE.
+  var PREMIERE_ANNEE = 2022, DERNIERE_ANNEE = 2025;
+  // Les puissances suivent l'ordre de la liste déroulante « Puissance administrative ».
+  var BAREME = {
+    nom: "voiture", seuils: [5000, 20000],
+    puissances: [
+      ["3 CV et moins", [[529, 0], [316, 1065], [370, 0]]],
+      ["4 CV",          [[606, 0], [340, 1330], [407, 0]]],
+      ["5 CV",          [[636, 0], [357, 1395], [427, 0]]],
+      ["6 CV",          [[665, 0], [374, 1457], [447, 0]]],
+      ["7 CV et plus",  [[697, 0], [394, 1515], [470, 0]]]
+    ]
+  };
+
+  function entier(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
+  function coef(c) { return "0," + ("00" + c).slice(-3); }
+
+  function calcule() {
+    var v = {};
+    ids.forEach(function (id) { v[id] = $(id).value.trim(); });
+    v.cptCharge = v.cptCharge || "625110";
+    var bareme = BAREME, puissance = bareme.puissances[+v.puissance] || bareme.puissances[2];
+    var electrique = $("electrique").checked;
+    var alertes = [], ecritures = [], blocage = "";
+
+    var kmTexte = v.km.replace(/[\s  ]/g, "");
+    var km = /^\d+$/.test(kmTexte) ? parseInt(kmTexte, 10) : NaN;
+    var annee = /^\d{4}$/.test(v.annee) ? parseInt(v.annee, 10) : NaN;
+    $("km").classList.toggle("erreur", isNaN(km));
+    $("annee").classList.toggle("erreur", isNaN(annee) || annee < PREMIERE_ANNEE);
+
+    if (isNaN(km)) blocage = "Le nombre de kilomètres doit être un nombre entier.";
+    else if (km === 0) blocage = "Renseignez le nombre de kilomètres.";
+    else if (isNaN(annee)) blocage = "Renseignez l'année sur quatre chiffres.";
+    else if (annee < PREMIERE_ANNEE) blocage = "L'outil reprend le barème à partir de l'année " + PREMIERE_ANNEE + ".";
+
+    note = "";
+    if (!blocage) {
+      if (annee > DERNIERE_ANNEE) {
+        alertes.push("Le barème de l'année " + annee + " n'est pas repris dans l'outil : le dernier barème connu (année " +
+                     DERNIERE_ANNEE + ") est appliqué. Vérifiez qu'il n'a pas été revalorisé.");
+      }
+      var rang = km <= bareme.seuils[0] ? 0 : (km <= bareme.seuils[1] ? 1 : 2);
+      var ligne = puissance[1][rang];
+      var tranche = rang === 0 ? "jusqu'à " + entier(bareme.seuils[0]) + " km"
+                  : rang === 1 ? "de " + entier(bareme.seuils[0] + 1) + " à " + entier(bareme.seuils[1]) + " km"
+                  : "au-delà de " + entier(bareme.seuils[1]) + " km";
+      var formule = ligne[1] ? "(" + entier(km) + " km x " + coef(ligne[0]) + ") + " + entier(ligne[1])
+                             : entier(km) + " km x " + coef(ligne[0]);
+      // Tout est compté en millièmes d'euro, puis arrondi au centime une seule fois.
+      var base = km * ligne[0] + ligne[1] * 1000;
+      var baseCentimes = Math.round(base / 10);
+      var montant = electrique ? Math.round(base * 12 / 100) : baseCentimes;
+
+      $("indemnite").textContent = M.affiche(montant) + " €";
+      $("tranche").textContent = tranche;
+      $("formule").textContent = formule + (electrique ? ", + 20 %" : "");
+
+      var designation = bareme.nom + ", " + puissance[0] +
+                        (electrique ? ", électrique" : "");
+      note = "Indemnités kilométriques " + annee + (v.vehicule ? " - véhicule " + v.vehicule : "") + " (" + designation + ") : " +
+             entier(km) + " km parcourus à titre professionnel. Barème kilométrique de l'année " + Math.min(annee, DERNIERE_ANNEE) +
+             ", tranche " + tranche + " : " + formule + " = " + M.affiche(baseCentimes) + " Euros" +
+             (electrique ? ", majorés de 20 % pour un véhicule électrique, soit " + M.affiche(montant) + " Euros" : "") + ".";
+
+      if (!v.cptConducteur) blocage = "Renseignez le compte courant du conducteur.";
+      else {
+        note += " Montant porté au crédit du compte " + v.cptConducteur + " par le débit du compte " + v.cptCharge + ".";
+        var piece = v.piece || M.code6(["ik", v.vehicule, v.puissance, electrique, km, annee, v.cptConducteur, v.cptCharge].join("|"));
+        var libelle = "IK " + annee + (v.vehicule ? " - " + v.vehicule : "") + " - " + entier(km) + " km";
+        var date = "31/12/" + annee;
+        ecritures.push(
+          { date: date, piece: piece, compte: v.cptCharge, libelle: libelle, debit: montant, credit: null, debut: true },
+          { date: date, piece: piece, compte: v.cptConducteur, libelle: libelle, debit: null, credit: montant }
+        );
+      }
+    } else {
+      $("indemnite").textContent = "—";
+      $("tranche").textContent = "—";
+      $("formule").textContent = "—";
+    }
+
+    $("note").textContent = note || "La note s'affichera une fois la configuration complète.";
+    $("copierNote").disabled = !note;
+    $("etatNote").textContent = "";
+    M.rendre(ecritures, blocage, alertes);
+  }
+
+  $("copierNote").addEventListener("click", function () {
+    var fait = function () { $("etatNote").textContent = "Note copiée"; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(note).then(fait, function () { $("etatNote").textContent = "Copie impossible dans ce navigateur"; });
+    } else $("etatNote").textContent = "Copie impossible dans ce navigateur";
+  });
+  M.brancher(ids, calcule);
+})();
+</script>
+</body>
+</html>

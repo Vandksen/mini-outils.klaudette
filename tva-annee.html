@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1136DB">
+<meta name="description" content="Calcul de la TVA de l'année à partir du contenu d'un compte : somme des débits moins somme des crédits, pour les journaux retenus. Gratuit, sans envoi de données.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/icone-180.png">
+<title>TVA de l'année — Mini-outils</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mini-outils">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="TVA de l'année — Mini-outils">
+<meta property="og:description" content="Calcul de la TVA de l'année à partir du contenu d'un compte : somme des débits moins somme des crédits, pour les journaux retenus. Gratuit, sans envoi de données.">
+<meta property="og:url" content="https://mini-outils-compta.fr/tva-annee.html">
+<link rel="canonical" href="https://mini-outils-compta.fr/tva-annee.html">
+<meta property="og:image" content="https://mini-outils-compta.fr/images/og-tempete.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Un navire dans la tempête, avec le slogan « Quand la période fiscale se déchaîne, gardez le cap. »">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="commun.css">
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">Contenu d'un compte — total par journal</p>
+    <h1>TVA <em>de l'année.</em></h1>
+    <p class="lead"><strong>But de la page :</strong> retrouver la TVA de l'année à partir du contenu d'un compte de TVA. La page additionne les lignes collées en ne retenant que les journaux cochés : débits moins crédits pour la TVA déductible, crédits moins débits pour la TVA collectée.</p>
+    <p class="lead">Choisissez la nature de la TVA, collez le contenu du compte, puis cochez les journaux à retenir. Le résultat est calculé aussitôt.</p>
+
+    <div class="grille">
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">01 — Configuration</p>
+          <div class="champ">
+            <label for="nature">Nature de la TVA</label>
+            <select id="nature" class="segments">
+              <option value="deductible">Déductible</option>
+              <option value="collectee">Collectée</option>
+            </select>
+          </div>
+          <div class="champ">
+            <label for="dossier">Dossier<span class="aide">Facultatif</span></label>
+            <input id="dossier" type="text" value="EXEMPLE SARL">
+          </div>
+          <ul class="alertes" id="alertes"></ul>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">02 — Contenu du compte</p>
+          <p class="aide-bloc">Une ligne par écriture, colonnes séparées par des tabulations : date, journal, compte, pièce, libellé, débit, crédit.</p>
+          <textarea id="source" class="saisie" spellcheck="false" wrap="off" aria-label="Contenu du compte à coller"></textarea>
+        </section>
+      </div>
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow" id="titreResultat">03 — TVA de l'année</p>
+          <p class="resultat" id="resultat"></p>
+          <div class="champ"><span class="etiquette">Sens du solde</span><span class="valeur droite" id="sens"></span></div>
+          <div class="champ"><span class="etiquette">Total débit retenu</span><span class="valeur droite" id="totDebit"></span></div>
+          <div class="champ"><span class="etiquette">Total crédit retenu</span><span class="valeur droite" id="totCredit"></span></div>
+          <div class="champ"><span class="etiquette">Lignes retenues</span><span class="valeur droite" id="nbRetenues"></span></div>
+          <div class="champ"><span class="etiquette">Lignes lues</span><span class="valeur droite" id="nbLues"></span></div>
+          <div class="champ"><span class="etiquette">Période des lignes retenues</span><span class="valeur droite" id="periode"></span></div>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">04 — Journaux à retenir</p>
+          <p class="aide-bloc">Les journaux lus dans le collage. AC, VE et OD sont cochés d'office ; les autres sont laissés de côté tant qu'ils ne sont pas cochés.</p>
+          <div class="cadre-table">
+            <table class="choix">
+              <thead>
+                <tr><th>Retenu</th><th>Journal</th><th class="droite">Lignes</th><th class="droite">Débit</th><th class="droite">Crédit</th><th class="droite sens-solde">Débit − crédit</th></tr>
+              </thead>
+              <tbody id="journaux"></tbody>
+            </table>
+          </div>
+          <div class="vide" id="vide" hidden></div>
+        </section>
+
+        <section class="panel" id="panneauComptes" hidden>
+          <p class="eyebrow">Détail par compte, journaux retenus</p>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr><th>Compte</th><th class="droite">Lignes</th><th class="droite">Débit</th><th class="droite">Crédit</th><th class="droite sens-solde">Débit − crédit</th></tr>
+              </thead>
+              <tbody id="comptes"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">05 — Note de calcul</p>
+            <div class="actions">
+              <span class="etat" id="etat" role="status"></span>
+              <button class="btn" id="copier" type="button">Copier la note</button>
+              <button class="btn ghost" id="pdf" type="button">Télécharger le justificatif PDF</button>
+            </div>
+          </div>
+          <p class="note" id="note"></p>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>TVA déductible = débits − crédits ; TVA collectée = crédits − débits ; journaux cochés</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script src="pdf.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var TAB = String.fromCharCode(9), SAUT = String.fromCharCode(10);
+  var D_OFFICE = ["AC", "VE", "OD"];   // journaux cochés d'office
+  var choix = {};                      // journal -> true / false, dès que l'utilisateur a coché ou décoché
+  var note = "";
+  var dernier = null;                  // dernier calcul valide, repris par le justificatif PDF
+
+  // Exemple fictif de départ : un compte de TVA déductible sur l'année, au format collé.
+  $("source").value = [
+    ["15/01/2026", "AC", "445660", "FA1201", "Fournitures de bureau", "120,00", ""],
+    ["28/02/2026", "AC", "445660", "FA1342", "Loyer du 1er trimestre", "600,00", ""],
+    ["31/03/2026", "OD", "445660", "REGUL", "TVA non déductible sur cadeaux", "", "40,00"],
+    ["12/05/2026", "AC", "445660", "FA1588", "Honoraires", "240,00", ""],
+    ["30/06/2026", "AC", "445660", "AV0091", "Avoir sur fournitures", "", "20,00"],
+    ["18/09/2026", "AC", "445660", "FA1877", "Matériel informatique", "380,00", ""],
+    ["30/09/2026", "BQ", "445660", "REMB", "Remboursement de crédit de TVA", "", "300,00"],
+    ["20/11/2026", "AC", "445660", "FA2034", "Entretien", "96,40", ""],
+    ["31/12/2026", "OD", "445660", "FNP", "TVA sur factures non parvenues", "58,00", ""]
+  ].map(function (l) { return l.join(TAB); }).join(SAUT);
+
+  function retenu(journal) {
+    return journal in choix ? choix[journal] : D_OFFICE.indexOf(journal) !== -1;
+  }
+  // Date lue -> nombre comparable (AAAAMMJJ), pour trouver la première et la dernière.
+  function rang(d) { return d.a * 10000 + d.m * 100 + d.j; }
+  function cellule(tr, texte, classe) {
+    var td = document.createElement("td");
+    td.textContent = texte;
+    if (classe) td.className = classe;
+    tr.appendChild(td);
+    return td;
+  }
+  function solde(centimes) { return (centimes < 0 ? "-" : "") + M.affiche(Math.abs(centimes)); }
+
+  function calcule() {
+    var dossier = $("dossier").value.trim();
+    // TVA déductible : le compte est débiteur, on compte débits - crédits.
+    // TVA collectée : le compte est créditeur, on compte crédits - débits.
+    var collectee = $("nature").value === "collectee";
+    var nomTva = collectee ? "TVA collectée" : "TVA déductible";
+    var formule = collectee ? "Crédit − débit" : "Débit − crédit";
+    var montant = function (debit, credit) { return collectee ? credit - debit : debit - credit; };
+    $("titreResultat").textContent = "03 — " + nomTva + " de l'année";
+    Array.prototype.forEach.call(document.querySelectorAll(".sens-solde"), function (th) { th.textContent = formule; });
+    var alertes = [], lues = 0, ignorees = 0, journaux = {}, ordre = [];
+    var lignes = [];
+
+    $("source").value.split(/\r?\n/).forEach(function (ligne, i) {
+      if (!ligne.trim()) return;
+      var c = ligne.split(TAB).map(function (x) { return x.trim(); });
+      // Ligne de titres recopiée avec les écritures : ignorée.
+      if (/^date$/i.test(c[0])) return;
+      lues++;
+      // Une dernière case vide (crédit) peut disparaître au collage : on la rétablit.
+      if (c.length === 6) c.push("");
+      var refus = "";
+      if (c.length !== 7) refus = c.length + " colonne" + (c.length > 1 ? "s" : "") + " au lieu de 7";
+      else if (!c[1]) refus = "journal manquant";
+      else if (isNaN(M.centimes(c[5])) || isNaN(M.centimes(c[6]))) refus = "le débit ou le crédit n'est pas un nombre";
+      if (refus) {
+        ignorees++;
+        if (ignorees <= 5) alertes.push("Ligne " + (i + 1) + " ignorée : " + refus + ".");
+        return;
+      }
+      var journal = c[1].toUpperCase();
+      if (!journaux[journal]) { journaux[journal] = { nom: journal, lignes: 0, debit: 0, credit: 0 }; ordre.push(journal); }
+      var l = { date: M.lireDate(c[0]), journal: journal, compte: c[2], debit: M.centimes(c[5]), credit: M.centimes(c[6]) };
+      journaux[journal].lignes++;
+      journaux[journal].debit += l.debit;
+      journaux[journal].credit += l.credit;
+      lignes.push(l);
+    });
+    if (ignorees > 5) alertes.push((ignorees - 5) + " autres lignes ignorées.");
+
+    // Journaux cochés d'office en tête, puis les autres par ordre alphabétique.
+    ordre.sort(function (a, b) {
+      var ia = D_OFFICE.indexOf(a), ib = D_OFFICE.indexOf(b);
+      if (ia !== -1 || ib !== -1) return (ia === -1 ? 9 : ia) - (ib === -1 ? 9 : ib);
+      return a < b ? -1 : 1;
+    });
+
+    // Tableau des journaux, avec une case à cocher par journal.
+    var corps = $("journaux");
+    corps.textContent = "";
+    ordre.forEach(function (j) {
+      var x = journaux[j], tr = document.createElement("tr");
+      if (!retenu(j)) tr.className = "exclu";
+      var td = cellule(tr, "");
+      var coche = document.createElement("input");
+      coche.type = "checkbox";
+      coche.checked = retenu(j);
+      coche.setAttribute("data-journal", j);
+      coche.setAttribute("aria-label", "Retenir le journal " + j);
+      td.appendChild(coche);
+      cellule(tr, j, "compte");
+      cellule(tr, String(x.lignes), "droite");
+      cellule(tr, M.affiche(x.debit), "droite");
+      cellule(tr, M.affiche(x.credit), "droite");
+      cellule(tr, solde(montant(x.debit, x.credit)), "droite");
+      corps.appendChild(tr);
+    });
+
+    // Totaux sur les journaux cochés.
+    var totD = 0, totC = 0, nb = 0, premiere = null, derniere = null, comptes = {}, ordreComptes = [], sansDate = 0;
+    lignes.forEach(function (l) {
+      if (!retenu(l.journal)) return;
+      nb++; totD += l.debit; totC += l.credit;
+      if (!l.date) sansDate++;
+      else {
+        if (!premiere || rang(l.date) < rang(premiere)) premiere = l.date;
+        if (!derniere || rang(l.date) > rang(derniere)) derniere = l.date;
+      }
+      var k = l.compte || "(sans compte)";
+      if (!comptes[k]) { comptes[k] = { nom: k, lignes: 0, debit: 0, credit: 0 }; ordreComptes.push(k); }
+      comptes[k].lignes++; comptes[k].debit += l.debit; comptes[k].credit += l.credit;
+    });
+    ordreComptes.sort();
+    if (sansDate) alertes.push(sansDate + " ligne" + (sansDate > 1 ? "s retenues ont" : " retenue a") + " une date illisible : " +
+                               (sansDate > 1 ? "elles sont comptées" : "elle est comptée") + ", mais pas dans la période affichée.");
+    if (premiere && derniere && premiere.a !== derniere.a) alertes.push("Les lignes retenues couvrent plusieurs années, de " + premiere.a + " à " + derniere.a + ".");
+
+    var retenus = ordre.filter(retenu), ecartes = ordre.filter(function (j) { return !retenu(j); });
+    var blocage = "";
+    if (!lues) blocage = "Collez le contenu du compte dans le cadre « Contenu du compte ».";
+    else if (!lignes.length) blocage = "Aucune ligne exploitable : vérifiez le format collé.";
+    else if (!retenus.length) blocage = "Cochez au moins un journal.";
+
+    // Détail par compte : utile seulement si plusieurs comptes ont été collés.
+    var corpsComptes = $("comptes");
+    corpsComptes.textContent = "";
+    $("panneauComptes").hidden = blocage !== "" || ordreComptes.length < 2;
+    ordreComptes.forEach(function (k) {
+      var x = comptes[k], tr = document.createElement("tr");
+      cellule(tr, k, "compte");
+      cellule(tr, String(x.lignes), "droite");
+      cellule(tr, M.affiche(x.debit), "droite");
+      cellule(tr, M.affiche(x.credit), "droite");
+      cellule(tr, solde(montant(x.debit, x.credit)), "droite");
+      corpsComptes.appendChild(tr);
+    });
+
+    var total = montant(totD, totC);
+    var periode = premiere ? "du " + M.dateFr(premiere) + " au " + M.dateFr(derniere) : "";
+    note = ""; dernier = null;
+    if (!blocage) {
+      // Le sens se lit sur le compte lui-même, quelle que soit la nature choisie.
+      var sens = totD > totC ? "solde débiteur" : (totD < totC ? "solde créditeur" : "solde nul");
+      if (total < 0) alertes.push("Le compte a un " + sens + ", inhabituel pour de la " + nomTva +
+                                  " : vérifiez la nature choisie et les journaux retenus.");
+      note = nomTva + " de l'année" + (ordreComptes.length === 1 ? " - compte " + ordreComptes[0] : "") + (dossier ? " - " + dossier : "") + " : " +
+             nb + " ligne" + (nb > 1 ? "s" : "") + (periode ? " " + periode : "") + ", journa" + (retenus.length > 1 ? "ux " : "l ") + retenus.join(", ") +
+             (ecartes.length ? " (non retenu" + (ecartes.length > 1 ? "s" : "") + " : " + ecartes.join(", ") + ")" : "") +
+             (collectee ? ". Somme des crédits " + M.affiche(totC) + " Euros - somme des débits " + M.affiche(totD)
+                        : ". Somme des débits " + M.affiche(totD) + " Euros - somme des crédits " + M.affiche(totC)) +
+             " Euros = " + solde(total) + " Euros (" + sens + ").";
+      dernier = { dossier: dossier, journaux: ordre.map(function (j) { return journaux[j]; }), retenus: retenus, ecartes: ecartes,
+                  comptes: ordreComptes.map(function (k) { return comptes[k]; }), totD: totD, totC: totC, total: total, nb: nb,
+                  periode: periode, sens: sens, collectee: collectee, nomTva: nomTva, formule: formule.replace("−", "-") };
+    }
+
+    $("resultat").textContent = blocage ? "—" : solde(total) + " €";
+    $("sens").textContent = blocage ? "—" : (totD > totC ? "Débiteur" : (totD < totC ? "Créditeur" : "Nul"));
+    $("totDebit").textContent = blocage ? "—" : M.affiche(totD);
+    $("totCredit").textContent = blocage ? "—" : M.affiche(totC);
+    $("nbRetenues").textContent = blocage ? "—" : String(nb);
+    $("nbLues").textContent = String(lues);
+    $("periode").textContent = blocage || !periode ? "—" : periode;
+    $("vide").hidden = !blocage;
+    $("vide").textContent = blocage;
+    $("note").textContent = note || "La note s'affichera une fois le contenu du compte collé.";
+    $("copier").disabled = !note;
+    $("pdf").disabled = !dernier;
+    $("etat").textContent = "";
+    var ul = $("alertes");
+    ul.textContent = "";
+    alertes.forEach(function (a) {
+      var li = document.createElement("li");
+      li.textContent = a;
+      ul.appendChild(li);
+    });
+  }
+
+  // Justificatif PDF d'une page : identification, total par journal, résultat.
+  function justificatif(d) {
+    var f = window.MiniPdf.fiche(d.nomTva + " de l'année");
+    var m = function (x) { return solde(d.collectee ? x.credit - x.debit : x.debit - x.credit); };
+    f.section("Identification");
+    f.ligne("Dossier", d.dossier).ligne("Compte", d.comptes.length === 1 ? d.comptes[0].nom : "")
+     .ligne("Période des lignes retenues", d.periode).ligne("Lignes retenues", String(d.nb));
+    f.section("Total par journal");
+    var corps = d.journaux.map(function (j) {
+      return [j.nom, d.retenus.indexOf(j.nom) !== -1 ? "Oui" : "Non", String(j.lignes), M.affiche(j.debit), M.affiche(j.credit), m(j)];
+    });
+    var total = ["Journaux retenus", "", String(d.nb), M.affiche(d.totD), M.affiche(d.totC), solde(d.total)];
+    total.gras = true;
+    f.tableau([{ nom: "Journal", largeur: 129 }, { nom: "Retenu", largeur: 60 }, { nom: "Lignes", largeur: 60, droite: true },
+               { nom: "Débit", largeur: 85, droite: true }, { nom: "Crédit", largeur: 85, droite: true },
+               { nom: d.formule, largeur: 80, droite: true }], corps.concat([total]));
+    if (d.comptes.length > 1) {
+      f.section("Détail par compte, journaux retenus");
+      f.tableau([{ nom: "Compte", largeur: 189 }, { nom: "Lignes", largeur: 60, droite: true }, { nom: "Débit", largeur: 85, droite: true },
+                 { nom: "Crédit", largeur: 85, droite: true }, { nom: d.formule, largeur: 80, droite: true }],
+                d.comptes.map(function (c) { return [c.nom, String(c.lignes), M.affiche(c.debit), M.affiche(c.credit), m(c)]; }));
+    }
+    f.total(d.nomTva + " de l'année (" + d.sens + ")", solde(d.total) + " €");
+    f.texte((d.collectee ? "Somme des crédits moins somme des débits" : "Somme des débits moins somme des crédits") +
+            " des lignes du compte, pour les seuls journaux retenus.");
+    return f;
+  }
+
+  $("journaux").addEventListener("change", function (e) {
+    var j = e.target.getAttribute && e.target.getAttribute("data-journal");
+    if (!j) return;
+    choix[j] = e.target.checked;
+    calcule();
+    // Le tableau vient d'être reconstruit : le curseur revient sur la case utilisée.
+    var coche = $("journaux").querySelector('input[data-journal="' + j + '"]');
+    if (coche) coche.focus();
+  });
+  $("pdf").addEventListener("click", function () {
+    if (!dernier) return;
+    justificatif(dernier).telecharger(window.MiniPdf.nomFichier([dernier.nomTva + " de l'année", dernier.dossier].filter(Boolean).join(" ")) + ".pdf");
+    $("etat").textContent = "Justificatif téléchargé";
+  });
+  window.justificatifPdf = function () { return dernier ? justificatif(dernier) : null; };   // pour les contrôles
+  ["nature", "dossier", "source"].forEach(function (id) {
+    $(id).addEventListener("input", calcule);
+    $(id).addEventListener("change", calcule);
+  });
+  $("copier").addEventListener("click", function () { M.copierTexte(note, "Note copiée"); });
+  calcule();
+})();
+</script>
+</body>
+</html>

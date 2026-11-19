@@ -53,10 +53,10 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
 }
 #menu :focus-visible { outline: 2px solid var(--on-blue); outline-offset: 2px; }
 .logo {
-  display: flex; align-items: center; gap: 10px; padding: 26px 26px 6px;
+  display: flex; align-items: center; justify-content: center; gap: 10px; padding: 26px 26px 20px;
   color: var(--on-blue); font-size: 20px; font-weight: 500; letter-spacing: 0.06em; text-decoration: none;
 }
-.logo svg { width: 36px; height: 36px; flex: none; }
+.logo svg { width: 31.5px; height: 30px; flex: none; }
 .logo svg.mot { width: auto; height: 16px; }
 #menu h2:not(:first-child) { margin-top: 22px; }
 /* Titre de catégorie : un bouton qui replie ou déplie ses entrées (accordéon). */

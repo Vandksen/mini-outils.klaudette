@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.13.6";
+  var VERSION = "1.13.7";
 
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [
@@ -410,16 +410,18 @@ window.MiniOutils = (function () {
     calcule();
   }
 
-  // Bouton en haut à droite de chaque page : copie l'adresse de la page, sans ses paramètres.
+  // Bouton « Copier le lien pour le partager », en haut à droite de chaque page : copie
+  // l'adresse de la page, sans ses paramètres. Sur téléphone, seule l'icône est affichée.
   function lienPage() {
     var contenu = $("contenu");
     if (!contenu) return;
     var bouton = document.createElement("button");
     bouton.type = "button";
     bouton.id = "copier-lien";
-    bouton.title = "Copier le lien de la page";
-    bouton.setAttribute("aria-label", "Copier le lien de la page");
-    bouton.innerHTML = ICONE_LIEN;
+    bouton.title = "Copier le lien de cette page pour le partager";
+    // Le nom du bouton reste annoncé sur téléphone, où son texte est masqué.
+    bouton.setAttribute("aria-label", "Copier le lien pour le partager");
+    bouton.innerHTML = ICONE_LIEN + '<span class="texte">Copier le lien pour le partager</span>';
     contenu.appendChild(bouton);
     var message = $("message-copie");
     if (!message) {

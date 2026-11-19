@@ -14,6 +14,7 @@
 <meta property="og:title" content="Cutter : étalement de charges et produits — Mini-outils">
 <meta property="og:description" content="Générateur d'écritures d'étalement d'une charge ou d'un produit sur plusieurs mois, avec les comptes 4886 et 4887 tenus par cycle, à coller dans ACDCompta.">
 <meta property="og:url" content="https://mini-outils-compta.fr/etalement.html">
+<link rel="canonical" href="https://mini-outils-compta.fr/etalement.html">
 <meta property="og:image" content="https://mini-outils-compta.fr/images/og-tempete.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -204,7 +205,11 @@
     var v = {};
     ids.forEach(function (id) { v[id] = $(id).type === "checkbox" ? $(id).checked : $(id).value.trim(); });
     var recue = v.type === RECUE;
-    $("aideFacture").textContent = recue ? "" : "Inutile pour une charge à recevoir";
+    // La mention garde sa place même quand elle ne s'applique pas : elle est seulement
+    // rendue invisible, pour que le cadre « Configuration » ne change pas de hauteur
+    // quand on passe d'un type à l'autre.
+    $("aideFacture").textContent = "Inutile pour une charge à recevoir";
+    $("aideFacture").style.visibility = recue ? "hidden" : "visible";
     $("dateFacture").disabled = !recue;
 
     var facture = recue ? M.lireDate(v.dateFacture) : null;

@@ -138,8 +138,9 @@ body::before {
 /* Bouton « copier le lien de la page », en haut à droite du contenu. */
 #contenu { position: relative; }
 #copier-lien {
-  position: absolute; z-index: 4; top: 24px; right: 32px; display: flex; align-items: center; justify-content: center;
-  width: 40px; height: 40px; padding: 0; cursor: pointer; border-radius: 50%;
+  position: absolute; z-index: 4; top: 24px; right: 32px; display: flex; align-items: center; justify-content: center; gap: 8px;
+  height: 40px; padding: 0 18px 0 14px; cursor: pointer; border-radius: 9999px;
+  font-family: var(--sans); font-size: 14px; font-weight: 500; white-space: nowrap;
   background: var(--paper); color: var(--blue); border: 1px solid rgba(17, 54, 219, .35);
   transition: background .15s, color .15s, border-color .15s;
 }
@@ -547,7 +548,9 @@ body.avec-filtres { grid-template-columns: 276px 300px minmax(0, 1fr); }
   }
   .conteneur { padding: 0 16px; }
   main { padding: 36px 0 48px; }
-  #copier-lien { top: 84px; right: 16px; }
+  /* Téléphone : le bouton redevient un rond, avec l'icône seule. */
+  #copier-lien { top: 84px; right: 16px; width: 40px; padding: 0; border-radius: 50%; }
+  #copier-lien .texte { display: none; }
 
   /* Téléphone : pages d'information seulement. Les outils disparaissent du menu,
      leurs pages affichent un message, et l'accueil ne propose pas de les ouvrir. */

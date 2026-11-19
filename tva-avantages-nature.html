@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1136DB">
+<meta name="description" content="Calcul de la TVA sur les avantages en nature nourriture en restauration, répartis entre 5,5 % et 20 %, avec la note de calcul et l'écriture comptable à coller dans ACDCompta. Gratuit, sans envoi de données.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/icone-180.png">
+<title>TVA sur avantages en nature — Mini-outils</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mini-outils">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="TVA sur avantages en nature — Mini-outils">
+<meta property="og:description" content="Calcul de la TVA sur les avantages en nature nourriture en restauration, répartis entre 5,5 % et 20 %, avec la note de calcul et l'écriture comptable à coller dans ACDCompta. Gratuit, sans envoi de données.">
+<meta property="og:url" content="https://mini-outils-compta.fr/tva-avantages-nature.html">
+<link rel="canonical" href="https://mini-outils-compta.fr/tva-avantages-nature.html">
+<meta property="og:image" content="https://mini-outils-compta.fr/images/og-tempete.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Un navire dans la tempête, avec le slogan « Quand la période fiscale se déchaîne, gardez le cap. »">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="commun.css">
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">Restauration — prélèvements pour les besoins du personnel</p>
+    <h1>TVA sur avantages <em>en nature.</em></h1>
+    <p class="lead"><strong>But de la page :</strong> calculer la TVA due sur les avantages en nature nourriture accordés au personnel d'un restaurant. Le montant des avantages, tenu pour toutes taxes comprises, est réparti entre le taux de 5,5 % et le taux de 20 % ; la page en tire la TVA, rédige la note de calcul et passe l'écriture.</p>
+    <p class="lead">Renseignez le montant des avantages en nature de la période. Le résultat est calculé aussitôt.</p>
+
+    <div class="grille">
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">01 — Configuration</p>
+          <div class="champ">
+            <label for="montant">Avantages en nature<span class="aide">Montant de la période, tenu pour TTC</span></label>
+            <input id="montant" class="droite" type="text" inputmode="decimal" value="12000,00">
+          </div>
+          <div class="champ">
+            <label for="part">Part au taux de 5,5 %<span class="aide">En %. Le reste est au taux de 20 %</span></label>
+            <input id="part" class="droite" type="text" inputmode="decimal" placeholder="85" value="85">
+          </div>
+          <div class="champ">
+            <label for="date">Date de l'écriture</label>
+            <input id="date" type="date" value="2025-12-31">
+          </div>
+          <div class="champ">
+            <label for="cptCharge">Compte débité</label>
+            <input id="cptCharge" type="text" inputmode="numeric" placeholder="609110" value="609110">
+          </div>
+          <div class="champ">
+            <label for="cptTva">Compte de TVA crédité</label>
+            <input id="cptTva" type="text" inputmode="numeric" placeholder="445660" value="445660">
+          </div>
+          <div class="champ">
+            <label for="piece">Pièce<span class="aide">Vide : code automatique de 6 caractères</span></label>
+            <input id="piece" type="text">
+          </div>
+          <div class="champ total">
+            <span class="etiquette">TVA à comptabiliser</span>
+            <span class="valeur" id="tva"></span>
+          </div>
+          <ul class="alertes" id="alertes"></ul>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">02 — Vérification</p>
+          <div class="champ"><span class="etiquette">Total débit</span><span class="valeur droite" id="totDebit"></span></div>
+          <div class="champ"><span class="etiquette">Total crédit</span><span class="valeur droite" id="totCredit"></span></div>
+          <div class="champ"><span class="etiquette">Équilibre</span><span class="valeur droite"><span id="equilibre"></span></span></div>
+          <div class="champ"><span class="etiquette">Lignes générées</span><span class="valeur droite" id="nbLignes"></span></div>
+        </section>
+      </div>
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">03 — Détail du calcul</p>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr><th>Taux</th><th class="droite">Part</th><th class="droite">TTC</th><th class="droite">HT</th><th class="droite">TVA</th></tr>
+              </thead>
+              <tbody id="detail"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">04 — Note de calcul</p>
+            <div class="actions">
+              <span class="etat" id="etatNote" role="status"></span>
+              <button class="btn ghost" id="copierNote" type="button">Copier la note</button>
+            </div>
+          </div>
+          <p class="note" id="note"></p>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">05 — Écriture</p>
+            <div class="actions">
+              <span class="etat" id="etat" role="status"></span>
+              <button class="btn" id="copier" type="button">Copier pour ACDCompta</button>
+            </div>
+          </div>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>N°</th><th>Date</th><th>Pièce</th><th>Compte</th><th>Libellé</th>
+                  <th class="droite">Débit</th><th class="droite">Crédit</th>
+                </tr>
+              </thead>
+              <tbody id="lignes"></tbody>
+            </table>
+          </div>
+          <div class="vide" id="vide" hidden></div>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Colonnes copiées : date · pièce · compte · libellé · débit · crédit</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var ids = ["montant", "part", "date", "cptCharge", "cptTva", "piece"];
+  var note = "";
+
+  function pourcent(c) { return M.affiche(c).replace(/,00$/, "") + " %"; }
+
+  function calcule() {
+    var v = {};
+    ids.forEach(function (id) { v[id] = $(id).value.trim(); });
+    v.part = v.part || "85";   // répartition du classeur si la case est laissée vide
+    v.cptCharge = v.cptCharge || "609110";
+    v.cptTva = v.cptTva || "445660";
+    var alertes = [], ecritures = [], blocage = "";
+
+    var montant = M.centimes(v.montant);
+    var part = M.centimes(v.part);   // en centièmes de pour cent : 85 % -> 8500
+    var partValide = !isNaN(part) && part >= 0 && part <= 10000;
+    var d = M.lireDate(v.date);
+    $("montant").classList.toggle("erreur", isNaN(montant));
+    $("part").classList.toggle("erreur", !partValide);
+    $("date").classList.toggle("erreur", !d);
+
+    if (isNaN(montant)) blocage = "Le montant des avantages en nature n'est pas un nombre valide.";
+    else if (montant === 0) blocage = "Renseignez le montant des avantages en nature.";
+    else if (montant < 0) blocage = "Le montant des avantages en nature doit être positif.";
+    else if (!partValide) blocage = "La part au taux de 5,5 % doit être comprise entre 0 et 100.";
+
+    var corps = $("detail");
+    corps.textContent = "";
+    note = "";
+    if (!blocage) {
+      // Le montant est réparti TTC entre les deux taux ; la TVA de chaque taux est
+      // arrondie au centime : TTC / 1,055 × 0,055 et TTC / 1,20 × 0,20.
+      var ttc55 = Math.round(montant * part / 10000), ttc20 = montant - ttc55;
+      var tva55 = Math.round(ttc55 * 55 / 1055), tva20 = Math.round(ttc20 * 20 / 120);
+      var tva = tva55 + tva20;
+      [["5,5 %", pourcent(part), ttc55, tva55], ["20 %", pourcent(10000 - part), ttc20, tva20],
+       ["Total", "100 %", montant, tva]].forEach(function (l, i) {
+        var tr = document.createElement("tr");
+        if (i === 2) tr.className = "debut";
+        [[l[0]], [l[1], "droite"], [M.affiche(l[2]), "droite"], [M.affiche(l[2] - l[3]), "droite"], [M.affiche(l[3]), "droite"]].forEach(function (c) {
+          var td = document.createElement("td");
+          td.textContent = c[0];
+          if (c[1]) td.className = c[1];
+          tr.appendChild(td);
+        });
+        corps.appendChild(tr);
+      });
+      $("tva").textContent = M.affiche(tva) + " €";
+
+      note = "TVA sur avantages en nature nourriture" + (d ? " " + d.a : "") + " : avantages en nature de " + M.affiche(montant) +
+             " Euros TTC, répartis à " + pourcent(part) + " au taux de 5,5 % (" + M.affiche(ttc55) + " Euros TTC, soit " +
+             M.affiche(tva55) + " Euros de TVA) et à " + pourcent(10000 - part) + " au taux de 20 % (" + M.affiche(ttc20) +
+             " Euros TTC, soit " + M.affiche(tva20) + " Euros de TVA). TVA totale de " + M.affiche(tva) +
+             " Euros, portée au débit du compte " + v.cptCharge + " par le crédit du compte " + v.cptTva + ".";
+
+      if (!d) blocage = "Renseignez la date de l'écriture.";
+      else if (tva === 0) blocage = "La TVA est nulle : aucune écriture à passer.";
+      else {
+        var piece = v.piece || M.code6(["tvaavn", v.date, montant, part, v.cptCharge, v.cptTva].join("|"));
+        var libelle = "TVA sur avantages en nature nourriture " + d.a;
+        ecritures.push(
+          { date: M.dateFr(d), piece: piece, compte: v.cptCharge, libelle: libelle, debit: tva, credit: null, debut: true },
+          { date: M.dateFr(d), piece: piece, compte: v.cptTva, libelle: libelle, debit: null, credit: tva }
+        );
+      }
+    } else {
+      $("tva").textContent = "—";
+    }
+
+    $("note").textContent = note || "La note s'affichera une fois la configuration complète.";
+    $("copierNote").disabled = !note;
+    $("etatNote").textContent = "";
+    M.rendre(ecritures, blocage, alertes);
+  }
+
+  $("copierNote").addEventListener("click", function () {
+    var fait = function () { $("etatNote").textContent = "Note copiée"; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(note).then(fait, function () { $("etatNote").textContent = "Copie impossible dans ce navigateur"; });
+    } else $("etatNote").textContent = "Copie impossible dans ce navigateur";
+  });
+  M.brancher(ids, calcule);
+})();
+</script>
+</body>
+</html>

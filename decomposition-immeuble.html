@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1136DB">
+<meta name="description" content="Décomposition d'un bien immobilier par composants (terrain, gros œuvre, façades, installations, agencements), avec les durées d'amortissement et l'écriture d'acquisition à coller dans ACDCompta. Gratuit, sans envoi de données.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/icone-180.png">
+<title>Décomposition d'un immeuble — Mini-outils</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mini-outils">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Décomposition d'un immeuble — Mini-outils">
+<meta property="og:description" content="Décomposition d'un bien immobilier par composants (terrain, gros œuvre, façades, installations, agencements), avec les durées d'amortissement et l'écriture d'acquisition à coller dans ACDCompta. Gratuit, sans envoi de données.">
+<meta property="og:url" content="https://mini-outils-compta.fr/decomposition-immeuble.html">
+<link rel="canonical" href="https://mini-outils-compta.fr/decomposition-immeuble.html">
+<meta property="og:image" content="https://mini-outils-compta.fr/images/og-tempete.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Un navire dans la tempête, avec le slogan « Quand la période fiscale se déchaîne, gardez le cap. »">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="commun.css">
+<style>
+/* Tableau de saisie des composants : un composant par ligne. */
+.composants { display: grid; grid-template-columns: 82px minmax(0, 1fr) 56px 56px; gap: 8px; align-items: end; }
+.composants .tete { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.composants { margin-top: 0; }
+.composants input { width: 100%; min-width: 0; height: 38px; padding: 0 10px; font-family: var(--mono); font-size: 13px; color: var(--ink); background: var(--cream); border: 1px solid var(--line); border-radius: 8px; }
+.composants input.droite { text-align: right; }
+.composants input:focus { outline: 2px solid var(--blue); outline-offset: 1px; border-color: var(--blue); }
+.composants input.erreur { border-color: var(--blue); background: var(--chip); }
+</style>
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">Immobilisations — approche par composants</p>
+    <h1>Décomposition d'un <em>immeuble.</em></h1>
+    <p class="lead"><strong>But de la page :</strong> ventiler le prix d'acquisition d'un bien immobilier entre le terrain, non amortissable, et les composants de la construction, chacun avec sa durée d'amortissement, puis passer l'écriture d'acquisition par le crédit du compte du vendeur.</p>
+    <p class="lead">Renseignez le bien et son prix. Les pourcentages et les durées proposés sont des valeurs courantes, à adapter au bien.</p>
+
+    <div class="grille">
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">01 — Bien immobilier</p>
+          <div class="champ">
+            <label for="date">Date d'acquisition</label>
+            <input id="date" type="date" value="2025-04-24">
+          </div>
+          <div class="champ">
+            <label for="rue">Rue du bien</label>
+            <input id="rue" type="text" value="1 rue de l'Exemple">
+          </div>
+          <div class="champ">
+            <label for="ville">Ville du bien</label>
+            <input id="ville" type="text" value="EXEMPLEVILLE">
+          </div>
+          <div class="champ">
+            <label for="valeur">Valeur d'origine</label>
+            <input id="valeur" class="droite" type="text" inputmode="decimal" value="200000,00">
+          </div>
+          <div class="champ">
+            <label for="droits">Droits d'enregistrement</label>
+            <input id="droits" class="droite" type="text" inputmode="decimal">
+          </div>
+          <div class="champ">
+            <label for="honoraires">Honoraires<span class="aide">Notaire ou agent immobilier</span></label>
+            <input id="honoraires" class="droite" type="text" inputmode="decimal">
+          </div>
+          <div class="champ">
+            <label for="tauxTerrain">Part du terrain<span class="aide">En % de la valeur d'origine</span></label>
+            <input id="tauxTerrain" class="droite" type="text" inputmode="decimal" placeholder="10" value="10">
+          </div>
+          <div class="champ">
+            <label for="cptTerrain">Compte du terrain</label>
+            <input id="cptTerrain" type="text" inputmode="numeric" placeholder="211000" value="211000">
+          </div>
+          <div class="champ">
+            <span class="etiquette">Compte vendeur automatique</span>
+            <span class="valeur code" id="tiersAuto"></span>
+          </div>
+          <div class="champ">
+            <label for="tiersForce">Compte vendeur forcé<span class="aide">Facultatif</span></label>
+            <input id="tiersForce" type="text">
+          </div>
+          <div class="champ">
+            <label for="piece">Pièce<span class="aide">Vide : code automatique de 6 caractères</span></label>
+            <input id="piece" type="text">
+          </div>
+          <div class="champ total">
+            <span class="etiquette">Valeur totale du bien</span>
+            <span class="valeur" id="totalBien"></span>
+          </div>
+          <ul class="alertes" id="alertes"></ul>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">02 — Composants</p>
+          <p class="aide-bloc">Pourcentages de la valeur hors terrain : leur somme doit faire 100. Durées d'amortissement en années.</p>
+          <div class="composants">
+            <span class="tete">Compte</span><span class="tete">Composant</span><span class="tete">%</span><span class="tete">Durée</span>
+            <input id="cpt1" type="text" inputmode="numeric" aria-label="Compte, composant 1" value="213000">
+            <input id="nom1" type="text" aria-label="Composant 1" value="Gros œuvre">
+            <input id="pct1" class="droite" type="text" inputmode="decimal" aria-label="Pourcentage, composant 1" value="45">
+            <input id="dur1" class="droite" type="text" inputmode="numeric" aria-label="Durée, composant 1" value="50">
+            <input id="cpt2" type="text" inputmode="numeric" aria-label="Compte, composant 2" value="213100">
+            <input id="nom2" type="text" aria-label="Composant 2" value="Façades et étanchéité">
+            <input id="pct2" class="droite" type="text" inputmode="decimal" aria-label="Pourcentage, composant 2" value="15">
+            <input id="dur2" class="droite" type="text" inputmode="numeric" aria-label="Durée, composant 2" value="30">
+            <input id="cpt3" type="text" inputmode="numeric" aria-label="Compte, composant 3" value="218100">
+            <input id="nom3" type="text" aria-label="Composant 3" value="Installation générale et technique">
+            <input id="pct3" class="droite" type="text" inputmode="decimal" aria-label="Pourcentage, composant 3" value="20">
+            <input id="dur3" class="droite" type="text" inputmode="numeric" aria-label="Durée, composant 3" value="20">
+            <input id="cpt4" type="text" inputmode="numeric" aria-label="Compte, composant 4" value="218110">
+            <input id="nom4" type="text" aria-label="Composant 4" value="Agencements">
+            <input id="pct4" class="droite" type="text" inputmode="decimal" aria-label="Pourcentage, composant 4" value="20">
+            <input id="dur4" class="droite" type="text" inputmode="numeric" aria-label="Durée, composant 4" value="10">
+            <input id="cpt5" type="text" inputmode="numeric" aria-label="Compte, composant 5">
+            <input id="nom5" type="text" aria-label="Composant 5">
+            <input id="pct5" class="droite" type="text" inputmode="decimal" aria-label="Pourcentage, composant 5">
+            <input id="dur5" class="droite" type="text" inputmode="numeric" aria-label="Durée, composant 5">
+          </div>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">03 — Vérification</p>
+          <div class="champ"><span class="etiquette">Somme des pourcentages</span><span class="valeur droite" id="sommePct"></span></div>
+          <div class="champ"><span class="etiquette">Total débit</span><span class="valeur droite" id="totDebit"></span></div>
+          <div class="champ"><span class="etiquette">Total crédit</span><span class="valeur droite" id="totCredit"></span></div>
+          <div class="champ"><span class="etiquette">Équilibre</span><span class="valeur droite"><span id="equilibre"></span></span></div>
+          <div class="champ"><span class="etiquette">Lignes générées</span><span class="valeur droite" id="nbLignes"></span></div>
+        </section>
+      </div>
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">04 — Décomposition</p>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr><th>Compte</th><th>Composant</th><th class="droite">%</th><th class="droite">Valeur</th><th class="droite">Durée</th><th class="droite">Dotation par an</th></tr>
+              </thead>
+              <tbody id="detail"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">05 — Note de calcul</p>
+            <div class="actions">
+              <span class="etat" id="etatNote" role="status"></span>
+              <button class="btn ghost" id="copierNote" type="button">Copier la note</button>
+            </div>
+          </div>
+          <p class="note" id="note"></p>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">06 — Écriture d'acquisition</p>
+            <div class="actions">
+              <span class="etat" id="etat" role="status"></span>
+              <button class="btn" id="copier" type="button">Copier pour ACDCompta</button>
+            </div>
+          </div>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>N°</th><th>Date</th><th>Pièce</th><th>Compte</th><th>Libellé</th>
+                  <th class="droite">Débit</th><th class="droite">Crédit</th>
+                </tr>
+              </thead>
+              <tbody id="lignes"></tbody>
+            </table>
+          </div>
+          <div class="vide" id="vide" hidden></div>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Colonnes copiées : date · pièce · compte · libellé · débit · crédit</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var RANGS = [1, 2, 3, 4, 5];
+  var ids = ["date", "rue", "ville", "valeur", "droits", "honoraires", "tauxTerrain", "cptTerrain", "tiersForce", "piece"];
+  RANGS.forEach(function (i) { ids.push("cpt" + i, "nom" + i, "pct" + i, "dur" + i); });
+  var note = "";
+
+  function pourcent(c) { return M.affiche(c).replace(/,00$/, "") + " %"; }
+  // Compte du vendeur : 467 suivi des trois premières lettres de la ville, comme dans le classeur.
+  function compteAuto(ville) {
+    var n = ville.toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Z0-9]/g, "");
+    return n ? "467" + n.slice(0, 3) : "";
+  }
+
+  function calcule() {
+    var v = {};
+    ids.forEach(function (id) { v[id] = $(id).value.trim(); });
+    v.tauxTerrain = v.tauxTerrain || "10";
+    v.cptTerrain = v.cptTerrain || "211000";
+    var alertes = [], ecritures = [], blocage = "";
+
+    var d = M.lireDate(v.date);
+    var valeur = M.centimes(v.valeur), droits = M.centimes(v.droits), honoraires = M.centimes(v.honoraires);
+    var taux = M.centimes(v.tauxTerrain);   // en centièmes de pour cent : 10 % -> 1000
+    var tauxValide = !isNaN(taux) && taux >= 0 && taux <= 10000;
+    $("date").classList.toggle("erreur", !d);
+    [["valeur", valeur], ["droits", droits], ["honoraires", honoraires]].forEach(function (p) {
+      $(p[0]).classList.toggle("erreur", isNaN(p[1]) || p[1] < 0);
+    });
+    $("tauxTerrain").classList.toggle("erreur", !tauxValide);
+    var montantsValides = [valeur, droits, honoraires].every(function (m) { return !isNaN(m) && m >= 0; });
+
+    var auto = compteAuto(v.ville);
+    $("tiersAuto").textContent = auto || "—";
+    var cptTiers = v.tiersForce || auto;
+
+    // Composants saisis : une ligne entièrement vide est ignorée.
+    var composants = [], somme = 0, invalide = false;
+    RANGS.forEach(function (i) {
+      var pct = M.centimes(v["pct" + i]);
+      var duree = v["dur" + i] === "" ? 0 : (/^\d+$/.test(v["dur" + i]) ? parseInt(v["dur" + i], 10) : NaN);
+      var pctFaux = isNaN(pct) || pct < 0, dureeFausse = isNaN(duree);
+      $("pct" + i).classList.toggle("erreur", pctFaux);
+      $("dur" + i).classList.toggle("erreur", dureeFausse);
+      if (pctFaux || dureeFausse) { invalide = true; return; }
+      if (!v["cpt" + i] && !v["nom" + i] && !pct && !duree) return;
+      if (!pct) return;
+      somme += pct;
+      composants.push({ rang: i, cpt: v["cpt" + i], nom: v["nom" + i] || "Composant " + i, pct: pct, duree: duree });
+    });
+    $("sommePct").textContent = invalide ? "—" : pourcent(somme);
+
+    if (!montantsValides) blocage = "Un montant n'est pas un nombre valide.";
+    else if (valeur === 0) blocage = "Renseignez la valeur d'origine du bien.";
+    else if (!tauxValide) blocage = "La part du terrain doit être comprise entre 0 et 100.";
+    else if (invalide) blocage = "Un pourcentage ou une durée de composant n'est pas un nombre valide.";
+    else if (!composants.length) blocage = "Renseignez au moins un composant.";
+    else if (somme !== 10000) blocage = "La somme des pourcentages des composants fait " + pourcent(somme) + " : elle doit faire 100 %.";
+
+    var corps = $("detail");
+    corps.textContent = "";
+    note = "";
+    if (!blocage) {
+      // Comme dans le classeur : le terrain est un pourcentage de la valeur d'origine, hors
+      // frais ; les composants se partagent le reste de la valeur totale. Le dernier
+      // composant reçoit l'écart d'arrondi, pour que l'écriture soit équilibrée.
+      var total = valeur + droits + honoraires;
+      var terrain = Math.round(valeur * taux / 10000), reste = total - terrain, pose = 0;
+      composants.forEach(function (c, k) {
+        c.valeur = k === composants.length - 1 ? reste - pose : Math.round(reste * c.pct / 10000);
+        pose += c.valeur;
+        c.dotation = c.duree ? Math.round(c.valeur / c.duree) : null;
+        if (!c.duree) alertes.push("Composant « " + c.nom + " » : renseignez la durée d'amortissement.");
+        if (!c.cpt) alertes.push("Composant « " + c.nom + " » : renseignez le compte, la ligne n'est pas générée.");
+      });
+      $("totalBien").textContent = M.affiche(total) + " €";
+
+      var dotations = 0;
+      var lignes = [{ cpt: v.cptTerrain, nom: "Terrain", pct: pourcent(taux), valeur: terrain, duree: "Non amortissable", dotation: "" }]
+        .concat(composants.map(function (c) {
+          dotations += c.dotation || 0;
+          return { cpt: c.cpt, nom: c.nom, pct: pourcent(c.pct), valeur: c.valeur,
+                   duree: c.duree ? c.duree + " ans" : "—", dotation: c.dotation === null ? "—" : M.affiche(c.dotation) };
+        }))
+        .concat([{ cpt: "", nom: "Total", pct: "", valeur: total, duree: "", dotation: M.affiche(dotations), total: true }]);
+      lignes.forEach(function (l) {
+        var tr = document.createElement("tr");
+        if (l.total) tr.className = "debut";
+        [[l.cpt, "compte"], [l.nom, "lib"], [l.pct, "droite"], [M.affiche(l.valeur), "droite"], [l.duree, "droite"], [l.dotation, "droite"]].forEach(function (c) {
+          var td = document.createElement("td");
+          td.textContent = c[0];
+          td.className = c[1];
+          tr.appendChild(td);
+        });
+        corps.appendChild(tr);
+      });
+
+      var adresse = [v.rue, v.ville].filter(Boolean).join(" à ");
+      note = "Décomposition de l'immeuble" + (adresse ? " " + adresse : "") + (d ? ", acquis le " + M.dateFr(d) : "") +
+             " : valeur d'origine " + M.affiche(valeur) + " Euros" +
+             (droits ? ", droits d'enregistrement " + M.affiche(droits) + " Euros" : "") +
+             (honoraires ? ", honoraires " + M.affiche(honoraires) + " Euros" : "") +
+             (droits || honoraires ? ", soit une valeur totale de " + M.affiche(total) + " Euros" : "") +
+             ". Terrain retenu pour " + pourcent(taux) + " de la valeur d'origine, soit " + M.affiche(terrain) +
+             " Euros, non amortissable. Reste " + M.affiche(reste) + " Euros répartis par composants : " +
+             composants.map(function (c) {
+               return c.nom + " " + pourcent(c.pct) + " soit " + M.affiche(c.valeur) + " Euros" + (c.duree ? " sur " + c.duree + " ans" : "");
+             }).join(" ; ") + ".";
+
+      if (!d) blocage = "Renseignez la date d'acquisition.";
+      else if (!cptTiers) blocage = "Renseignez la ville du bien ou le compte vendeur forcé.";
+      else if (composants.some(function (c) { return !c.cpt; })) blocage = "Renseignez le compte de chaque composant.";
+      else {
+        var piece = v.piece || M.code6(["immeuble", v.date, v.rue, v.ville, total, taux, somme, cptTiers].join("|"));
+        var date = M.dateFr(d), lieu = v.ville ? " à " + v.ville : "";
+        // Ordre du classeur : vendeur au crédit, puis terrain et composants au débit.
+        ecritures.push({ date: date, piece: piece, compte: cptTiers, libelle: "Acquisition " + adresse, debit: null, credit: total, debut: true });
+        if (terrain) ecritures.push({ date: date, piece: piece, compte: v.cptTerrain, libelle: "Terrains" + lieu, debit: terrain, credit: null });
+        composants.forEach(function (c) {
+          if (c.valeur) ecritures.push({ date: date, piece: piece, compte: c.cpt, libelle: c.nom + lieu, debit: c.valeur, credit: null });
+        });
+      }
+    } else {
+      $("totalBien").textContent = montantsValides && valeur ? M.affiche(valeur + droits + honoraires) + " €" : "—";
+    }
+
+    $("note").textContent = note || "La note s'affichera une fois la configuration complète.";
+    $("copierNote").disabled = !note;
+    $("etatNote").textContent = "";
+    M.rendre(ecritures, blocage, alertes);
+  }
+
+  $("copierNote").addEventListener("click", function () {
+    var fait = function () { $("etatNote").textContent = "Note copiée"; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(note).then(fait, function () { $("etatNote").textContent = "Copie impossible dans ce navigateur"; });
+    } else $("etatNote").textContent = "Copie impossible dans ce navigateur";
+  });
+  M.brancher(ids, calcule);
+})();
+</script>
+</body>
+</html>

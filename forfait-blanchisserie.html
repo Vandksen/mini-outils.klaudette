@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1136DB">
+<meta name="description" content="Calcul du forfait blanchisserie annuel d'un professionnel : nombre de lavages par élément, prix unitaire et note de calcul prête à copier. Gratuit, sans envoi de données.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/icone-180.png">
+<title>Forfait blanchisserie — Mini-outils</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mini-outils">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Forfait blanchisserie — Mini-outils">
+<meta property="og:description" content="Calcul du forfait blanchisserie annuel d'un professionnel : nombre de lavages par élément, prix unitaire et note de calcul prête à copier. Gratuit, sans envoi de données.">
+<meta property="og:url" content="https://mini-outils-compta.fr/forfait-blanchisserie.html">
+<link rel="canonical" href="https://mini-outils-compta.fr/forfait-blanchisserie.html">
+<meta property="og:image" content="https://mini-outils-compta.fr/images/og-tempete.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Un navire dans la tempête, avec le slogan « Quand la période fiscale se déchaîne, gardez le cap. »">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="commun.css">
+<style>
+/* Tableau de saisie des éléments lavés : un élément par ligne. */
+.elements { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr); gap: 8px; align-items: end; }
+.elements .tete { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.elements { margin-top: 12px; }
+.elements input { width: 100%; min-width: 0; height: 38px; padding: 0 10px; font-family: var(--mono); font-size: 13px; color: var(--ink); background: var(--cream); border: 1px solid var(--line); border-radius: 8px; }
+.elements input.droite { text-align: right; }
+.elements input:focus { outline: 2px solid var(--blue); outline-offset: 1px; border-color: var(--blue); }
+.elements input.erreur { border-color: var(--blue); background: var(--chip); }
+</style>
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">Linge professionnel lavé à domicile</p>
+    <h1>Forfait <em>blanchisserie.</em></h1>
+    <p class="lead"><strong>But de la page :</strong> chiffrer les frais de blanchisserie de l'année d'un professionnel qui lave lui-même son linge de travail : pour chaque élément, le nombre de lavages de l'année multiplié par un prix unitaire. La page rédige la note de calcul qui justifie le montant.</p>
+    <p class="lead">Renseignez les semaines travaillées, puis les éléments lavés. Le résultat est calculé aussitôt.</p>
+
+    <div class="grille">
+
+      <section class="panel">
+        <p class="eyebrow">01 — Configuration</p>
+        <div class="champ">
+          <label for="annee">Année</label>
+          <input id="annee" type="number" min="2000" max="2099" step="1" value="2025">
+        </div>
+        <div class="champ">
+          <label for="semaines">Semaines travaillées<span class="aide">52 semaines moins les congés</span></label>
+          <input id="semaines" class="droite" type="number" min="1" max="53" step="1" placeholder="48" value="48">
+        </div>
+        <div class="elements">
+          <span class="tete">Élément lavé</span><span class="tete">Lavages par semaine</span><span class="tete">Prix d'un lavage</span>
+          <input id="nom1" type="text" aria-label="Élément 1" value="Blouse">
+          <input id="lav1" class="droite" type="text" inputmode="decimal" aria-label="Lavages par semaine, élément 1" value="1">
+          <input id="prix1" class="droite" type="text" inputmode="decimal" aria-label="Prix d'un lavage, élément 1" value="4,00">
+          <input id="nom2" type="text" aria-label="Élément 2" value="Calot">
+          <input id="lav2" class="droite" type="text" inputmode="decimal" aria-label="Lavages par semaine, élément 2" value="1">
+          <input id="prix2" class="droite" type="text" inputmode="decimal" aria-label="Prix d'un lavage, élément 2" value="1,00">
+          <input id="nom3" type="text" aria-label="Élément 3">
+          <input id="lav3" class="droite" type="text" inputmode="decimal" aria-label="Lavages par semaine, élément 3">
+          <input id="prix3" class="droite" type="text" inputmode="decimal" aria-label="Prix d'un lavage, élément 3">
+          <input id="nom4" type="text" aria-label="Élément 4">
+          <input id="lav4" class="droite" type="text" inputmode="decimal" aria-label="Lavages par semaine, élément 4">
+          <input id="prix4" class="droite" type="text" inputmode="decimal" aria-label="Prix d'un lavage, élément 4">
+        </div>
+        <ul class="alertes" id="alertes"></ul>
+      </section>
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">02 — Forfait de l'année</p>
+          <p class="resultat" id="total"></p>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr><th>Élément lavé</th><th class="droite">Lavages par an</th><th class="droite">Prix d'un lavage</th><th class="droite">Coût</th></tr>
+              </thead>
+              <tbody id="detail"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">03 — Note de calcul</p>
+            <div class="actions">
+              <span class="etat" id="etat" role="status"></span>
+              <button class="btn" id="copier" type="button">Copier la note</button>
+            </div>
+          </div>
+          <p class="note" id="note"></p>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Forfait = lavages par semaine × semaines travaillées × prix d'un lavage</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var RANGS = [1, 2, 3, 4];
+  var ids = ["annee", "semaines"];
+  RANGS.forEach(function (i) { ids.push("nom" + i, "lav" + i, "prix" + i); });
+  var note = "";
+
+  // Nombre affiché sans décimales inutiles : 48 ou 0,5.
+  function nombre(centiemes) { return M.affiche(centiemes).replace(/,00$/, "").replace(/(,\d)0$/, "$1"); }
+
+  function calcule() {
+    var v = {};
+    ids.forEach(function (id) { v[id] = $(id).value.trim(); });
+    v.semaines = v.semaines || "48";   // 52 - 4, valeur du classeur
+    var alertes = [], blocage = "", lignes = [], total = 0;
+
+    var annee = /^\d{4}$/.test(v.annee) ? parseInt(v.annee, 10) : NaN;
+    var semaines = /^\d+$/.test(v.semaines) ? parseInt(v.semaines, 10) : NaN;
+    var semainesValides = semaines >= 1 && semaines <= 53;
+    $("annee").classList.toggle("erreur", isNaN(annee));
+    $("semaines").classList.toggle("erreur", !semainesValides);
+
+    var invalide = false;
+    RANGS.forEach(function (i) {
+      var lav = M.centimes(v["lav" + i]), prix = M.centimes(v["prix" + i]);   // lavages en centièmes
+      var lavFaux = isNaN(lav) || lav < 0, prixFaux = isNaN(prix) || prix < 0;
+      $("lav" + i).classList.toggle("erreur", lavFaux);
+      $("prix" + i).classList.toggle("erreur", prixFaux);
+      if (lavFaux || prixFaux) { invalide = true; return; }
+      var vide = !v["nom" + i] && !v["lav" + i] && !v["prix" + i];
+      if (vide) return;
+      if (!lav || !prix) { alertes.push("Ligne " + i + " : renseignez les lavages par semaine et le prix d'un lavage."); return; }
+      lignes.push({ nom: v["nom" + i] || "Élément " + i, lav: lav, prix: prix });
+    });
+
+    if (isNaN(annee)) blocage = "Renseignez l'année sur quatre chiffres.";
+    else if (!semainesValides) blocage = "Renseignez le nombre de semaines travaillées (entre 1 et 53).";
+    else if (invalide) blocage = "Un nombre de lavages ou un prix n'est pas un nombre valide.";
+    else if (!lignes.length) blocage = "Renseignez au moins un élément lavé.";
+
+    var corps = $("detail");
+    corps.textContent = "";
+    note = "";
+    if (!blocage) {
+      lignes.forEach(function (l) {
+        l.parAn = l.lav * semaines;                       // en centièmes de lavage
+        l.cout = Math.round(l.parAn * l.prix / 100);      // en centimes
+        total += l.cout;
+      });
+      lignes.concat([{ nom: "Total", cout: total, total: true }]).forEach(function (l) {
+        var tr = document.createElement("tr");
+        if (l.total) tr.className = "debut";
+        [[l.nom, "lib"], [l.total ? "" : nombre(l.parAn), "droite"], [l.total ? "" : M.affiche(l.prix), "droite"], [M.affiche(l.cout), "droite"]].forEach(function (c) {
+          var td = document.createElement("td");
+          td.textContent = c[0];
+          td.className = c[1];
+          tr.appendChild(td);
+        });
+        corps.appendChild(tr);
+      });
+      $("total").textContent = M.affiche(total) + " €";
+      note = "Forfait blanchisserie " + annee + " sur " + semaines + " semaines travaillées : " +
+             lignes.map(function (l) {
+               return l.nom + " " + nombre(l.lav) + " lavage" + (l.lav > 100 ? "s" : "") + " par semaine, soit " + nombre(l.parAn) +
+                      " lavages x " + M.affiche(l.prix) + " = " + M.affiche(l.cout) + " Euros";
+             }).join(" ; ") + ". Forfait de l'année : " + M.affiche(total) + " Euros.";
+    } else {
+      $("total").textContent = "—";
+      alertes.unshift(blocage);
+    }
+
+    $("note").textContent = note || "La note s'affichera une fois la configuration complète.";
+    $("copier").disabled = !note;
+    $("etat").textContent = "";
+    var ul = $("alertes");
+    ul.textContent = "";
+    alertes.forEach(function (a) {
+      var li = document.createElement("li");
+      li.textContent = a;
+      ul.appendChild(li);
+    });
+  }
+
+  ids.forEach(function (id) {
+    $(id).addEventListener("input", calcule);
+    $(id).addEventListener("change", calcule);
+  });
+  $("copier").addEventListener("click", function () { M.copierTexte(note, "Note copiée"); });
+  calcule();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1136DB">
+<meta name="description" content="Calcul de l'avantage en nature annuel à partir des dépenses réelles et d'un taux, avec la note de calcul et l'écriture comptable à coller dans ACDCompta. Gratuit, sans envoi de données.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/icone-180.png">
+<title>Avantage en nature — Mini-outils</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mini-outils">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Avantage en nature — Mini-outils">
+<meta property="og:description" content="Calcul de l'avantage en nature annuel à partir des dépenses réelles et d'un taux, avec la note de calcul et l'écriture comptable à coller dans ACDCompta. Gratuit, sans envoi de données.">
+<meta property="og:url" content="https://mini-outils-compta.fr/avantage-nature.html">
+<link rel="canonical" href="https://mini-outils-compta.fr/avantage-nature.html">
+<meta property="og:image" content="https://mini-outils-compta.fr/images/og-tempete.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Un navire dans la tempête, avec le slogan « Quand la période fiscale se déchaîne, gardez le cap. »">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="commun.css">
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">Dépenses réelles — comptes 644</p>
+    <h1>Avantage en <em>nature.</em></h1>
+    <p class="lead"><strong>But de la page :</strong> évaluer l'avantage en nature de l'année (un véhicule, par exemple) en appliquant un taux au total des dépenses réelles relevées dans la balance, rédiger la note de calcul qui le justifie et passer l'écriture de fin d'année.</p>
+    <p class="lead">Collez les dépenses de l'année, indiquez le taux. Le résultat est calculé aussitôt.</p>
+
+    <div class="grille">
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">01 — Configuration</p>
+          <div class="champ">
+            <label for="annee">Année</label>
+            <input id="annee" type="number" min="2000" max="2099" step="1" value="2025">
+          </div>
+          <div class="champ">
+            <label for="taux">Taux de l'avantage<span class="aide">En % des dépenses, à adapter au cas</span></label>
+            <input id="taux" class="droite" type="text" inputmode="decimal" value="30">
+          </div>
+          <div class="champ">
+            <label for="cptDebit">Compte débité</label>
+            <input id="cptDebit" type="text" inputmode="numeric" placeholder="644006" value="644006">
+          </div>
+          <div class="champ">
+            <label for="cptCredit">Compte crédité</label>
+            <input id="cptCredit" type="text" inputmode="numeric" placeholder="644007" value="644007">
+          </div>
+          <div class="champ">
+            <label for="piece">Pièce<span class="aide">Vide : code automatique de 6 caractères</span></label>
+            <input id="piece" type="text">
+          </div>
+          <div class="champ total">
+            <span class="etiquette">Avantage en nature</span>
+            <span class="valeur" id="avantage"></span>
+          </div>
+          <ul class="alertes" id="alertes"></ul>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">02 — Dépenses réelles</p>
+          <p class="aide-bloc">Une ligne par compte, colonnes séparées par des tabulations ou des points-virgules : compte, libellé, solde. Un collage depuis la balance convient ; une ligne ne contenant qu'un montant aussi.</p>
+          <textarea id="source" class="saisie" spellcheck="false" wrap="off" aria-label="Dépenses réelles à coller">606140&#9;Carburant&#9;1850,00
+615500&#9;Entretien du véhicule&#9;640,00
+616300&#9;Assurance du véhicule&#9;780,00
+612200&#9;Crédit-bail du véhicule&#9;4320,00</textarea>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">03 — Vérification</p>
+          <div class="champ"><span class="etiquette">Lignes lues</span><span class="valeur droite" id="nbLues"></span></div>
+          <div class="champ"><span class="etiquette">Total des dépenses</span><span class="valeur droite" id="totalDepenses"></span></div>
+          <div class="champ"><span class="etiquette">Total débit</span><span class="valeur droite" id="totDebit"></span></div>
+          <div class="champ"><span class="etiquette">Total crédit</span><span class="valeur droite" id="totCredit"></span></div>
+          <div class="champ"><span class="etiquette">Équilibre</span><span class="valeur droite"><span id="equilibre"></span></span></div>
+          <div class="champ"><span class="etiquette">Lignes générées</span><span class="valeur droite" id="nbLignes"></span></div>
+        </section>
+      </div>
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">04 — Détail du calcul</p>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr><th>Compte</th><th>Libellé</th><th class="droite">Solde</th></tr>
+              </thead>
+              <tbody id="detail"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">05 — Note de calcul</p>
+            <div class="actions">
+              <span class="etat" id="etatNote" role="status"></span>
+              <button class="btn ghost" id="copierNote" type="button">Copier la note</button>
+            </div>
+          </div>
+          <p class="note" id="note"></p>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">06 — Écriture</p>
+            <div class="actions">
+              <span class="etat" id="etat" role="status"></span>
+              <button class="btn" id="copier" type="button">Copier pour ACDCompta</button>
+            </div>
+          </div>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>N°</th><th>Date</th><th>Pièce</th><th>Compte</th><th>Libellé</th>
+                  <th class="droite">Débit</th><th class="droite">Crédit</th>
+                </tr>
+              </thead>
+              <tbody id="lignes"></tbody>
+            </table>
+          </div>
+          <div class="vide" id="vide" hidden></div>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Colonnes copiées : date · pièce · compte · libellé · débit · crédit</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var ids = ["annee", "taux", "cptDebit", "cptCredit", "piece", "source"];
+  var note = "";
+
+  function cellule(tr, texte, classe) {
+    var td = document.createElement("td");
+    td.textContent = texte;
+    if (classe) td.className = classe;
+    tr.appendChild(td);
+  }
+
+  // Une ligne collée : compte, libellé, solde. Le solde est la dernière cellule ; une ligne
+  // d'une seule cellule est un montant seul.
+  function lire(texte) {
+    var lues = [], rejets = 0;
+    texte.split(/\r?\n/).forEach(function (ligne) {
+      if (!ligne.trim()) return;
+      var c = ligne.split(/\t|;/).map(function (x) { return x.trim(); });
+      while (c.length > 1 && c[c.length - 1] === "") c.pop();
+      var montant = M.centimes(c[c.length - 1]);
+      if (isNaN(montant) || c[c.length - 1] === "") { rejets++; return; }
+      lues.push({
+        compte: c.length > 1 ? c[0] : "",
+        libelle: c.length > 2 ? c.slice(1, -1).filter(Boolean).join(" ") : "",
+        montant: montant
+      });
+    });
+    return { lues: lues, rejets: rejets };
+  }
+
+  function calcule() {
+    var v = {};
+    ids.forEach(function (id) { v[id] = $(id).value.trim(); });
+    v.cptDebit = v.cptDebit || "644006";
+    v.cptCredit = v.cptCredit || "644007";
+    var alertes = [], ecritures = [], blocage = "";
+
+    var annee = /^\d{4}$/.test(v.annee) ? parseInt(v.annee, 10) : NaN;
+    var taux = v.taux === "" ? NaN : M.centimes(v.taux);   // en centièmes de pour cent : 30 % -> 3000
+    $("annee").classList.toggle("erreur", isNaN(annee));
+    $("taux").classList.toggle("erreur", isNaN(taux) || taux < 0);
+
+    var r = lire($("source").value), total = 0;
+    var corps = $("detail");
+    corps.textContent = "";
+    r.lues.forEach(function (l) {
+      total += l.montant;
+      var tr = document.createElement("tr");
+      cellule(tr, l.compte, "compte"); cellule(tr, l.libelle, "lib"); cellule(tr, M.affiche(l.montant), "droite");
+      corps.appendChild(tr);
+    });
+    if (r.rejets) alertes.push(r.rejets + (r.rejets > 1 ? " lignes ignorées : leur" : " ligne ignorée : sa") + " dernière colonne n'est pas un montant.");
+
+    if (!r.lues.length) blocage = "Collez les dépenses réelles de l'année.";
+    else if (isNaN(annee)) blocage = "Renseignez l'année sur quatre chiffres.";
+    else if (isNaN(taux) || taux < 0) blocage = "Renseignez le taux de l'avantage en nature.";
+
+    $("nbLues").textContent = r.lues.length;
+    $("totalDepenses").textContent = r.lues.length ? M.affiche(total) + " €" : "—";
+
+    note = "";
+    if (!blocage) {
+      // Avantage = arrondi au centime de total × taux.
+      var montant = Math.round(total * taux / 10000);
+      var tauxTexte = M.affiche(taux).replace(/,00$/, "") + " %";
+      $("avantage").textContent = M.affiche(montant) + " €";
+      [["Total des dépenses réelles", M.affiche(total)], ["Taux de l'avantage en nature", tauxTexte],
+       ["Avantage en nature à comptabiliser", M.affiche(montant)]].forEach(function (p) {
+        var tr = document.createElement("tr");
+        tr.className = "debut";
+        cellule(tr, ""); cellule(tr, p[0], "lib"); cellule(tr, p[1], "droite");
+        corps.appendChild(tr);
+      });
+
+      note = "Avantage en nature " + annee + " : dépenses réelles de l'année " +
+             r.lues.map(function (l) { return (l.libelle || l.compte || "dépense") + " " + M.affiche(l.montant); }).join(" + ") +
+             (r.lues.length > 1 ? " = " + M.affiche(total) : "") + " Euros, retenues pour " + tauxTexte +
+             ", soit un avantage en nature de " + M.affiche(montant) + " Euros, porté au débit du compte " + v.cptDebit +
+             " par le crédit du compte " + v.cptCredit + ".";
+
+      if (montant === 0) blocage = "L'avantage en nature est nul : aucune écriture à passer.";
+      else {
+        // Montant négatif (dépenses créditrices) : l'écriture est passée dans l'autre sens.
+        var sens = montant > 0, abs = Math.abs(montant);
+        var piece = v.piece || M.code6(["avn", annee, taux, total, v.cptDebit, v.cptCredit].join("|"));
+        var date = "31/12/" + annee, libelle = "Avantage en nature " + annee;
+        ecritures.push(
+          { date: date, piece: piece, compte: v.cptDebit, libelle: libelle, debit: sens ? abs : null, credit: sens ? null : abs, debut: true },
+          { date: date, piece: piece, compte: v.cptCredit, libelle: libelle, debit: sens ? null : abs, credit: sens ? abs : null }
+        );
+      }
+    } else {
+      $("avantage").textContent = "—";
+    }
+
+    $("note").textContent = note || "La note s'affichera une fois la configuration complète.";
+    $("copierNote").disabled = !note;
+    $("etatNote").textContent = "";
+    M.rendre(ecritures, blocage, alertes);
+  }
+
+  $("copierNote").addEventListener("click", function () {
+    var fait = function () { $("etatNote").textContent = "Note copiée"; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(note).then(fait, function () { $("etatNote").textContent = "Copie impossible dans ce navigateur"; });
+    } else $("etatNote").textContent = "Copie impossible dans ce navigateur";
+  });
+  M.brancher(ids, calcule);
+})();
+</script>
+</body>
+</html>

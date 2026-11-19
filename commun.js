@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.14.0";
+  var VERSION = "1.15.0";
 
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [
@@ -20,6 +20,10 @@ window.MiniOutils = (function () {
     { fichier: "abo-mensuel.html", nom: "Abonnement mensuel" },
     { fichier: "rem-gerance.html", nom: "Rémunération gérance" },
     { fichier: "indemnites-km.html", nom: "Indemnités kilométriques" },
+    { fichier: "avantage-nature.html", nom: "Avantage en nature" },
+    { fichier: "tva-avantages-nature.html", nom: "TVA avantages en nature" },
+    { fichier: "forfait-blanchisserie.html", nom: "Forfait blanchisserie" },
+    { fichier: "decomposition-immeuble.html", nom: "Décomposition immeuble" },
     { fichier: "extournes.html", nom: "Extournes" },
     { fichier: "import-banque.html", nom: "Import banque" }
   ];

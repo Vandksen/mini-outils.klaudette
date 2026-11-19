@@ -1,7 +1,7 @@
 {
   "name": "Mini-outils",
   "short_name": "Mini-outils",
-  "description": "Générateurs d'écritures pour ACDCompta : FNP, abonnement mensuel, rémunération gérance, extournes.",
+  "description": "Générateurs d'écritures et calculs de révision pour ACDCompta : abonnements, rémunération de gérance, extournes, import de relevé, étalement, FNP, outils 2035.",
   "lang": "fr",
   "dir": "ltr",
   "start_url": "./fnp.html",
@@ -19,7 +19,7 @@
   "shortcuts": [
     { "name": "Calcul de FNP", "url": "./fnp.html" },
     { "name": "Abonnement mensuel", "url": "./abo-mensuel.html" },
-    { "name": "Rémunération gérance 64x", "url": "./rem-gerance.html" },
+    { "name": "Rémunération gérance", "url": "./rem-gerance.html" },
     { "name": "Indemnités kilométriques", "url": "./indemnites-km.html" },
     { "name": "Extournes", "url": "./extournes.html" },
     { "name": "Import banque", "url": "./import-banque.html" }

@@ -12,12 +12,12 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.18.1";
+  var VERSION = "1.18.2";
 
   // Catégorie « Outils de production » du menu : écritures courantes de la tenue.
   // Pour ajouter un outil : une ligne ici, à sa place dans l'ordre d'affichage.
   var PRODUCTION = [
-    { fichier: "extournes.html", nom: "Écritures d'extourne" },
+    { fichier: "extournes.html", nom: "Extournes" },
     { fichier: "abo-mensuel.html", nom: "Abonnement mensuel" },
     { fichier: "rem-gerance.html", nom: "Rémunération gérance" },
     { fichier: "indemnites-km.html", nom: "Indemnités kilométriques" },
@@ -27,9 +27,9 @@ window.MiniOutils = (function () {
   var REVISION = [
     { fichier: "fnp.html", nom: "Calcul de FNP" },
     { fichier: "avantage-nature.html", nom: "Avantage en nature" },
-    { fichier: "tva-avantages-nature.html", nom: "TVA sur avantages en nature" },
+    { fichier: "tva-avantages-nature.html", nom: "TVA avantages en nature" },
     { fichier: "forfait-blanchisserie.html", nom: "Forfait blanchisserie" },
-    { fichier: "decomposition-immeuble.html", nom: "Décomposition d'un immeuble" }
+    { fichier: "decomposition-immeuble.html", nom: "Décomposition immeuble" }
   ];
   var OUTILS = PRODUCTION.concat(REVISION);
   // Catégorie « Dashboard » du menu : outils qui s'appuient sur les comptes 4886 et 4887

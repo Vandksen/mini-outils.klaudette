@@ -4,10 +4,13 @@
    - fichiers de l'application : le réseau d'abord, en revalidant auprès du serveur
      (cache: "no-cache") pour ne pas resservir la copie que le navigateur garde
      10 minutes ; la copie en cache si le réseau ne répond pas.
+     Ajouter un paramètre à l'adresse ne contourne pas le réseau de diffusion de GitHub
+     Pages, qui l'ignore : c'est commun.js qui attend la fin d'un déploiement avant de
+     recharger une page (voir verifieVersion).
    Les polices sont des fichiers du site comme les autres : rien n'est demandé à un tiers.
 
    Quand un outil est ajouté, ajouter sa page à FICHIERS et augmenter VERSION. */
-const VERSION = "mini-outils-v13";
+const VERSION = "mini-outils-v14";
 const FICHIERS = [
   "./",
   "index.html",
@@ -64,12 +67,20 @@ self.addEventListener("fetch", (e) => {
     fetch(req.url, { cache: "no-cache" })
       .then((rep) => {
         if (rep.ok) {
-          const copie = rep.clone();
-          caches.open(VERSION).then((c) => c.put(req, copie));
+          const copie = rep.clone(), sansParametre = url.search ? rep.clone() : null;
+          caches.open(VERSION).then((c) => {
+            c.put(req, copie);
+            // Un fichier demandé avec « ?v=… » remplace aussi sa copie sans paramètre,
+            // pour que le hors-ligne ne ressorte pas un exemplaire plus ancien.
+            if (sansParametre) c.put(url.origin + url.pathname, sansParametre);
+          });
         }
         return rep;
       })
-      .catch(() => caches.match(req, { ignoreSearch: true })
+      // Hors ligne : la copie exacte d'abord, sinon celle du même fichier sans paramètre.
+      .catch(() => caches.match(req)
+        .then((exacte) => exacte || caches.match(url.origin + url.pathname))
+        .then((enCache) => enCache || caches.match(req, { ignoreSearch: true }))
         .then((enCache) => enCache || (req.mode === "navigate" ? caches.match("fnp.html") : Response.error())))
   );
 });

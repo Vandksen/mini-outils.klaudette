@@ -73,12 +73,23 @@
 <div id="message-copie" role="status" aria-live="polite"></div>
 
 <script src="commun.js"></script>
-<!-- Le « ?v= » lie cette page à la forme des données qu'elle attend : l'augmenter chaque
-     fois que la forme de pcg-donnees.js change (nouvelle valeur par compte, par exemple),
-     pour qu'un navigateur ne puisse pas assembler la nouvelle page avec d'anciennes données. -->
-<script src="pcg-donnees.js?v=2"></script>
 <script>
+// Le fichier de données est demandé avec le numéro de version de commun.js : son adresse
+// change à chaque publication, donc le navigateur ne peut pas resservir un exemplaire
+// qu'il aurait gardé d'une version précédente.
 (function () {
+  var donnees = document.createElement("script");
+  donnees.src = "pcg-donnees.js?v=" + window.MiniOutils.VERSION;
+  donnees.onload = demarre;
+  donnees.onerror = function () {
+    var p = document.getElementById("aucun");
+    p.textContent = "Le plan de comptes n'a pas pu être chargé. Vérifiez la connexion, puis rechargez la page.";
+    p.hidden = false;
+  };
+  document.head.appendChild(donnees);
+})();
+
+function demarre() {
   "use strict";
   var $ = function (id) { return document.getElementById(id); };
   var CATEGORIES = window.PCG.categories;
@@ -281,7 +292,7 @@
   boutonsCategories();
   if (!AVEC_REFORME) { $("titre-reforme").hidden = true; $("reforme").hidden = true; }
   affiche();
-})();
+}
 </script>
 </body>
 </html>

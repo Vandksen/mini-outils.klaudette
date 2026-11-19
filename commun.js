@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.13.3";
+  var VERSION = "1.13.4";
 
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [
@@ -682,6 +682,7 @@ window.MiniOutils = (function () {
       return fetch(f, { cache: "reload" }).catch(function () {});
     })).then(function () { location.reload(); });
   }
+  var DELAI_MAJ = 60000, majPrevue = null;   // une minute entre la détection et le rechargement
   function verifieVersion() {
     if (!enLigne) return;
     fetch("commun.js", { cache: "no-store" })
@@ -693,8 +694,17 @@ window.MiniOutils = (function () {
         try { deja = sessionStorage.getItem("mini-outils-maj"); } catch (e) {}
         // Un seul rechargement automatique par version, pour ne jamais boucler.
         if (!saisieEnCours && deja !== m[1]) {
-          try { sessionStorage.setItem("mini-outils-maj", m[1]); } catch (e) {}
-          rechargeFrais();
+          // On laisse au déploiement le temps d'atteindre tous les fichiers : pendant
+          // quelques secondes, commun.js peut déjà être le nouveau alors qu'un fichier
+          // de données ou de styles est encore l'ancien. Recharger tout de suite
+          // assemblait alors une page à moitié à jour, qui le restait.
+          if (majPrevue) return;
+          majPrevue = setTimeout(function () {
+            majPrevue = null;
+            if (saisieEnCours) { proposeMaj(m[1]); return; }
+            try { sessionStorage.setItem("mini-outils-maj", m[1]); } catch (e) {}
+            rechargeFrais();
+          }, DELAI_MAJ);
         } else proposeMaj(m[1]);
       })
       .catch(function () {});
@@ -794,6 +804,6 @@ window.MiniOutils = (function () {
   reinitialisation();
   lienPage();
 
-  return { $: $, centimes: centimes, deux: deux, code6: code6, affiche: affiche, lireDate: lireDate,
+  return { VERSION: VERSION, $: $, centimes: centimes, deux: deux, code6: code6, affiche: affiche, lireDate: lireDate,
            decale: decale, dateFr: dateFr, copierTexte: copierTexte, fete: fete, tempsGagne: tempsGagne, verifieVersion: verifieVersion, rendre: rendre, texteACopier: texteACopier, brancher: brancher };
 })();

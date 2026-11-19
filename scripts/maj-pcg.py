@@ -14,8 +14,8 @@ Le script lit quatre colonnes : « Numéro (6) », « Libellé de compte », « 
 (la valeur de la colonne liée « Catégories ») et la colonne de la réforme du PCG 2025
 (« Réforme PCG 2025 », « Avant Réforme PCG 2025 » ou vide). Il ne publie rien : après une mise à jour,
 augmenter VERSION dans commun.js puis commiter, comme pour toute publication.
-Si la forme du fichier change (une valeur de plus par compte, par exemple), augmenter
-aussi le « ?v= » de la balise <script src="pcg-donnees.js?v=…"> dans pcg.html.
+pcg.html demande ce fichier avec le numéro de version en cours (« ?v=… ») : c'est ce
+changement de VERSION qui fait arriver les nouvelles données chez les utilisateurs.
 
 Aucune dépendance : Python 3 seul suffit.
 """

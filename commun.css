@@ -383,7 +383,7 @@ a.carte:hover { box-shadow: 0 24px 44px -24px rgba(17, 54, 219, .45), 0 2px 6px 
 .bandeau-bleu ul { margin: 0 0 6px; padding-left: 20px; max-width: 760px; }
 .bandeau-bleu li { margin: 0 0 4px; }
 
-/* Bandeau final de l'accueil : « Ships in Distress in a Storm » de Peter Monamy (1681-1749),
+/* Encart illustré, en tête de l'accueil et en bas du manifeste : « Ships in Distress in a Storm » de Peter Monamy (1681-1749),
    Tate T00807, image de Wikimedia Commons passée en camaïeu bleu, dans le style de capedinvisibilite.fr.
    Le voile bleu à gauche garde le texte lisible sur la partie sombre de l'image. */
 .final {
@@ -397,8 +397,12 @@ a.carte:hover { box-shadow: 0 24px 44px -24px rgba(17, 54, 219, .45), 0 2px 6px 
   background: linear-gradient(90deg, rgba(8, 20, 110, .72) 0%, rgba(8, 20, 110, .45) 45%, rgba(8, 20, 110, 0) 75%);
 }
 .final-texte { position: relative; max-width: 620px; }
-.accueil .final h2 { color: var(--on-blue); font-size: clamp(34px, 4.6vw, 56px); line-height: 1.04; margin: 0 0 14px; }
-.accueil .final p { color: var(--on-blue); font-size: 20px; margin: 0; }
+.final .final-texte h2 { color: var(--on-blue); font-size: clamp(34px, 4.6vw, 56px); font-weight: 500; letter-spacing: -0.035em; line-height: 1.04; margin: 0 0 14px; }
+.final .final-texte h2 em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: -0.01em; font-size: 1.08em; }
+.final .final-texte p { color: var(--on-blue); font-size: 20px; margin: 0; }
+/* L'encart ouvre l'accueil et ferme le manifeste. */
+.accueil > .final:first-child { margin: 0 0 56px; }
+.manifeste > .final { margin-top: 48px; }
 .final .btn { background: var(--on-blue); color: var(--blue); border-color: var(--on-blue); }
 .final .btn:hover:not(:disabled) { background: var(--cream); border-color: var(--cream); color: var(--ink); }
 

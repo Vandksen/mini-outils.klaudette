@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.13.1";
+  var VERSION = "1.13.2";
 
   // Liste des outils du menu de gauche. Pour ajouter un outil : une ligne ici.
   var OUTILS = [
@@ -132,10 +132,11 @@ window.MiniOutils = (function () {
     if (!nav) return;
     var page = location.pathname.split("/").pop() || "index.html";
     // Chaque catégorie du menu est un accordéon : son titre est un bouton qui déplie ses
-    // entrées. Elles sont repliées d'office, sauf celle de la page affichée ; en déplier
-    // une replie les autres.
+    // entrées. « Outils », « Dashboard » et « Référentiel » sont dépliées à chaque
+    // chargement ; « À propos » est repliée, sauf sur l'une de ses pages. Un clic sur un
+    // titre replie ou déplie sa seule catégorie.
     var rubrique = function (cle, titre, contenu, classe) {
-      var ouverte = contenu.indexOf('aria-current="page"') !== -1;
+      var ouverte = cle !== "a-propos" || contenu.indexOf('aria-current="page"') !== -1;
       return '<h2' + (classe ? ' class="' + classe + '"' : '') + '><button type="button" class="rubrique" data-cle="' + cle +
              '" aria-expanded="' + ouverte + '" aria-controls="rubrique-' + cle + '"><span>' + titre + '</span>' + CHEVRON + '</button></h2>' +
              '<div class="groupe' + (classe ? ' ' + classe : '') + '" id="rubrique-' + cle + '"' + (ouverte ? '' : ' hidden') + '>' + contenu + '</div>';
@@ -186,11 +187,8 @@ window.MiniOutils = (function () {
       var b = e.target.closest(".rubrique");
       if (!b) return;
       var ouvrir = b.getAttribute("aria-expanded") !== "true";
-      Array.prototype.forEach.call(nav.querySelectorAll(".rubrique"), function (autre) {
-        var ouverte = autre === b && ouvrir;
-        autre.setAttribute("aria-expanded", String(ouverte));
-        $("rubrique-" + autre.getAttribute("data-cle")).hidden = !ouverte;
-      });
+      b.setAttribute("aria-expanded", String(ouvrir));
+      $("rubrique-" + b.getAttribute("data-cle")).hidden = !ouvrir;
     });
 
     var ouvrir = $("ouvrir"), fond = $("fond");

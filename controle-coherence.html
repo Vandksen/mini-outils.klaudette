@@ -236,13 +236,18 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
     l.v = l.n - l.p;
     l.pct = l.p !== 0 ? l.v / Math.abs(l.p) * 100 : null;
     var constats = [], ecart = Math.abs(l.v), assez = ecart >= seuils.min && ecart > 0;
-    var poids = seuils.euros > 0 && ecart > seuils.euros;
+    var poids = assez && seuils.euros > 0 && ecart > seuils.euros;
+    // La ligne n'est signalée que si sa variation dépasse un seuil : le pourcentage (un compte
+    // nouveau compte pour un dépassement) ou le poids dans le total. Sous les seuils, aucun
+    // constat n'est affiché, pas même un sens inversé ou une charge créditrice.
+    var depasse = assez && (poids || (l.pct === null ? l.n !== 0 : Math.abs(l.pct) > seuils.pct));
     if (assez && l.p === 0 && l.n !== 0) constats.push(poste ? "Nouveau poste" : "Nouveau compte");
     else if (assez && l.n === 0 && l.p !== 0) constats.push(poste ? "Poste soldé" : "Compte soldé");
     else if (assez && l.pct !== null && Math.abs(l.pct) > seuils.pct) constats.push("Variation > " + seuils.pctTexte);
     if (poids) constats.push("Poids > " + seuils.totalTexte);
     if (l.n * l.p < 0) constats.push("Sens inversé");
     if (!poste && l.compte.charAt(0) === "6" && (l.n < 0 || l.p < 0)) constats.push("Charge créditrice");
+    if (!depasse) constats = [];
     l.constats = constats;
     // Prioritaire : la variation pèse dans le total et un autre constat s'y ajoute.
     l.rang = !constats.length ? 0 : (poids && constats.length > 1 ? 2 : 1);
@@ -258,7 +263,8 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
       if (c[0] === "constats") {
         l.constats.forEach(function (texte) {
           var s = document.createElement("span");
-          s.className = "constat" + (l.rang === 2 ? " fort" : "");
+          // Pleine pour une ligne prioritaire, et toujours pour une charge créditrice.
+          s.className = "constat" + (l.rang === 2 || texte === "Charge créditrice" ? " fort" : "");
           s.textContent = texte;
           td.appendChild(s);
         });
@@ -350,7 +356,7 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
       $("vide").hidden = v.vue === "tous" || signales.length > 0;
       $("vide").textContent = "Aucun compte ne dépasse les seuils.";
       $("legende").textContent = "Pastille pleine : la variation dépasse " + seuils.totalTexte + " du total des soldes " + exo + " (" +
-        M.affiche(seuils.euros) + " €) et un autre constat s'y ajoute. Le pourcentage est rapporté à la valeur absolue du solde N-1.";
+        M.affiche(seuils.euros) + " €) et un autre constat s'y ajoute, ou le compte de charge est créditeur. Le pourcentage est rapporté à la valeur absolue du solde N-1.";
 
       if (signales.length) {
         synthese = "Contrôle de cohérence " + exo + " / N-1 - " + r.comptes.length + " comptes analysés, " + signales.length + " à justifier (variation de plus de " +

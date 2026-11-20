@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.20.6";
+  var VERSION = "1.21.0";
 
   // Catégorie « Outils de production » du menu : écritures courantes de la tenue.
   // Pour ajouter un outil : une ligne ici, à sa place dans l'ordre d'affichage.
@@ -37,6 +37,11 @@ window.MiniOutils = (function () {
     { fichier: "revenu-brut-social.html", nom: "Revenu brut social" }
   ];
   var OUTILS = PRODUCTION.concat(REVISION);
+  // Catégorie « Analyse » du menu : contrôles et revues à partir de données collées.
+  // Pour y ajouter une page : une ligne ici, de la même forme que dans OUTILS.
+  var ANALYSE = [
+    { fichier: "controle-coherence.html", nom: "Contrôle de cohérence" }
+  ];
   // Catégorie « Dashboard » du menu : outils qui s'appuient sur les comptes 4886 et 4887
   // tenus par cycle. Pour y ajouter une page :
   // une ligne ici, de la même forme que dans OUTILS.
@@ -167,6 +172,10 @@ window.MiniOutils = (function () {
                ' title="' + o.nom + '"><span class="num">' + deux(i + 1) + '</span><span class="lib">' + o.nom + '</span></a>';
       }).join(""), "outil") +
       rubrique("revision", "Outils de révision", REVISION.map(function (o, i) {
+        return '<a class="entree outil" href="' + o.fichier + '"' + (o.fichier === page ? ' aria-current="page"' : '') +
+               ' title="' + o.nom + '"><span class="num">' + deux(i + 1) + '</span><span class="lib">' + o.nom + '</span></a>';
+      }).join(""), "outil") +
+      rubrique("analyse", "Analyse", ANALYSE.map(function (o, i) {
         return '<a class="entree outil" href="' + o.fichier + '"' + (o.fichier === page ? ' aria-current="page"' : '') +
                ' title="' + o.nom + '"><span class="num">' + deux(i + 1) + '</span><span class="lib">' + o.nom + '</span></a>';
       }).join(""), "outil") +
@@ -797,7 +806,7 @@ window.MiniOutils = (function () {
   // de large au plus) qui masque l'outil et montre le message.
   function mobile() {
     var page = location.pathname.split("/").pop() || "index.html";
-    var outil = OUTILS.concat(DASHBOARD).filter(function (o) { return o.fichier === page; })[0];
+    var outil = OUTILS.concat(ANALYSE, DASHBOARD).filter(function (o) { return o.fichier === page; })[0];
     var contenu = $("contenu"), principal = document.querySelector("main");
     if (!outil || !contenu || !principal) return;
     document.body.classList.add("page-outil");

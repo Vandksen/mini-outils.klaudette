@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1136DB">
+<meta name="description" content="Contrôle de cohérence d'une balance comparative collée depuis ACDCompta : variations de plus de 10 %, variations significatives, comptes nouveaux ou soldés, soldes de sens inversé. Gratuit, sans envoi de données.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/icone-180.png">
+<title>Contrôle de cohérence — Mini-outils</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mini-outils">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Contrôle de cohérence — Mini-outils">
+<meta property="og:description" content="Contrôle de cohérence d'une balance comparative collée depuis ACDCompta : variations de plus de 10 %, variations significatives, comptes nouveaux ou soldés, soldes de sens inversé. Gratuit, sans envoi de données.">
+<meta property="og:url" content="https://mini-outils-compta.fr/controle-coherence.html">
+<link rel="canonical" href="https://mini-outils-compta.fr/controle-coherence.html">
+<meta property="og:image" content="https://mini-outils-compta.fr/images/og-tempete.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Un navire dans la tempête, avec le slogan « Quand la période fiscale se déchaîne, gardez le cap. »">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="commun.css">
+<style>
+/* Constats d'analyse : une pastille par constat, pleine pour les points prioritaires. */
+.constat { display: inline-block; margin: 1px 4px 1px 0; padding: 2px 8px; border: 1px solid rgba(17, 54, 219, .35); border-radius: 999px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .04em; text-transform: uppercase; color: var(--blue); white-space: nowrap; }
+.constat.fort { background: var(--blue); border-color: var(--blue); color: var(--on-blue); }
+tr.prioritaire td.compte, tr.prioritaire td.lib { font-weight: 500; }
+tr.calme td { color: var(--muted); }
+th.constats, td.constats { padding-left: 18px; }
+td.constats { min-width: 150px; }
+.legende { font-size: 13px; color: var(--muted); margin: 14px 0 0; }
+.impression-tete { display: none; }
+
+/* Impression de l'analyse : la synthèse, les postes et les comptes, sans le menu, les
+   seuils à saisir ni le collage. */
+@media print {
+  @page { size: A4 portrait; margin: 14mm 12mm; }
+  html, body { background: #fff !important; }
+  body::before, #menu, #fond, #barre-mobile, #copier-lien, #message-copie, .mobile-info, .site-footer, .lead, .maj, .bravo,
+  .panel.saisie-ecran, .barre .actions, #reinit { display: none !important; }
+  #contenu { zoom: 1 !important; margin: 0 !important; padding: 0 !important; width: auto !important; }
+  main { display: block !important; }
+  main, .conteneur { padding: 0 !important; margin: 0 !important; max-width: none !important; }
+  h1 { font-size: 26px !important; margin: 4px 0 6px !important; }
+  .impression-tete { display: block; font-size: 11px; color: var(--muted); margin: 0 0 12px; }
+  .grille, .colonne { display: block !important; }
+  .panel { box-shadow: none !important; border: 0 !important; background: none !important; padding: 0 !important; margin: 0 0 16px !important; }
+  .panel > .eyebrow, .barre { margin-bottom: 4px !important; }
+  .synthese { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; }
+  .synthese .champ { padding: 3px 0 !important; }
+  .cadre-table { overflow: visible !important; }
+  table { font-size: 10px; }
+  th, td { padding-top: 3px !important; padding-bottom: 3px !important; }
+  tr { break-inside: avoid; }
+  thead { display: table-header-group; }
+  .constat { font-size: 8px; padding: 1px 5px; }
+  .constat.fort { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .legende { font-size: 10px; }
+}
+</style>
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">Revue analytique — comparaison N / N-1</p>
+    <h1>Contrôle de <em>cohérence.</em></h1>
+    <p class="lead"><strong>But de la page :</strong> repérer, dans une balance comparative sur deux exercices, les comptes dont l'évolution demande une explication. Comme en revue analytique, la page croise deux seuils : la variation en pourcentage du compte, et le poids de cette variation dans le total des soldes de l'exercice. Elle signale aussi les comptes nouveaux, les comptes soldés et les soldes de sens inversé.</p>
+    <p class="impression-tete" id="impressionTete"></p>
+    <p class="lead">Collez la balance copiée depuis ACDCompta. L'analyse est faite aussitôt ; elle désigne les points à regarder, elle ne les explique pas.</p>
+
+    <div class="grille">
+
+      <div class="colonne">
+        <section class="panel saisie-ecran">
+          <p class="eyebrow">01 — Seuils</p>
+          <div class="champ">
+            <label for="seuilPct">Variation du compte<span class="aide">Signalée au-delà de ce pourcentage</span></label>
+            <input id="seuilPct" class="droite" type="text" inputmode="decimal" placeholder="10" value="10">
+          </div>
+          <div class="champ">
+            <label for="seuilTotal">Poids dans le total N<span class="aide">Variation supérieure à ce pourcentage du total des soldes N</span></label>
+            <input id="seuilTotal" class="droite" type="text" inputmode="decimal" placeholder="5" value="5">
+          </div>
+          <div class="champ">
+            <label for="ecartMin">Écart minimal<span class="aide">Facultatif. En euros : les variations plus petites ne sont pas signalées</span></label>
+            <input id="ecartMin" class="droite" type="text" inputmode="decimal">
+          </div>
+          <div class="champ pleine">
+            <label for="vue">Affichage</label>
+            <select id="vue" class="segments">
+              <option value="constats">Comptes à justifier</option>
+              <option value="tous">Tous les comptes</option>
+            </select>
+          </div>
+          <ul class="alertes" id="alertes"></ul>
+        </section>
+
+        <section class="panel saisie-ecran">
+          <p class="eyebrow">02 — Balance comparative</p>
+          <p class="aide-bloc">Copiez les lignes dans ACDCompta, en-tête compris si possible, puis collez-les ici. Colonnes attendues : cycle, compte, intitulé, collaborateur, superviseur, solde N, solde N-1. Les sous-totaux sont reconnus et recalculés.</p>
+          <textarea id="source" class="saisie" spellcheck="false" wrap="off" aria-label="Balance comparative à coller">Cyc&#9;N° de compte&#9;Intitulé&#9;Collab.&#9;Superv.&#9;Sld. 31/12/2025&#9;Solde N-1&#9;Variation N/N-1&#9;% var. N/N-1
+D&#9;606100&#9;Énergie&#9;&#9;&#9;2 480,00&#9;2 310,00&#9;170,00&#9;7,36
+D&#9;606400&#9;Fournitures administratives&#9;&#9;&#9;640,00&#9;1 250,00&#9;-610,00&#9;-48,80
+ &#9;60&#9; &#9; &#9; &#9;3 120,00&#9;3 560,00&#9;-440,00&#9;-12,36
+D&#9;613200&#9;Locations immobilières&#9;&#9;&#9;14 400,00&#9;14 400,00&#9;0,00&#9;0,00
+D&#9;615500&#9;Entretien et réparations&#9;&#9;&#9;3 900,00&#9;1 150,00&#9;2 750,00&#9;239,13
+D&#9;616000&#9;Assurances&#9;&#9;&#9;2 150,00&#9;2 040,00&#9;110,00&#9;5,39
+ &#9;61&#9; &#9; &#9; &#9;20 450,00&#9;17 590,00&#9;2 860,00&#9;16,26
+D&#9;622600&#9;Honoraires&#9;&#9;&#9;6 800,00&#9;5 200,00&#9;1 600,00&#9;30,77
+D&#9;623000&#9;Publicité&#9;&#9;&#9;1 900,00&#9;0,00&#9;1 900,00&#9;0,00
+D&#9;625100&#9;Déplacements&#9;&#9;&#9;0,00&#9;870,00&#9;-870,00&#9;-100,00
+D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 290,00&#9;30,00&#9;2,33
+ &#9;62&#9; &#9; &#9; &#9;10 020,00&#9;7 360,00&#9;2 660,00&#9;36,14
+ &#9;6&#9; &#9; &#9; &#9;33 590,00&#9;28 510,00&#9;5 080,00&#9;17,82</textarea>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">03 — Synthèse</p>
+          <div class="synthese">
+          <div class="champ"><span class="etiquette">Comptes lus</span><span class="valeur droite" id="nbComptes"></span></div>
+          <div class="champ"><span class="etiquette">Total des soldes <span class="exoN">N</span></span><span class="valeur droite" id="totalN"></span></div>
+          <div class="champ"><span class="etiquette">Total des soldes N-1</span><span class="valeur droite" id="totalP"></span></div>
+          <div class="champ"><span class="etiquette">Variation d'ensemble</span><span class="valeur droite" id="varTotale"></span></div>
+          <div class="champ"><span class="etiquette">Seuil de poids, en euros</span><span class="valeur droite" id="seuilEuros"></span></div>
+          <div class="champ"><span class="etiquette">Points prioritaires</span><span class="valeur droite" id="nbPrioritaires"></span></div>
+          <div class="champ"><span class="etiquette">Autres points à regarder</span><span class="valeur droite" id="nbAutres"></span></div>
+          <div class="champ"><span class="etiquette">Comptes sans remarque</span><span class="valeur droite" id="nbCalmes"></span></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">04 — Analyse par poste</p>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr><th>Poste</th><th class="droite"><span class="exoN">N</span></th><th class="droite">N-1</th><th class="droite">Variation</th><th class="droite">%</th><th class="constats">Constats</th></tr>
+              </thead>
+              <tbody id="postes"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">05 — Analyse par compte</p>
+            <div class="actions">
+              <span class="etat" id="etat" role="status"></span>
+              <button class="btn ghost" id="imprimer" type="button">Imprimer l'analyse</button>
+              <button class="btn" id="copier" type="button">Copier la synthèse</button>
+            </div>
+          </div>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr><th>Compte</th><th>Intitulé</th><th class="droite"><span class="exoN">N</span></th><th class="droite">N-1</th><th class="droite">Variation</th><th class="droite">%</th><th class="constats">Constats</th></tr>
+              </thead>
+              <tbody id="comptes"></tbody>
+            </table>
+          </div>
+          <div class="vide" id="vide" hidden></div>
+          <p class="legende" id="legende"></p>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Variation = solde N − solde N-1 ; pourcentage rapporté au solde N-1</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var ids = ["seuilPct", "seuilTotal", "ecartMin", "vue", "source"];
+  var synthese = "";
+
+  function montant(texte) { return texte === "" ? NaN : M.centimes(texte); }
+  function pourcent(p) { return (p > 0 ? "+" : "") + M.affiche(Math.round(p * 100)) + " %"; }
+  function signe(c) { return (c > 0 ? "+" : "") + M.affiche(c); }
+
+  // Lit le collage : une ligne par compte ou par sous-total. Les montants sont pris en fin
+  // de ligne (solde N, solde N-1, puis variation et pourcentage s'ils sont collés) ; le
+  // compte est la première cellule faite de chiffres.
+  function lire(texte) {
+    var comptes = [], sousTotaux = [], rejets = 0, exercice = "";
+    texte.split(/\r?\n/).forEach(function (ligne) {
+      if (!ligne.trim()) return;
+      var c = ligne.split(ligne.indexOf("\t") !== -1 ? "\t" : ";").map(function (x) { return x.trim(); });
+      var iCompte = -1;
+      for (var i = 0; i < c.length && iCompte < 0; i++) if (/^\d{1,12}$/.test(c[i])) iCompte = i;
+      if (iCompte < 0) {
+        // Ligne d'en-tête : on y lit la date du solde N (« Sld. 31/10/2026 »).
+        var d = /(\d{2}\/\d{2}\/\d{4})/.exec(ligne);
+        if (d && !exercice) exercice = d[1];
+        else if (!/compte|intitul/i.test(ligne)) rejets++;
+        return;
+      }
+      var fin = c.length;
+      while (fin > iCompte + 1 && c[fin - 1] === "") fin--;
+      var debut = fin;
+      while (debut > iCompte + 1 && !isNaN(montant(c[debut - 1]))) debut--;
+      var nb = fin - debut;
+      if (nb < 2) { rejets++; return; }
+      var n = montant(c[debut]), p = montant(c[debut + 1]);
+      var intitule = c.slice(iCompte + 1, debut).filter(Boolean)[0] || "";
+      var cycle = iCompte > 0 ? c[iCompte - 1] : "";
+      var l = { compte: c[iCompte], intitule: intitule, n: n, p: p };
+      if ((!intitule && !cycle) || c[iCompte].length <= 3) sousTotaux.push(l); else comptes.push(l);
+    });
+    return { comptes: comptes, sousTotaux: sousTotaux, rejets: rejets, exercice: exercice };
+  }
+
+  // Constats d'une ligne (compte ou poste). seuils : { pct, euros, min } ; pct en pour cent.
+  function analyse(l, seuils, poste) {
+    l.v = l.n - l.p;
+    l.pct = l.p !== 0 ? l.v / Math.abs(l.p) * 100 : null;
+    var constats = [], ecart = Math.abs(l.v), assez = ecart >= seuils.min && ecart > 0;
+    var poids = seuils.euros > 0 && ecart > seuils.euros;
+    if (assez && l.p === 0 && l.n !== 0) constats.push(poste ? "Nouveau poste" : "Nouveau compte");
+    else if (assez && l.n === 0 && l.p !== 0) constats.push(poste ? "Poste soldé" : "Compte soldé");
+    else if (assez && l.pct !== null && Math.abs(l.pct) > seuils.pct) constats.push("Variation > " + seuils.pctTexte);
+    if (poids) constats.push("Poids > " + seuils.totalTexte);
+    if (l.n * l.p < 0) constats.push("Sens inversé");
+    if (!poste && l.compte.charAt(0) === "6" && (l.n < 0 || l.p < 0)) constats.push("Charge créditrice");
+    l.constats = constats;
+    // Prioritaire : la variation pèse dans le total et un autre constat s'y ajoute.
+    l.rang = !constats.length ? 0 : (poids && constats.length > 1 ? 2 : 1);
+    return l;
+  }
+
+  function ligneTable(l, colonnes) {
+    var tr = document.createElement("tr");
+    tr.className = l.rang === 2 ? "prioritaire" : (l.rang === 0 ? "calme" : "");
+    colonnes.forEach(function (c) {
+      var td = document.createElement("td");
+      if (c[1]) td.className = c[1];
+      if (c[0] === "constats") {
+        l.constats.forEach(function (texte) {
+          var s = document.createElement("span");
+          s.className = "constat" + (l.rang === 2 ? " fort" : "");
+          s.textContent = texte;
+          td.appendChild(s);
+        });
+      } else td.textContent = c[0];
+      tr.appendChild(td);
+    });
+    return tr;
+  }
+
+  function calcule() {
+    var v = {};
+    ids.forEach(function (id) { v[id] = $(id).value.trim(); });
+    v.seuilPct = v.seuilPct || "10";
+    v.seuilTotal = v.seuilTotal || "5";
+    var alertes = [], blocage = "";
+
+    var sPct = M.centimes(v.seuilPct), sTotal = M.centimes(v.seuilTotal), min = M.centimes(v.ecartMin);
+    $("seuilPct").classList.toggle("erreur", isNaN(sPct) || sPct < 0);
+    $("seuilTotal").classList.toggle("erreur", isNaN(sTotal) || sTotal < 0);
+    $("ecartMin").classList.toggle("erreur", isNaN(min) || min < 0);
+
+    var r = lire($("source").value);
+    if (!r.comptes.length) blocage = "Collez la balance comparative copiée depuis ACDCompta.";
+    else if (isNaN(sPct) || sPct < 0 || isNaN(sTotal) || sTotal < 0) blocage = "Un seuil n'est pas un nombre valide.";
+    else if (isNaN(min) || min < 0) blocage = "L'écart minimal n'est pas un nombre valide.";
+    if (r.rejets) alertes.push(r.rejets + (r.rejets > 1 ? " lignes ignorées : aucun compte ou aucun solde n'y a été reconnu."
+                                                         : " ligne ignorée : aucun compte ou aucun solde n'y a été reconnu."));
+
+    var exo = r.exercice || "N";
+    Array.prototype.forEach.call(document.querySelectorAll(".exoN"), function (e) { e.textContent = exo; });
+    var corpsPostes = $("postes"), corpsComptes = $("comptes"), seuils = null;
+    corpsPostes.textContent = "";
+    corpsComptes.textContent = "";
+    synthese = "";
+
+    if (!blocage) {
+      // Le total qui sert de base au second seuil : somme des soldes N en valeur absolue,
+      // pour que charges et produits ne se compensent pas.
+      var baseN = 0, totalN = 0, totalP = 0;
+      r.comptes.forEach(function (l) { baseN += Math.abs(l.n); totalN += l.n; totalP += l.p; });
+      var texte = function (c) { return M.affiche(c).replace(/,00$/, "") + " %"; };
+      seuils = { pct: sPct / 100, pctTexte: texte(sPct), euros: Math.round(baseN * sTotal / 10000), totalTexte: texte(sTotal), min: min };
+      r.comptes.forEach(function (l) { analyse(l, seuils, false); });
+
+      // Postes : regroupement des comptes sur leurs deux premiers chiffres.
+      var postes = [], parRacine = {};
+      r.comptes.forEach(function (l) {
+        var racine = l.compte.slice(0, 2);
+        if (!parRacine[racine]) { parRacine[racine] = { compte: racine, n: 0, p: 0 }; postes.push(parRacine[racine]); }
+        parRacine[racine].n += l.n;
+        parRacine[racine].p += l.p;
+      });
+      postes.forEach(function (l) { analyse(l, seuils, true); });
+      postes.concat([analyse({ compte: "Total", n: totalN, p: totalP }, { pct: Infinity, euros: 0, min: 0 }, true)]).forEach(function (l) {
+        var tr = ligneTable(l, [[l.compte, "compte"], [M.affiche(l.n), "droite"], [M.affiche(l.p), "droite"], [signe(l.v), "droite"],
+                                [l.pct === null ? "—" : pourcent(l.pct), "droite"], ["constats", "constats"]]);
+        if (l.compte === "Total") tr.className = "debut";
+        corpsPostes.appendChild(tr);
+      });
+
+      // Sous-totaux collés : ils doivent retrouver la somme des comptes lus.
+      r.sousTotaux.forEach(function (s) {
+        var n = 0, p = 0, nb = 0;
+        r.comptes.forEach(function (l) { if (l.compte.indexOf(s.compte) === 0) { n += l.n; p += l.p; nb++; } });
+        if (nb && (n !== s.n || p !== s.p)) {
+          alertes.push("Sous-total " + s.compte + " : le collage indique " + M.affiche(s.n) + " et " + M.affiche(s.p) +
+                       ", les comptes lus font " + M.affiche(n) + " et " + M.affiche(p) + ". Le collage est peut-être incomplet.");
+        }
+      });
+
+      var signales = r.comptes.filter(function (l) { return l.rang > 0; });
+      // Les comptes à justifier sont classés du plus prioritaire au moins prioritaire, puis
+      // par variation décroissante ; l'affichage complet garde l'ordre du collage.
+      var tries = signales.slice().sort(function (a, b) { return b.rang - a.rang || Math.abs(b.v) - Math.abs(a.v); });
+      (v.vue === "tous" ? r.comptes : tries).forEach(function (l) {
+        corpsComptes.appendChild(ligneTable(l, [[l.compte, "compte"], [l.intitule, "lib"], [M.affiche(l.n), "droite"], [M.affiche(l.p), "droite"],
+                                                [signe(l.v), "droite"], [l.pct === null ? "—" : pourcent(l.pct), "droite"], ["constats", "constats"]]));
+      });
+      var prioritaires = signales.filter(function (l) { return l.rang === 2; }).length;
+
+      $("nbComptes").textContent = r.comptes.length;
+      $("totalN").textContent = M.affiche(totalN) + " €";
+      $("totalP").textContent = M.affiche(totalP) + " €";
+      $("varTotale").textContent = signe(totalN - totalP) + " €" + (totalP ? " (" + pourcent((totalN - totalP) / Math.abs(totalP) * 100) + ")" : "");
+      $("seuilEuros").textContent = M.affiche(seuils.euros) + " €";
+      $("nbPrioritaires").textContent = prioritaires;
+      $("nbAutres").textContent = signales.length - prioritaires;
+      $("nbCalmes").textContent = r.comptes.length - signales.length;
+      $("vide").hidden = v.vue === "tous" || signales.length > 0;
+      $("vide").textContent = "Aucun compte ne dépasse les seuils.";
+      $("legende").textContent = "Pastille pleine : la variation dépasse " + seuils.totalTexte + " du total des soldes " + exo + " (" +
+        M.affiche(seuils.euros) + " €) et un autre constat s'y ajoute. Le pourcentage est rapporté à la valeur absolue du solde N-1.";
+
+      if (signales.length) {
+        synthese = "Contrôle de cohérence " + exo + " / N-1 - " + r.comptes.length + " comptes analysés, " + signales.length + " à justifier (variation de plus de " +
+                   seuils.pctTexte + ", ou supérieure à " + seuils.totalTexte + " du total des soldes, soit " + M.affiche(seuils.euros) + " Euros) :\n" +
+                   tries.map(function (l) {
+                     return "- " + l.compte + " " + l.intitule + " : " + M.affiche(l.n) + " contre " + M.affiche(l.p) + ", soit " + signe(l.v) +
+                            (l.pct === null ? "" : " (" + pourcent(l.pct) + ")") + " - " + l.constats.join(", ").toLowerCase() + ".";
+                   }).join("\n");
+      }
+    } else {
+      ["nbComptes", "totalN", "totalP", "varTotale", "seuilEuros", "nbPrioritaires", "nbAutres", "nbCalmes"].forEach(function (id) { $(id).textContent = "—"; });
+      $("vide").hidden = false;
+      $("vide").textContent = blocage;
+      $("legende").textContent = "";
+    }
+
+    $("copier").disabled = !synthese;
+    $("imprimer").disabled = !!blocage;
+    // En-tête de la version imprimée : seuils retenus, affichage et date d'édition.
+    var jour = new Date();
+    $("impressionTete").textContent = blocage ? "" :
+      "Seuils : variation de plus de " + seuils.pctTexte + " ; variation supérieure à " + seuils.totalTexte + " du total des soldes " + exo +
+      (min ? " ; écart minimal de " + M.affiche(min) + " €" : "") + ". " +
+      (v.vue === "tous" ? "Tous les comptes" : "Comptes à justifier") + ". Édité le " + M.deux(jour.getDate()) + "/" +
+      M.deux(jour.getMonth() + 1) + "/" + jour.getFullYear() + " avec mini-outils-compta.fr.";
+    $("etat").textContent = "";
+    var ul = $("alertes");
+    ul.textContent = "";
+    alertes.forEach(function (a) {
+      var li = document.createElement("li");
+      li.textContent = a;
+      ul.appendChild(li);
+    });
+  }
+
+  ids.forEach(function (id) {
+    $(id).addEventListener("input", calcule);
+    $(id).addEventListener("change", calcule);
+  });
+  $("copier").addEventListener("click", function () { M.copierTexte(synthese, "Synthèse copiée"); });
+  $("imprimer").addEventListener("click", function () { window.print(); });
+  calcule();
+})();
+</script>
+</body>
+</html>

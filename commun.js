@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.21.5";
+  var VERSION = "1.21.6";
 
   // Catégorie « Outils de production » du menu : écritures courantes de la tenue.
   // Pour ajouter un outil : une ligne ici, à sa place dans l'ordre d'affichage.
@@ -859,7 +859,28 @@ window.MiniOutils = (function () {
     });
   }
 
+  // Zones de collage (balance, grand livre, relevé) : à l'entrée dans la zone, tout son
+  // contenu est sélectionné, pour qu'un nouveau collage remplace l'ancien. Un second clic
+  // place le curseur comme d'habitude.
+  function selectionCollage() {
+    Array.prototype.forEach.call(document.querySelectorAll("textarea.saisie"), function (zone) {
+      var entree = false;
+      zone.addEventListener("focus", function () {
+        if (!zone.value) return;
+        zone.select();
+        entree = true;
+      });
+      // Le relâchement du clic qui a donné le focus annulerait la sélection.
+      zone.addEventListener("mouseup", function (e) {
+        if (entree) e.preventDefault();
+        entree = false;
+      });
+      zone.addEventListener("blur", function () { entree = false; });
+    });
+  }
+
   segments();
+  selectionCollage();
   calendrier();
   menu();
   mobile();

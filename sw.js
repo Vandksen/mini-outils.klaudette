@@ -10,7 +10,7 @@
    Les polices sont des fichiers du site comme les autres : rien n'est demandé à un tiers.
 
    Quand un outil est ajouté, ajouter sa page à FICHIERS et augmenter VERSION. */
-const VERSION = "mini-outils-v36";
+const VERSION = "mini-outils-v37";
 const FICHIERS = [
   "./",
   "index.html",
@@ -56,7 +56,9 @@ const FICHIERS = [
   "polices/inter-tight-latin-ext.woff2",
   "polices/inter-tight-latin.woff2",
   "polices/jetbrains-mono-latin-ext.woff2",
-  "polices/jetbrains-mono-latin.woff2"
+  "polices/jetbrains-mono-latin.woff2",
+  "polices/space-mono-italique-latin-ext.woff2",
+  "polices/space-mono-italique-latin.woff2"
 ];
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(FICHIERS)).then(() => self.skipWaiting()));

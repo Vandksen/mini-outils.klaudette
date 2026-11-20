@@ -172,7 +172,7 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
 
 <footer class="site-footer">
   <div class="conteneur">
-    <span>Variation = solde N − solde N-1, en valeurs absolues ; pourcentage rapporté au solde N-1</span>
+    <span>Variation = écart entre le solde N et le solde N-1, en valeur absolue ; pourcentage rapporté au solde N-1</span>
     <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
   </div>
 </footer>
@@ -189,8 +189,9 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
   var dernier = null;   // dernière analyse valide, reprise par le justificatif PDF
 
   function montant(texte) { return texte === "" ? NaN : M.centimes(texte); }
-  function pourcent(p) { return (p > 0 ? "+" : "") + M.affiche(Math.round(p * 100)) + " %"; }
-  function signe(c) { return (c > 0 ? "+" : "") + M.affiche(c); }
+  // Variation et pourcentage sont des valeurs absolues : ils s'affichent sans signe.
+  function pourcent(p) { return M.affiche(Math.round(Math.abs(p) * 100)) + " %"; }
+  function signe(c) { return M.affiche(Math.abs(c)); }
 
   // Lit le collage : une ligne par compte ou par sous-total. Les montants sont pris en fin
   // de ligne (solde N, solde N-1, puis variation et pourcentage s'ils sont collés) ; le
@@ -226,9 +227,9 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
 
   // Constats d'une ligne (compte ou poste). seuils : { pct, euros, min } ; pct en pour cent.
   function analyse(l, seuils, poste) {
-    // La variation compare les soldes en valeur absolue : un solde créditeur (produit, charge
-    // créditrice) qui grossit est une hausse, quel que soit son signe.
-    l.v = Math.abs(l.n) - Math.abs(l.p);
+    // La variation est l'écart entre les deux soldes, en valeur absolue : une baisse de
+    // 1 000 et une hausse de 1 000 donnent toutes deux 1 000. Le sens se lit sur les soldes.
+    l.v = Math.abs(l.n - l.p);
     l.pct = l.p !== 0 ? l.v / Math.abs(l.p) * 100 : null;
     var constats = [], ecart = Math.abs(l.v), assez = ecart >= seuils.min && ecart > 0;
     var poids = assez && seuils.euros > 0 && ecart > seuils.euros;
@@ -350,7 +351,7 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
       $("nbComptes").textContent = r.comptes.length;
       $("totalN").textContent = M.affiche(totalN) + " €";
       $("totalP").textContent = M.affiche(totalP) + " €";
-      var varTotale = Math.abs(totalN) - Math.abs(totalP);
+      var varTotale = Math.abs(totalN - totalP);
       $("varTotale").textContent = signe(varTotale) + " €" + (totalP ? " (" + pourcent(varTotale / Math.abs(totalP) * 100) + ")" : "");
       $("seuilEuros").textContent = M.affiche(seuils.euros) + " €";
       $("nbPrioritaires").textContent = prioritaires;
@@ -360,7 +361,7 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
       $("vide").hidden = (v.vue === "tous" ? visibles.length : signales.length) > 0;
       $("vide").textContent = "Aucun compte ne dépasse " + (masquer ? "le seuil de poids." : "les seuils.");
       $("legende").textContent = "Pastille pleine : la variation dépasse " + seuils.totalTexte + " du total des soldes " + exo + " (" +
-        M.affiche(seuils.euros) + " €) et un autre constat s'y ajoute, ou le compte de charge est créditeur. La variation compare les soldes en valeur absolue ; le pourcentage est rapporté au solde N-1." +
+        M.affiche(seuils.euros) + " €) et un autre constat s'y ajoute, ou le compte de charge est créditeur. La variation et son pourcentage sont donnés en valeur absolue, sans signe ; le pourcentage est rapporté au solde N-1." +
         (masquer && masques ? " " + masques + (masques > 1 ? " comptes ne sont pas listés : leur" : " compte n'est pas listé : sa") +
                               " variation ne dépasse pas " + M.affiche(seuils.euros) + " €." : "");
       dernier = { dossier: v.dossier, exo: exo, seuils: seuils, min: min, tous: v.vue === "tous", nbComptes: r.comptes.length,
@@ -372,7 +373,7 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
       // ceux dont la variation dépasse le seuil de poids en euros, du plus fort au plus faible.
       var decrit = function (l) {
         var autres = l.constats.filter(function (c) { return c.indexOf("Poids") !== 0 && c.indexOf("Variation") !== 0; });
-        return "- " + l.compte + " " + l.intitule + " : " + M.affiche(l.n) + " contre " + M.affiche(l.p) + ", soit " + signe(l.v) +
+        return "- " + l.compte + " " + l.intitule + " : " + M.affiche(l.n) + " contre " + M.affiche(l.p) + ", soit une variation de " + signe(l.v) +
                (l.pct === null ? "" : " (" + pourcent(l.pct) + ")") + (autres.length ? " - " + autres.join(", ").toLowerCase() : "") + ".";
       };
       var parEcart = function (a, b) { return Math.abs(b.v) - Math.abs(a.v); };
@@ -428,7 +429,7 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
             (d.masquer ? ", variation supérieure au seuil de poids" : ""));
     f.section("Synthèse");
     f.ligne("Total des soldes " + d.exo, M.affiche(d.totalN) + " €").ligne("Total des soldes N-1", M.affiche(d.totalP) + " €")
-     .ligne("Variation d'ensemble", signe(Math.abs(d.totalN) - Math.abs(d.totalP)) + " €")
+     .ligne("Variation d'ensemble", signe(d.totalN - d.totalP) + " €")
      .ligne("Points prioritaires", String(d.prioritaires)).ligne("Autres points à regarder", String(d.autres))
      .ligne("Comptes sans remarque", String(d.calmes))
      .ligne("Comptes non listés, sous le seuil de poids", d.masquer ? String(d.masques) : "");
@@ -453,7 +454,7 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
     } else f.ligne("Résultat", "Aucun compte ne dépasse les seuils");
     f.texte("Ligne en gras : point prioritaire, la variation dépasse " + s.totalTexte + " du total des soldes " + d.exo + " (" +
             M.affiche(s.euros) + " €) et un autre constat s'y ajoute. Une charge créditrice est écrite en capitales. " +
-            "La variation compare les soldes en valeur absolue ; le pourcentage est rapporté au solde N-1.");
+            "La variation et son pourcentage sont donnés en valeur absolue, sans signe ; le pourcentage est rapporté au solde N-1.");
     return f;
   }
 

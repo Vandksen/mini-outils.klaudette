@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1136DB">
+<meta name="description" content="Revalorisation d'un loyer selon l'indice ILC, ILAT ou ICC à partir du détail collé du compte : nouveau loyer, complément des mois déjà comptabilisés et écriture de provision à coller dans ACDCompta. Gratuit, sans envoi de données.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/icone-m-180.png">
+<title>Revalorisation de loyer — Mini-outils</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mini-outils">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Revalorisation de loyer — Mini-outils">
+<meta property="og:description" content="Revalorisation d'un loyer selon l'indice ILC, ILAT ou ICC à partir du détail collé du compte : nouveau loyer, complément des mois déjà comptabilisés et écriture de provision à coller dans ACDCompta. Gratuit, sans envoi de données.">
+<meta property="og:url" content="https://mini-outils-compta.fr/revalorisation-loyer.html">
+<link rel="canonical" href="https://mini-outils-compta.fr/revalorisation-loyer.html">
+<meta property="og:image" content="https://mini-outils-compta.fr/images/og-tempete.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Un navire dans la tempête, avec le slogan « Quand la période fiscale se déchaîne, gardez le cap. »">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="commun.css">
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">Indices ILC, ILAT, ICC — provision de clôture</p>
+    <h1>Revalorisation <em>de loyer.</em></h1>
+    <p class="lead"><strong>But de la page :</strong> chiffrer la révision d'un loyer indexé qui n'a pas encore été facturée. À partir du détail du compte de loyer, la page calcule le nouveau loyer selon l'indice du bail, le complément dû sur chaque mois comptabilisé à l'ancien montant depuis la date de révision, et propose l'écriture de provision à la fin de la période.</p>
+    <p class="lead">Collez le détail du compte, cochez la ligne de la date de révision, puis choisissez l'indice du bail. Le résultat est calculé aussitôt.</p>
+
+    <div class="grille">
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">01 — Configuration</p>
+          <div class="champ">
+            <label for="dossier">Dossier<span class="aide">Facultatif, pour le justificatif PDF</span></label>
+            <input id="dossier" type="text" value="EXEMPLE SARL">
+          </div>
+          <div class="champ pleine">
+            <label for="indice">Indice du bail</label>
+            <select id="indice" class="segments">
+              <option value="ILC">ILC</option>
+              <option value="ILAT">ILAT</option>
+              <option value="ICC">ICC</option>
+            </select>
+          </div>
+          <div class="champ pleine">
+            <label for="trimestre">Trimestre de référence<span class="aide">Celui que fixe la clause d'indexation du bail</span></label>
+            <select id="trimestre" class="segments">
+              <option value="1">T1</option>
+              <option value="2" selected>T2</option>
+              <option value="3">T3</option>
+              <option value="4">T4</option>
+            </select>
+          </div>
+          <div class="champ">
+            <label for="ancien">Indice de base<span class="aide" id="aideAncien">Vide : indice de l'année précédente</span></label>
+            <input id="ancien" class="droite" type="text" inputmode="decimal">
+          </div>
+          <div class="champ">
+            <label for="nouveau">Nouvel indice<span class="aide" id="aideNouveau">Vide : dernier indice publié à la date de révision</span></label>
+            <input id="nouveau" class="droite" type="text" inputmode="decimal">
+          </div>
+          <div class="champ">
+            <label for="tva">Loyer soumis à la TVA</label>
+            <input id="tva" type="checkbox" class="bascule" role="switch" checked>
+          </div>
+          <div class="champ avecTva">
+            <label for="taux">Taux de TVA (%)</label>
+            <input id="taux" class="droite" type="text" inputmode="decimal" value="20">
+          </div>
+          <div class="champ">
+            <label for="cptLoyer">Compte de loyer<span class="aide">Le compte collé</span></label>
+            <input id="cptLoyer" type="text" inputmode="numeric" placeholder="613200" value="613200">
+          </div>
+          <div class="champ">
+            <label for="cptAttente">Compte de provision<span class="aide" id="aideAttente">408100 en charge, 418100 en produit</span></label>
+            <input id="cptAttente" type="text" inputmode="numeric">
+          </div>
+          <div class="champ avecTva">
+            <label for="cptTva">Compte de TVA<span class="aide">445860 en charge, 445870 en produit</span></label>
+            <input id="cptTva" type="text" inputmode="numeric">
+          </div>
+          <div class="champ">
+            <label for="piece">Pièce<span class="aide">Vide : code automatique de 6 caractères</span></label>
+            <input id="piece" type="text">
+          </div>
+          <div class="champ total">
+            <span class="etiquette">Provision HT</span>
+            <span class="valeur" id="resultat"></span>
+          </div>
+          <ul class="alertes" id="alertes"></ul>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">02 — Détail du compte</p>
+          <p class="aide-bloc">Dans ACD, ouvrez le détail du compte de loyer en mode grand livre, copiez son contenu avec Ctrl+C puis collez-le dans cette zone avec Ctrl+V (la ligne de titres peut être copiée ou non).</p>
+          <textarea id="source" class="saisie" spellcheck="false" wrap="off" aria-label="Détail du compte à coller"></textarea>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">03 — Vérification</p>
+          <div class="champ"><span class="etiquette">Date de révision</span><span class="valeur droite" id="dateRevision"></span></div>
+          <div class="champ"><span class="etiquette">Fin de période provisionnée</span><span class="valeur droite" id="finPeriode"></span></div>
+          <div class="champ"><span class="etiquette">Indices retenus</span><span class="valeur droite" id="indices"></span></div>
+          <div class="champ"><span class="etiquette">Variation de l'indice</span><span class="valeur droite" id="variation"></span></div>
+          <div class="champ"><span class="etiquette">Loyer avant révision</span><span class="valeur droite" id="loyerAncien"></span></div>
+          <div class="champ"><span class="etiquette">Loyer révisé</span><span class="valeur droite" id="loyerNouveau"></span></div>
+          <div class="champ"><span class="etiquette">Total débit</span><span class="valeur droite" id="totDebit"></span></div>
+          <div class="champ"><span class="etiquette">Total crédit</span><span class="valeur droite" id="totCredit"></span></div>
+          <div class="champ"><span class="etiquette">Équilibre</span><span class="valeur droite"><span id="equilibre"></span></span></div>
+          <div class="champ"><span class="etiquette">Lignes générées</span><span class="valeur droite" id="nbLignes"></span></div>
+        </section>
+      </div>
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">04 — Lignes du compte</p>
+          <p class="aide-bloc">Cochez la ligne du premier loyer à réviser : sa date fixe la date de révision. Les lignes suivantes, jusqu'à la dernière, reçoivent le complément.</p>
+          <div class="cadre-table">
+            <table class="choix">
+              <thead>
+                <tr><th>Révision</th><th>Date</th><th>Jnl</th><th>Pièce</th><th>Libellé</th><th class="droite">Comptabilisé</th><th class="droite">Loyer révisé</th><th class="droite">Complément</th></tr>
+              </thead>
+              <tbody id="detail"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">05 — Note de calcul</p>
+            <div class="actions">
+              <span class="etat" id="etatNote" role="status"></span>
+              <button class="btn ghost" id="copierNote" type="button">Copier la note</button>
+              <button class="btn ghost" id="pdf" type="button">Télécharger le justificatif PDF</button>
+            </div>
+          </div>
+          <p class="note" id="note"></p>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">06 — Écriture de provision</p>
+            <div class="actions">
+              <span class="etat" id="etat" role="status"></span>
+              <button class="btn" id="copier" type="button">Copier pour ACDCompta</button>
+            </div>
+          </div>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>N°</th><th>Date</th><th>Pièce</th><th>Compte</th><th>Libellé</th>
+                  <th class="droite">Débit</th><th class="droite">Crédit</th>
+                </tr>
+              </thead>
+              <tbody id="lignes"></tbody>
+            </table>
+          </div>
+          <div class="vide" id="vide" hidden></div>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Loyer révisé = loyer × nouvel indice / indice de base ; indices publiés par l'Insee</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script src="pdf.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var TAB = String.fromCharCode(9), SAUT = String.fromCharCode(10);
+  var ids = ["dossier", "indice", "trimestre", "ancien", "nouveau", "tva", "taux", "cptLoyer", "cptAttente", "cptTva", "piece", "source"];
+  var note = "";
+  var dernier = null;   // dernier calcul valide, repris par le justificatif PDF
+  var coche = null;     // rang de la ligne cochée dans le collage ; null tant que rien n'est coché
+  var texteLu = "";     // le collage auquel se rapporte la case cochée
+
+  // Indices trimestriels publiés par l'Insee (service SDMX de la banque de données macro-
+  // économiques, séries 001532540, 001617112 et 000008630), relevés le 20/11/2026.
+  // Chaque année : les valeurs des trimestres T1 à T4. Quand un trimestre paraît : l'ajouter ici.
+  var INDICES = {
+    ILC: { nom: "Indice des loyers commerciaux (ILC)", valeurs: {
+      2018: [111.87, 112.59, 113.45, 114.06], 2019: [114.64, 115.21, 115.60, 116.16], 2020: [116.23, 115.42, 115.70, 115.79],
+      2021: [116.73, 118.41, 119.70, 118.59], 2022: [120.61, 123.65, 126.13, 126.05], 2023: [128.68, 131.81, 133.66, 132.63],
+      2024: [134.58, 136.72, 137.71, 135.30], 2025: [135.87, 136.81, 137.09, 134.62], 2026: [135.26, 137.16] } },
+    ILAT: { nom: "Indice des loyers des activités tertiaires (ILAT)", valeurs: {
+      2018: [111.45, 112.01, 112.74, 113.30], 2019: [113.88, 114.47, 114.85, 115.43], 2020: [115.53, 114.33, 114.23, 114.06],
+      2021: [114.87, 116.46, 117.61, 118.97], 2022: [120.73, 122.65, 124.53, 126.66], 2023: [128.59, 130.64, 132.15, 133.69],
+      2024: [135.13, 136.45, 137.12, 137.29], 2025: [137.29, 137.15, 137.07, 137.21], 2026: [137.42, 138.01] } },
+    ICC: { nom: "Indice du coût de la construction (ICC)", valeurs: {
+      2018: [1671, 1699, 1733, 1703], 2019: [1728, 1746, 1746, 1769], 2020: [1770, 1753, 1765, 1795],
+      2021: [1822, 1821, 1886, 1886], 2022: [1948, 1966, 2037, 2052], 2023: [2077, 2123, 2106, 2162],
+      2024: [2227, 2205, 2143, 2108], 2025: [2146, 2086, 2056, 2058], 2026: [2084, 2103] } }
+  };
+
+  // Exemple fictif de départ : douze loyers mensuels au format de la consultation de compte ACD.
+  var TITRES_ACD = ["Date >", "Jnl", "Pièce", "Facture", "Libellé", "Débit", "Lettrage", "Crédit", "Solde cumulé", "Code TVA", "Rgl.", "D.", "Tx",
+                    "Montant", "Montant org.", "Rappro. le", "Intégrée le"];
+  var cumul = 0, exemple = [TITRES_ACD];
+  for (var m = 1; m <= 12; m++) {
+    cumul += 250000;
+    exemple.push(["01/" + M.deux(m) + "/2026", "AC", "Bail", "", "SCI EXEMPLE - Loyer 2026." + M.deux(m), "2 500,00", "", "0,00",
+                  M.affiche(cumul), "", "R", "E", "1", "2 500,00", "2 500,00", "", ""]);
+  }
+  $("source").value = exemple.map(function (l) { return l.join(TAB); }).join(SAUT);
+  texteLu = $("source").value;
+  coche = 9;   // l'exemple coche le loyer d'octobre
+
+  // Place des colonnes ; -1 : colonne absente.
+  var SEPT_COLONNES = { date: 0, journal: 1, piece: 3, libelle: 4, debit: 5, credit: 6 };
+  var CONSULTATION_ACD = { date: 0, journal: 1, piece: 2, libelle: 4, debit: 5, credit: 7 };
+  function lireTitres(c) {
+    var p = { date: -1, journal: -1, piece: -1, libelle: -1, debit: -1, credit: -1 };
+    c.forEach(function (t, k) {
+      var n = t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z ]/g, "").trim();
+      if (p.date === -1 && /^date/.test(n)) p.date = k;
+      else if (p.journal === -1 && /^(jnl|journal|code journal|jal)$/.test(n)) p.journal = k;
+      else if (p.piece === -1 && /^(piece|n piece|numero de piece)$/.test(n)) p.piece = k;
+      else if (p.libelle === -1 && /^libelle/.test(n)) p.libelle = k;
+      else if (p.debit === -1 && n === "debit") p.debit = k;
+      else if (p.credit === -1 && n === "credit") p.credit = k;
+    });
+    return p;
+  }
+  function rang(d) { return d.a * 10000 + d.m * 100 + d.j; }
+  function finDeMois(d) { return { a: d.a, m: d.m, j: new Date(d.a, d.m, 0).getDate() }; }
+  function nombre(x) { return String(x).replace(".", ","); }
+  function cellule(tr, texte, classe) {
+    var td = document.createElement("td");
+    td.textContent = texte;
+    if (classe) td.className = classe;
+    tr.appendChild(td);
+    return td;
+  }
+  // Valeur d'un indice saisie à la main : « 136,81 » -> 136.81 ; vide -> null ; invalide -> NaN.
+  function lireIndice(txt) {
+    var s = String(txt).replace(/[\s  ]/g, "").replace(",", ".");
+    if (!s) return null;
+    return /^\d+(\.\d+)?$/.test(s) ? parseFloat(s) : NaN;
+  }
+  // Dernier indice du trimestre choisi publié à la date de révision. L'Insee publie un trimestre
+  // environ trois mois après sa fin : T1 en juin, T2 en septembre, T3 en décembre, T4 en mars
+  // de l'année suivante. Il est retenu pour une révision qui tombe à partir du mois suivant.
+  // Renvoie { annee, valeur } ou null si le tableau n'a pas l'indice.
+  function indicePublie(serie, t, date) {
+    for (var a = date.a; a >= 2018; a--) {
+      var publie = t === 4 ? { a: a + 1, m: 3 } : { a: a, m: 3 * t + 3 };
+      if (date.a * 100 + date.m <= publie.a * 100 + publie.m) continue;
+      var v = serie.valeurs[a] && serie.valeurs[a][t - 1];
+      return v ? { annee: a, valeur: v } : null;
+    }
+    return null;
+  }
+
+  function calcule() {
+    var v = {};
+    ids.forEach(function (id) { v[id] = $(id).type === "checkbox" ? $(id).checked : $(id).value.trim(); });
+    if ($("source").value !== texteLu) { texteLu = $("source").value; coche = null; }   // nouveau collage : rien de coché
+    var serie = INDICES[v.indice] || INDICES.ILC, t = parseInt(v.trimestre, 10) || 1;
+    Array.prototype.forEach.call(document.querySelectorAll(".champ.avecTva"), function (c) { c.hidden = !v.tva; });
+    var alertes = [], ecritures = [], blocage = "", lues = 0, ignorees = 0, lignes = [], titres = null;
+
+    $("source").value.split(/\r?\n/).forEach(function (ligne, i) {
+      if (!ligne.trim()) return;
+      var c = ligne.split(TAB).map(function (x) { return x.trim(); });
+      if (/^date\b/i.test(c[0])) { titres = lireTitres(c); return; }
+      if (/^(total|report|solde|cumul)/i.test(c[0])) return;
+      lues++;
+      var p = titres || (c.length >= 8 ? CONSULTATION_ACD : SEPT_COLONNES);
+      var date = M.lireDate(c[p.date] || "");
+      var debit = p.debit === -1 ? 0 : M.centimes(c[p.debit] || ""), credit = p.credit === -1 ? 0 : M.centimes(c[p.credit] || "");
+      if (!date || isNaN(debit) || isNaN(credit)) {
+        ignorees++;
+        if (ignorees <= 5) alertes.push("Ligne " + (i + 1) + " ignorée : " + (!date ? "date illisible" : "le débit ou le crédit n'est pas un nombre") + ".");
+        return;
+      }
+      lignes.push({ date: date, journal: (c[p.journal] || "").toUpperCase(), piece: p.piece === -1 ? "" : (c[p.piece] || ""),
+                    libelle: p.libelle === -1 ? "" : (c[p.libelle] || ""), debit: debit, credit: credit });
+    });
+    if (ignorees > 5) alertes.push((ignorees - 5) + " autres lignes ignorées.");
+    lignes.sort(function (a, b) { return rang(a.date) - rang(b.date); });
+
+    // Sens du compte : débiteur pour une charge (locataire), créditeur pour un produit (bailleur).
+    var totD = 0, totC = 0;
+    lignes.forEach(function (l) { totD += l.debit; totC += l.credit; });
+    var produit = totC > totD;
+    lignes.forEach(function (l) { l.montant = produit ? l.credit - l.debit : l.debit - l.credit; });
+    var cptAttente = v.cptAttente || (produit ? "418100" : "408100");
+    var cptTva = v.cptTva || (produit ? "445870" : "445860");
+    $("cptAttente").placeholder = produit ? "418100" : "408100";
+    $("cptTva").placeholder = produit ? "445870" : "445860";
+    v.cptLoyer = v.cptLoyer || "613200";
+    if (coche !== null && coche >= lignes.length) coche = null;
+
+    var ancienSaisi = lireIndice(v.ancien), nouveauSaisi = lireIndice(v.nouveau), taux = M.centimes(v.taux || "20");
+    $("ancien").classList.toggle("erreur", isNaN(ancienSaisi));
+    $("nouveau").classList.toggle("erreur", isNaN(nouveauSaisi));
+    $("taux").classList.toggle("erreur", v.tva && (isNaN(taux) || taux < 0));
+
+    var revision = coche === null ? null : lignes[coche];
+    var base = null, nouveau = null;
+    if (revision) {
+      nouveau = indicePublie(serie, t, revision.date);
+      base = nouveau ? { annee: nouveau.annee - 1, valeur: serie.valeurs[nouveau.annee - 1] && serie.valeurs[nouveau.annee - 1][t - 1] } : null;
+      if (base && !base.valeur) base = null;
+    }
+    $("aideNouveau").textContent = nouveau ? "Vide : " + v.indice + " T" + t + " " + nouveau.annee + " = " + nombre(nouveau.valeur)
+                                           : "Vide : dernier indice publié à la date de révision";
+    $("aideAncien").textContent = base ? "Vide : " + v.indice + " T" + t + " " + base.annee + " = " + nombre(base.valeur)
+                                       : "Vide : indice de l'année précédente";
+    var iBase = ancienSaisi !== null ? ancienSaisi : (base && base.valeur);
+    var iNouveau = nouveauSaisi !== null ? nouveauSaisi : (nouveau && nouveau.valeur);
+
+    if (!lues) blocage = "Collez le détail du compte de loyer dans le cadre « Détail du compte ».";
+    else if (!lignes.length) blocage = "Aucune ligne exploitable : vérifiez le format collé.";
+    else if (!revision) blocage = "Cochez, dans « Lignes du compte », la ligne du premier loyer à réviser.";
+    else if (isNaN(ancienSaisi) || isNaN(nouveauSaisi)) blocage = "Un indice saisi n'est pas un nombre valide.";
+    else if (!iNouveau || !iBase) blocage = "L'indice " + v.indice + " T" + t + " n'est pas repris dans l'outil pour cette date : saisissez l'indice de base et le nouvel indice.";
+    else if (v.tva && (isNaN(taux) || taux < 0)) blocage = "Le taux de TVA n'est pas valide.";
+    else if (revision.montant <= 0) blocage = "La ligne cochée n'a pas de montant de loyer positif.";
+
+    var ancienLoyer = 0, nouveauLoyer = 0, total = 0, concernees = [], fin = null;
+    if (!blocage) {
+      ancienLoyer = revision.montant;
+      nouveauLoyer = Math.round(ancienLoyer * iNouveau / iBase);
+      fin = finDeMois(lignes[lignes.length - 1].date);
+      lignes.forEach(function (l, k) {
+        l.vise = k >= coche;
+        l.revise = l.vise ? nouveauLoyer : null;
+        l.complement = l.vise ? Math.max(0, nouveauLoyer - l.montant) : 0;
+        if (l.vise) { concernees.push(l); total += l.complement; }
+      });
+      if (iNouveau < iBase) alertes.push("L'indice a baissé : le loyer révisé est inférieur. La page ne provisionne que les compléments positifs ; vérifiez la clause du bail.");
+      var dejaRevises = concernees.filter(function (l) { return l.montant >= nouveauLoyer && l !== revision; }).length;
+      if (dejaRevises && iNouveau > iBase) alertes.push(dejaRevises + " ligne" + (dejaRevises > 1 ? "s sont" : " est") + " déjà au montant révisé ou au-delà : pas de complément.");
+      if (ancienSaisi === null && nouveauSaisi === null) alertes.push("Indices pris dans le tableau de l'outil : vérifiez qu'ils correspondent à ceux que retient le bail.");
+    }
+
+    // Tableau des lignes, avec la case qui fixe la date de révision.
+    var corps = $("detail");
+    corps.textContent = "";
+    lignes.forEach(function (l, k) {
+      var tr = document.createElement("tr");
+      if (!blocage && !l.vise) tr.className = "exclu";
+      var td = cellule(tr, "");
+      var c = document.createElement("input");
+      c.type = "checkbox";
+      c.checked = k === coche;
+      c.setAttribute("data-rang", k);
+      c.setAttribute("aria-label", "Réviser à partir du " + M.dateFr(l.date));
+      td.appendChild(c);
+      cellule(tr, M.dateFr(l.date));
+      cellule(tr, l.journal, "compte");
+      cellule(tr, l.piece);
+      cellule(tr, l.libelle, "lib");
+      cellule(tr, M.affiche(l.montant), "droite");
+      cellule(tr, l.revise === null || blocage ? "" : M.affiche(l.revise), "droite");
+      cellule(tr, l.vise && !blocage ? M.affiche(l.complement) : "", "droite");
+      corps.appendChild(tr);
+    });
+
+    var tva = v.tva && !blocage ? Math.round(total * taux / 10000) : 0;
+    note = ""; dernier = null;
+    if (!blocage) {
+      var variation = (iNouveau / iBase - 1) * 100;
+      var nomIndices = (ancienSaisi === null && base ? v.indice + " T" + t + " " + base.annee + " " : "indice de base ") + nombre(iBase) + " ; " +
+                       (nouveauSaisi === null && nouveau ? v.indice + " T" + t + " " + nouveau.annee + " " : "nouvel indice ") + nombre(iNouveau);
+      $("dateRevision").textContent = M.dateFr(revision.date);
+      $("finPeriode").textContent = M.dateFr(fin);
+      $("indices").textContent = nomIndices;
+      $("variation").textContent = (variation >= 0 ? "+" : "") + nombre(variation.toFixed(2)) + " %";
+      $("loyerAncien").textContent = M.affiche(ancienLoyer) + " €";
+      $("loyerNouveau").textContent = M.affiche(nouveauLoyer) + " €";
+      $("resultat").textContent = M.affiche(total) + " €";
+
+      note = "Revalorisation du loyer " + (produit ? "perçu" : "versé") + " (" + serie.nom + ", trimestre de référence T" + t + ") : " + nomIndices +
+             ", soit " + (variation >= 0 ? "+" : "") + nombre(variation.toFixed(2)) + " %. Loyer de " + M.affiche(ancienLoyer) + " Euros porté à " +
+             M.affiche(ancienLoyer) + " x " + nombre(iNouveau) + " / " + nombre(iBase) + " = " + M.affiche(nouveauLoyer) + " Euros HT à compter du " +
+             M.dateFr(revision.date) + ". Du " + M.dateFr(revision.date) + " au " + M.dateFr(fin) + ", " + concernees.length + " loyer" +
+             (concernees.length > 1 ? "s" : "") + " comptabilisé" + (concernees.length > 1 ? "s" : "") + " pour " +
+             M.affiche(concernees.reduce(function (s, l) { return s + l.montant; }, 0)) + " Euros au lieu de " + M.affiche(nouveauLoyer * concernees.length) +
+             " Euros : complément de " + M.affiche(total) + " Euros HT" + (tva ? ", TVA " + M.affiche(tva) + " Euros" : "") + ", provisionné au " +
+             M.dateFr(fin) + " au compte " + cptAttente + ".";
+
+      if (total > 0) {
+        var piece = v.piece || M.code6(["reval", v.indice, t, iBase, iNouveau, M.dateFr(revision.date), M.dateFr(fin), total, v.cptLoyer, cptAttente, v.tva, taux].join("|"));
+        var date = M.dateFr(fin), libelle = "Revalorisation loyer " + v.indice + " " + M.dateFr(revision.date).slice(3) + " à " + M.dateFr(fin).slice(3);
+        if (produit) {
+          ecritures.push({ date: date, piece: piece, compte: cptAttente, libelle: libelle, debit: total + tva, credit: null, debut: true },
+                         { date: date, piece: piece, compte: v.cptLoyer, libelle: libelle, debit: null, credit: total });
+          if (tva) ecritures.push({ date: date, piece: piece, compte: cptTva, libelle: libelle, debit: null, credit: tva });
+        } else {
+          ecritures.push({ date: date, piece: piece, compte: v.cptLoyer, libelle: libelle, debit: total, credit: null, debut: true });
+          if (tva) ecritures.push({ date: date, piece: piece, compte: cptTva, libelle: libelle, debit: tva, credit: null });
+          ecritures.push({ date: date, piece: piece, compte: cptAttente, libelle: libelle, debit: null, credit: total + tva });
+        }
+      } else blocage = "Pas d'écriture : aucun complément de loyer à provisionner.";
+      dernier = { dossier: v.dossier, serie: serie, indice: v.indice, t: t, nomIndices: nomIndices, iBase: iBase, iNouveau: iNouveau, variation: variation,
+                  revision: M.dateFr(revision.date), fin: M.dateFr(fin), ancienLoyer: ancienLoyer, nouveauLoyer: nouveauLoyer, lignes: concernees,
+                  total: total, tva: tva, produit: produit, ecritures: ecritures };
+    } else {
+      ["dateRevision", "finPeriode", "indices", "variation", "loyerAncien", "loyerNouveau", "resultat"].forEach(function (id) { $(id).textContent = "—"; });
+    }
+
+    $("note").textContent = note || "La note s'affichera une fois la ligne de révision cochée.";
+    $("copierNote").disabled = !note;
+    $("pdf").disabled = !dernier;
+    $("etatNote").textContent = "";
+    M.rendre(ecritures, blocage, alertes);
+  }
+
+  // Justificatif PDF : identification, indices, loyers concernés, écriture.
+  function justificatif(d) {
+    var f = window.MiniPdf.fiche("Revalorisation de loyer");
+    f.section("Identification");
+    f.ligne("Dossier", d.dossier).ligne("Loyer", d.produit ? "Perçu (produit)" : "Versé (charge)")
+     .ligne("Indice du bail", d.serie.nom).ligne("Trimestre de référence", "T" + d.t);
+    f.section("Révision");
+    f.ligne("Indices retenus", d.nomIndices)
+     .ligne("Variation de l'indice", (d.variation >= 0 ? "+" : "") + nombre(d.variation.toFixed(2)) + " %")
+     .ligne("Loyer avant révision", M.affiche(d.ancienLoyer) + " €")
+     .ligne("Loyer révisé (HT)", M.affiche(d.nouveauLoyer) + " €", { gras: true })
+     .ligne("Période provisionnée", "du " + d.revision + " au " + d.fin);
+    f.section("Loyers comptabilisés à l'ancien montant");
+    var corps = d.lignes.map(function (l) { return [M.dateFr(l.date), l.libelle, M.affiche(l.montant), M.affiche(l.revise), M.affiche(l.complement)]; });
+    var total = ["Total", "", "", "", M.affiche(d.total)];
+    total.gras = true;
+    f.tableau([{ nom: "Date", largeur: 62 }, { nom: "Libellé", largeur: 197 }, { nom: "Comptabilisé", largeur: 80, droite: true },
+               { nom: "Loyer révisé", largeur: 80, droite: true }, { nom: "Complément", largeur: 80, droite: true }], corps.concat([total]));
+    f.total("Provision au " + d.fin + " (HT)", M.affiche(d.total) + " €");
+    f.texte("Loyer révisé = loyer x nouvel indice / indice de base, à compter de la date de révision. Indices publiés par l'Insee ; " +
+            "le complément de chaque loyer comptabilisé à l'ancien montant est provisionné à la fin du mois de la dernière ligne.");
+    f.ecritures(d.ecritures, M.affiche);
+    return f;
+  }
+
+  $("detail").addEventListener("change", function (e) {
+    var r = e.target.getAttribute && e.target.getAttribute("data-rang");
+    if (r === null) return;
+    coche = e.target.checked ? parseInt(r, 10) : null;   // une seule ligne cochée à la fois
+    calcule();
+    var c = $("detail").querySelector('input[data-rang="' + r + '"]');
+    if (c) c.focus();
+  });
+  $("copierNote").addEventListener("click", function () {
+    var fait = function () { $("etatNote").textContent = "Note copiée"; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(note).then(fait, function () { $("etatNote").textContent = "Copie impossible dans ce navigateur"; });
+    } else $("etatNote").textContent = "Copie impossible dans ce navigateur";
+  });
+  $("pdf").addEventListener("click", function () {
+    if (!dernier) return;
+    var nom = window.MiniPdf.nomFichier(["Revalorisation loyer", dernier.fin.slice(6), dernier.dossier].filter(Boolean).join(" "));
+    justificatif(dernier).telecharger(nom + ".pdf");
+    $("etatNote").textContent = "Justificatif téléchargé";
+  });
+  window.justificatifPdf = function () { return dernier ? justificatif(dernier) : null; };   // pour les contrôles
+  M.brancher(ids, calcule);
+})();
+</script>
+</body>
+</html>

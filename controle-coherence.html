@@ -48,7 +48,7 @@ td.constats { min-width: 150px; }
   <div class="conteneur">
     <p class="eyebrow">Revue analytique — comparaison N / N-1</p>
     <h1>Contrôle de <em>cohérence.</em></h1>
-    <p class="lead"><strong>But de la page :</strong> repérer, dans une balance comparative sur deux exercices, les comptes dont l'évolution demande une explication. Comme en revue analytique, la page croise deux seuils : la variation en pourcentage du compte, et le poids de cette variation dans le total des soldes de l'exercice. Elle signale aussi les comptes nouveaux, les comptes soldés et les soldes de sens inversé.</p>
+    <p class="lead"><strong>But de la page :</strong> repérer, dans une balance comparative sur deux exercices, les comptes dont l'évolution demande une explication. Comme en revue analytique, la page met en avant deux choses : les variations fortes en pourcentage, comparées au solde N-1 du compte, et les variations fortes en valeur, comparées au total des soldes de l'exercice. Sur les comptes ainsi retenus, elle signale aussi les comptes nouveaux, les comptes soldés et les soldes de sens inversé.</p>
     <p class="lead">Collez la balance copiée depuis ACDCompta. L'analyse est faite aussitôt ; elle désigne les points à regarder, elle ne les explique pas.</p>
 
     <div class="grille">
@@ -61,19 +61,15 @@ td.constats { min-width: 150px; }
             <input id="dossier" type="text" value="EXEMPLE SARL">
           </div>
           <div class="champ">
-            <label for="seuilPct">Variation du compte<span class="aide">Signalée au-delà de ce pourcentage, à la hausse comme à la baisse</span></label>
+            <label for="seuilPct">Variation en %<span class="aide">Mise en avant au-delà de ce pourcentage du solde N-1, à la hausse comme à la baisse</span></label>
             <input id="seuilPct" class="droite" type="text" inputmode="decimal" placeholder="30" value="30">
           </div>
           <div class="champ">
-            <label for="seuilTotal">Poids dans le total N<span class="aide">Variation supérieure à ce pourcentage du total des soldes N</span></label>
+            <label for="seuilTotal">Variation en valeur<span class="aide">Mise en avant quand le montant de la variation dépasse ce pourcentage du total des soldes N</span></label>
             <input id="seuilTotal" class="droite" type="text" inputmode="decimal" placeholder="10" value="10">
           </div>
           <div class="champ">
-            <label for="ecartMin">Écart minimal<span class="aide">Facultatif. En euros : les variations plus petites ne sont pas signalées</span></label>
-            <input id="ecartMin" class="droite" type="text" inputmode="decimal">
-          </div>
-          <div class="champ">
-            <label for="masquer">Masquer sous les seuils<span class="aide">Les comptes qui ne dépassent ni le seuil de variation ni le seuil de poids ne sont pas listés</span></label>
+            <label for="masquer">Masquer sous les seuils<span class="aide">Les comptes qui ne dépassent ni le seuil en % ni le seuil en valeur ne sont pas listés</span></label>
             <input id="masquer" type="checkbox" class="bascule" role="switch" checked>
           </div>
           <div class="champ pleine">
@@ -112,7 +108,7 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
           <div class="champ"><span class="etiquette">Total des soldes <span class="exoN">N</span></span><span class="valeur droite" id="totalN"></span></div>
           <div class="champ"><span class="etiquette">Total des soldes N-1</span><span class="valeur droite" id="totalP"></span></div>
           <div class="champ"><span class="etiquette">Variation d'ensemble</span><span class="valeur droite" id="varTotale"></span></div>
-          <div class="champ"><span class="etiquette">Seuil de poids, en euros</span><span class="valeur droite" id="seuilEuros"></span></div>
+          <div class="champ"><span class="etiquette">Seuil en valeur, en euros</span><span class="valeur droite" id="seuilEuros"></span></div>
           <div class="champ"><span class="etiquette">Points prioritaires</span><span class="valeur droite" id="nbPrioritaires"></span></div>
           <div class="champ"><span class="etiquette">Autres points à regarder</span><span class="valeur droite" id="nbAutres"></span></div>
           <div class="champ"><span class="etiquette">Comptes sans remarque</span><span class="valeur droite" id="nbCalmes"></span></div>
@@ -184,7 +180,7 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
 (function () {
   "use strict";
   var M = window.MiniOutils, $ = M.$;
-  var ids = ["dossier", "seuilPct", "seuilTotal", "ecartMin", "masquer", "vue", "source"];
+  var ids = ["dossier", "seuilPct", "seuilTotal", "masquer", "vue", "source"];
   var synthese = "";
   var dernier = null;   // dernière analyse valide, reprise par le justificatif PDF
 
@@ -225,28 +221,32 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
     return { comptes: comptes, sousTotaux: sousTotaux, rejets: rejets, exercice: exercice };
   }
 
-  // Constats d'une ligne (compte ou poste). seuils : { pct, euros, min } ; pct en pour cent.
+  // Constats d'une ligne (compte ou poste). seuils : { pct, euros } ; pct en pour cent.
+  // Deux règles mettent une ligne en avant :
+  // - la variation en % : l'écart dépasse le seuil en pourcentage du solde N-1. Un compte
+  //   nouveau, sans solde N-1, la dépasse toujours ;
+  // - la variation en valeur : l'écart dépasse le seuil en euros, tiré du total des soldes N.
+  // Les autres constats (sens inversé, charge créditrice) ne s'affichent que sur une ligne
+  // mise en avant par l'une de ces deux règles.
   function analyse(l, seuils, poste) {
     // La variation est l'écart entre les deux soldes, en valeur absolue : une baisse de
     // 1 000 et une hausse de 1 000 donnent toutes deux 1 000. Le sens se lit sur les soldes.
     l.v = Math.abs(l.n - l.p);
     l.pct = l.p !== 0 ? l.v / Math.abs(l.p) * 100 : null;
-    var constats = [], ecart = Math.abs(l.v), assez = ecart >= seuils.min && ecart > 0;
-    var poids = assez && seuils.euros > 0 && ecart > seuils.euros;
-    // La ligne n'est signalée que si sa variation dépasse un seuil : le pourcentage (un compte
-    // nouveau compte pour un dépassement) ou le poids dans le total. Sous les seuils, aucun
-    // constat n'est affiché, pas même un sens inversé ou une charge créditrice.
-    var depasse = assez && (poids || (l.pct === null ? l.n !== 0 : Math.abs(l.pct) > seuils.pct));
-    if (assez && l.p === 0 && l.n !== 0) constats.push(poste ? "Nouveau poste" : "Nouveau compte");
-    else if (assez && l.n === 0 && l.p !== 0) constats.push(poste ? "Poste soldé" : "Compte soldé");
-    else if (assez && l.pct !== null && Math.abs(l.pct) > seuils.pct) constats.push("Variation > " + seuils.pctTexte);
-    if (poids) constats.push("Poids > " + seuils.totalTexte);
+    var constats = [];
+    var enPct = l.v > 0 && (l.pct === null || l.pct > seuils.pct);
+    var enValeur = seuils.euros > 0 && l.v > seuils.euros;
+    if (enPct) {
+      constats.push(l.p === 0 ? (poste ? "Nouveau poste" : "Nouveau compte")
+                  : l.n === 0 ? (poste ? "Poste soldé" : "Compte soldé") : "Variation en %");
+    }
+    if (enValeur) constats.push("Variation en valeur");
     if (l.n * l.p < 0) constats.push("Sens inversé");
     if (!poste && l.compte.charAt(0) === "6" && (l.n < 0 || l.p < 0)) constats.push("Charge créditrice");
-    if (!depasse) constats = [];
+    if (!enPct && !enValeur) constats = [];
     l.constats = constats;
-    // Prioritaire : la variation pèse dans le total et un autre constat s'y ajoute.
-    l.rang = !constats.length ? 0 : (poids && constats.length > 1 ? 2 : 1);
+    // Prioritaire : la ligne dépasse les deux seuils à la fois.
+    l.rang = enPct && enValeur ? 2 : (enPct || enValeur ? 1 : 0);
     return l;
   }
 
@@ -277,15 +277,13 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
     v.seuilTotal = v.seuilTotal || "10";
     var alertes = [], blocage = "";
 
-    var sPct = M.centimes(v.seuilPct), sTotal = M.centimes(v.seuilTotal), min = M.centimes(v.ecartMin);
+    var sPct = M.centimes(v.seuilPct), sTotal = M.centimes(v.seuilTotal);
     $("seuilPct").classList.toggle("erreur", isNaN(sPct) || sPct < 0);
     $("seuilTotal").classList.toggle("erreur", isNaN(sTotal) || sTotal < 0);
-    $("ecartMin").classList.toggle("erreur", isNaN(min) || min < 0);
 
     var r = lire($("source").value);
     if (!r.comptes.length) blocage = "Collez la balance comparative copiée depuis ACDCompta.";
     else if (isNaN(sPct) || sPct < 0 || isNaN(sTotal) || sTotal < 0) blocage = "Un seuil n'est pas un nombre valide.";
-    else if (isNaN(min) || min < 0) blocage = "L'écart minimal n'est pas un nombre valide.";
     if (r.rejets) alertes.push(r.rejets + (r.rejets > 1 ? " lignes ignorées : aucun compte ou aucun solde n'y a été reconnu."
                                                          : " ligne ignorée : aucun compte ou aucun solde n'y a été reconnu."));
 
@@ -303,7 +301,7 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
       var baseN = 0, totalN = 0, totalP = 0;
       r.comptes.forEach(function (l) { baseN += Math.abs(l.n); totalN += l.n; totalP += l.p; });
       var texte = function (c) { return M.affiche(c).replace(/,00$/, "") + " %"; };
-      seuils = { pct: sPct / 100, pctTexte: texte(sPct), euros: Math.round(baseN * sTotal / 10000), totalTexte: texte(sTotal), min: min };
+      seuils = { pct: sPct / 100, pctTexte: texte(sPct), euros: Math.round(baseN * sTotal / 10000), totalTexte: texte(sTotal) };
       r.comptes.forEach(function (l) { analyse(l, seuils, false); });
 
       // Postes : regroupement des comptes sur leurs deux premiers chiffres.
@@ -315,7 +313,7 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
         parRacine[racine].p += l.p;
       });
       postes.forEach(function (l) { analyse(l, seuils, true); });
-      var lignesPostes = postes.concat([analyse({ compte: "Total", n: totalN, p: totalP }, { pct: Infinity, euros: 0, min: 0 }, true)]);
+      var lignesPostes = postes.concat([analyse({ compte: "Total", n: totalN, p: totalP }, { pct: Infinity, euros: 0 }, true)]);
       lignesPostes.forEach(function (l) {
         var tr = ligneTable(l, [[l.compte, "compte"], [M.affiche(l.n), "droite"], [M.affiche(l.p), "droite"], [signe(l.v), "droite"],
                                 [l.pct === null ? "—" : pourcent(l.pct), "droite"], ["constats", "constats"]]);
@@ -334,7 +332,7 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
       });
 
       // Périmètre de contrôle : un compte y entre dès que sa variation dépasse l'un ou l'autre
-      // seuil, le pourcentage ou le poids dans le total. L'interrupteur « Masquer sous les
+      // seuil, en pourcentage ou en valeur. L'interrupteur « Masquer sous les
       // seuils » ne liste que ces comptes, dans les deux affichages.
       var masquer = $("masquer").checked;
       var visibles = masquer ? r.comptes.filter(function (l) { return l.rang > 0; }) : r.comptes;
@@ -361,11 +359,12 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
       $("nbMasques").textContent = masquer ? masques : "—";
       $("vide").hidden = (v.vue === "tous" ? visibles.length : signales.length) > 0;
       $("vide").textContent = "Aucun compte ne dépasse les seuils.";
-      $("legende").textContent = "Pastille pleine : la variation dépasse " + seuils.totalTexte + " du total des soldes " + exo + " (" +
-        M.affiche(seuils.euros) + " €) et un autre constat s'y ajoute, ou le compte de charge est créditeur. La variation et son pourcentage sont donnés en valeur absolue, sans signe ; le pourcentage est rapporté au solde N-1." +
+      $("legende").textContent = "Variation en % : plus de " + seuils.pctTexte + " du solde N-1. Variation en valeur : plus de " + seuils.totalTexte +
+        " du total des soldes " + exo + ", soit " + M.affiche(seuils.euros) +
+        " €. Pastille pleine : le compte dépasse les deux seuils, ou le compte de charge est créditeur. La variation et son pourcentage sont donnés en valeur absolue, sans signe ; le pourcentage est rapporté au solde N-1." +
         (masquer && masques ? " " + masques + (masques > 1 ? " comptes ne sont pas listés : ils ne dépassent" : " compte n'est pas listé : il ne dépasse") +
                               " aucun des deux seuils." : "");
-      dernier = { dossier: v.dossier, exo: exo, seuils: seuils, min: min, tous: v.vue === "tous", nbComptes: r.comptes.length,
+      dernier = { dossier: v.dossier, exo: exo, seuils: seuils, tous: v.vue === "tous", nbComptes: r.comptes.length,
                   totalN: totalN, totalP: totalP, prioritaires: prioritaires, autres: signales.length - prioritaires,
                   calmes: visibles.length - signales.length, masquer: masquer, masques: masques, postes: lignesPostes,
                   comptes: v.vue === "tous" ? visibles : tries };
@@ -380,9 +379,9 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
       var reste = r.comptes.length - perimetre.length;
       var pluriel = function (n, un, plusieurs) { return n + " " + (n > 1 ? plusieurs : un); };
       synthese = "Contrôle de cohérence " + exo + " / N-1" + (v.dossier ? " - " + v.dossier : "") + " : " +
-                 pluriel(r.comptes.length, "compte analysé", "comptes analysés") + ". Périmètre de contrôle : variation de plus de " +
-                 seuils.pctTexte + ", ou supérieure à " + seuils.totalTexte + " du total des soldes " + exo + " (soit " + M.affiche(seuils.euros) + " Euros)" +
-                 (min ? ", pour un écart d'au moins " + M.affiche(min) + " Euros" : "") + ".\n" +
+                 pluriel(r.comptes.length, "compte analysé", "comptes analysés") + ". Périmètre de contrôle : variation en % de plus de " +
+                 seuils.pctTexte + ", ou variation en valeur supérieure à " + seuils.totalTexte + " du total des soldes " + exo +
+                 " (soit " + M.affiche(seuils.euros) + " Euros).\n" +
                  (perimetre.length ? pluriel(perimetre.length, "compte dans le périmètre, à justifier", "comptes dans le périmètre, à justifier") +
                                      " :\n" + perimetre.map(decrit).join("\n")
                                    : "Aucun compte dans le périmètre : aucune variation ne dépasse ces seuils.") +
@@ -420,9 +419,8 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
     var s = d.seuils, pct = function (l) { return l.pct === null ? "—" : pourcent(l.pct); };
     f.section("Identification");
     f.ligne("Dossier", d.dossier).ligne("Exercice", d.exo + " comparé à N-1").ligne("Comptes lus", String(d.nbComptes))
-     .ligne("Seuil de variation", "plus de " + s.pctTexte)
-     .ligne("Seuil de poids", "plus de " + s.totalTexte + " du total des soldes, soit " + M.affiche(s.euros) + " €")
-     .ligne("Écart minimal", d.min ? M.affiche(d.min) + " €" : "")
+     .ligne("Variation en %", "plus de " + s.pctTexte + " du solde N-1")
+     .ligne("Variation en valeur", "plus de " + s.totalTexte + " du total des soldes, soit " + M.affiche(s.euros) + " €")
      .ligne("Comptes présentés", (d.tous ? "Tous les comptes" : "Comptes à justifier") +
             (d.masquer ? ", au-delà de l'un ou l'autre seuil" : ""));
     f.section("Synthèse");
@@ -450,8 +448,7 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
                   return r;
                 }));
     } else f.ligne("Résultat", "Aucun compte ne dépasse les seuils");
-    f.texte("Ligne en gras : point prioritaire, la variation dépasse " + s.totalTexte + " du total des soldes " + d.exo + " (" +
-            M.affiche(s.euros) + " €) et un autre constat s'y ajoute. Une charge créditrice est écrite en capitales. " +
+    f.texte("Ligne en gras : point prioritaire, le compte dépasse les deux seuils, en % et en valeur. Une charge créditrice est écrite en capitales. " +
             "La variation et son pourcentage sont donnés en valeur absolue, sans signe ; le pourcentage est rapporté au solde N-1.");
     return f;
   }

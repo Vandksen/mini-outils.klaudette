@@ -66,11 +66,11 @@ td.constats { min-width: 150px; }
           </div>
           <div class="champ">
             <label for="seuilTotal">Variation en valeur<span class="aide">Mise en avant quand le montant de la variation dépasse ce pourcentage du total des soldes N</span></label>
-            <input id="seuilTotal" class="droite" type="text" inputmode="decimal" placeholder="10" value="10">
+            <input id="seuilTotal" class="droite" type="text" inputmode="decimal" placeholder="20" value="20">
           </div>
           <div class="champ">
             <label for="ecartMin">Écart minimal<span class="aide">En euros : une variation plus petite n'est pas mise en avant. Vide : aucun minimum</span></label>
-            <input id="ecartMin" class="droite" type="text" inputmode="decimal" value="100">
+            <input id="ecartMin" class="droite" type="text" inputmode="decimal" value="1000">
           </div>
           <div class="champ">
             <label for="masquer">Masquer sous les seuils<span class="aide">Les comptes qui ne dépassent ni le seuil en % ni le seuil en valeur ne sont pas listés</span></label>
@@ -94,15 +94,15 @@ D&#9;606100&#9;Énergie&#9;&#9;&#9;2 480,00&#9;2 310,00&#9;170,00&#9;7,36
 D&#9;606400&#9;Fournitures administratives&#9;&#9;&#9;640,00&#9;1 250,00&#9;-610,00&#9;-48,80
  &#9;60&#9; &#9; &#9; &#9;3 120,00&#9;3 560,00&#9;-440,00&#9;-12,36
 D&#9;613200&#9;Locations immobilières&#9;&#9;&#9;14 400,00&#9;14 400,00&#9;0,00&#9;0,00
-D&#9;615500&#9;Entretien et réparations&#9;&#9;&#9;6 900,00&#9;1 150,00&#9;5 750,00&#9;500,00
+D&#9;615500&#9;Entretien et réparations&#9;&#9;&#9;9 900,00&#9;1 150,00&#9;8 750,00&#9;760,87
 D&#9;616000&#9;Assurances&#9;&#9;&#9;2 150,00&#9;2 040,00&#9;110,00&#9;5,39
- &#9;61&#9; &#9; &#9; &#9;23 450,00&#9;17 590,00&#9;5 860,00&#9;33,31
+ &#9;61&#9; &#9; &#9; &#9;26 450,00&#9;17 590,00&#9;8 860,00&#9;50,37
 D&#9;622600&#9;Honoraires&#9;&#9;&#9;6 800,00&#9;5 200,00&#9;1 600,00&#9;30,77
 D&#9;623000&#9;Publicité&#9;&#9;&#9;1 900,00&#9;0,00&#9;1 900,00&#9;0,00
 D&#9;625100&#9;Déplacements&#9;&#9;&#9;0,00&#9;870,00&#9;-870,00&#9;-100,00
 D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 290,00&#9;30,00&#9;2,33
  &#9;62&#9; &#9; &#9; &#9;10 020,00&#9;7 360,00&#9;2 660,00&#9;36,14
- &#9;6&#9; &#9; &#9; &#9;36 590,00&#9;28 510,00&#9;8 080,00&#9;28,34</textarea>
+ &#9;6&#9; &#9; &#9; &#9;39 590,00&#9;28 510,00&#9;11 080,00&#9;38,86</textarea>
         </section>
 
         <section class="panel">
@@ -281,7 +281,7 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
     var v = {};
     ids.forEach(function (id) { v[id] = $(id).value.trim(); });
     v.seuilPct = v.seuilPct || "30";
-    v.seuilTotal = v.seuilTotal || "10";
+    v.seuilTotal = v.seuilTotal || "20";
     var alertes = [], blocage = "";
 
     var sPct = M.centimes(v.seuilPct), sTotal = M.centimes(v.seuilTotal), min = M.centimes(v.ecartMin);

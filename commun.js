@@ -40,7 +40,8 @@ window.MiniOutils = (function () {
   // Catégorie « Analyse » du menu : contrôles et revues à partir de données collées.
   // Pour y ajouter une page : une ligne ici, de la même forme que dans OUTILS.
   var ANALYSE = [
-    { fichier: "controle-coherence.html", nom: "Contrôle de cohérence" }
+    { fichier: "controle-coherence.html", nom: "Contrôle de cohérence" },
+    { fichier: "dates-week-end.html", nom: "Dates de week-end" }
   ];
   // Catégorie « Dashboard » du menu : outils qui s'appuient sur les comptes 4886 et 4887
   // tenus par cycle. Pour y ajouter une page :
@@ -151,11 +152,11 @@ window.MiniOutils = (function () {
     if (!nav) return;
     var page = location.pathname.split("/").pop() || "index.html";
     // Chaque catégorie du menu est un accordéon : son titre est un bouton qui déplie ses
-    // entrées. Les deux catégories d'outils, « Dashboard » et « Référentiel » sont dépliées à chaque
-    // chargement ; « À propos » est repliée, sauf sur l'une de ses pages. Un clic sur un
-    // titre replie ou déplie sa seule catégorie.
+    // entrées. Les deux catégories d'outils et « Référentiel » sont dépliées à chaque
+    // chargement ; « Dashboard » et « À propos » sont repliées, sauf sur l'une de leurs
+    // pages. Un clic sur un titre replie ou déplie sa seule catégorie.
     var rubrique = function (cle, titre, contenu, classe) {
-      var ouverte = cle !== "a-propos" || contenu.indexOf('aria-current="page"') !== -1;
+      var ouverte = (cle !== "a-propos" && cle !== "dashboard") || contenu.indexOf('aria-current="page"') !== -1;
       return '<h2' + (classe ? ' class="' + classe + '"' : '') + '><button type="button" class="rubrique" data-cle="' + cle +
              '" aria-expanded="' + ouverte + '" aria-controls="rubrique-' + cle + '"><span>' + titre + '</span>' + CHEVRON + '</button></h2>' +
              '<div class="groupe' + (classe ? ' ' + classe : '') + '" id="rubrique-' + cle + '"' + (ouverte ? '' : ' hidden') + '>' + contenu + '</div>';

@@ -31,6 +31,7 @@ const FICHIERS = [
   "extournes.html",
   "import-banque.html",
   "controle-coherence.html",
+  "dates-week-end.html",
   "etalement.html",
   "etalement-donnees.js",
   "pcg.html",

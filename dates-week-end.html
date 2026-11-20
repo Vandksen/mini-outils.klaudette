@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1136DB">
+<meta name="description" content="Repère, dans le détail collé d'un compte du grand livre, les écritures datées d'un samedi ou d'un dimanche : liste à copier, répartition par jour de la semaine, note et justificatif PDF. Gratuit, sans envoi de données.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/icone-m-180.png">
+<title>Dates de week-end — Mini-outils</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mini-outils">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Dates de week-end — Mini-outils">
+<meta property="og:description" content="Repère, dans le détail collé d'un compte du grand livre, les écritures datées d'un samedi ou d'un dimanche : liste à copier, répartition par jour de la semaine, note et justificatif PDF. Gratuit, sans envoi de données.">
+<meta property="og:url" content="https://mini-outils-compta.fr/dates-week-end.html">
+<link rel="canonical" href="https://mini-outils-compta.fr/dates-week-end.html">
+<meta property="og:image" content="https://mini-outils-compta.fr/images/og-tempete.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Un navire dans la tempête, avec le slogan « Quand la période fiscale se déchaîne, gardez le cap. »">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="commun.css">
+<style>
+/* Jours de la semaine retenus dans la répartition. */
+#semaine tr.vise td { color: var(--blue); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">Contenu d'un compte — samedis et dimanches</p>
+    <h1>Dates <em>de week-end.</em></h1>
+    <p class="lead"><strong>But de la page :</strong> repérer dans le détail d'un compte du grand livre les écritures datées d'un samedi ou d'un dimanche, par exemple des notes de restaurant ou de carburant à justifier. La page liste ces lignes, les totalise et rédige la note à joindre au dossier ou la question à poser au client.</p>
+    <p class="lead">Collez le contenu du compte. Le résultat est calculé aussitôt.</p>
+
+    <div class="grille">
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">01 — Configuration</p>
+          <div class="champ">
+            <label for="dossier">Dossier<span class="aide">Facultatif</span></label>
+            <input id="dossier" type="text" value="EXEMPLE SARL">
+          </div>
+          <div class="champ">
+            <label for="compte">Compte analysé<span class="aide">Facultatif, pour la note</span></label>
+            <input id="compte" type="text" value="625700">
+          </div>
+          <div class="champ">
+            <label for="samedi">Samedis</label>
+            <input id="samedi" type="checkbox" class="bascule" role="switch" checked>
+          </div>
+          <div class="champ">
+            <label for="dimanche">Dimanches</label>
+            <input id="dimanche" type="checkbox" class="bascule" role="switch" checked>
+          </div>
+          <ul class="alertes" id="alertes"></ul>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">02 — Contenu du compte</p>
+          <p class="aide-bloc">Dans ACD, ouvrez le détail du compte en mode grand livre, copiez son contenu avec Ctrl+C puis collez-le dans cette zone avec Ctrl+V (la ligne de titres peut être copiée ou non).</p>
+          <textarea id="source" class="saisie" spellcheck="false" wrap="off" aria-label="Contenu du compte à coller"></textarea>
+        </section>
+      </div>
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">03 — Écritures du week-end</p>
+          <p class="resultat" id="resultat"></p>
+          <div class="champ"><span class="etiquette">Dont samedis</span><span class="valeur droite" id="nbSamedi"></span></div>
+          <div class="champ"><span class="etiquette">Dont dimanches</span><span class="valeur droite" id="nbDimanche"></span></div>
+          <div class="champ"><span class="etiquette">Débit de ces lignes</span><span class="valeur droite" id="totDebit"></span></div>
+          <div class="champ"><span class="etiquette">Crédit de ces lignes</span><span class="valeur droite" id="totCredit"></span></div>
+          <div class="champ"><span class="etiquette">Lignes lues</span><span class="valeur droite" id="nbLues"></span></div>
+          <div class="champ"><span class="etiquette">Période du compte</span><span class="valeur droite" id="periode"></span></div>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">04 — Lignes repérées</p>
+            <div class="actions">
+              <span class="etat" id="etat" role="status"></span>
+              <button class="btn" id="copier" type="button">Copier les lignes</button>
+            </div>
+          </div>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr><th>Date</th><th>Jour</th><th>Jnl</th><th>Pièce</th><th>Libellé</th><th class="droite">Débit</th><th class="droite">Crédit</th></tr>
+              </thead>
+              <tbody id="lignes"></tbody>
+            </table>
+          </div>
+          <div class="vide" id="vide" hidden></div>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">05 — Répartition par jour de la semaine</p>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr><th>Jour</th><th class="droite">Lignes</th><th class="droite">Débit</th><th class="droite">Crédit</th></tr>
+              </thead>
+              <tbody id="semaine"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">06 — Note</p>
+            <div class="actions">
+              <span class="etat" id="etatNote" role="status"></span>
+              <button class="btn ghost" id="copierNote" type="button">Copier la note</button>
+              <button class="btn ghost" id="pdf" type="button">Télécharger le justificatif PDF</button>
+            </div>
+          </div>
+          <p class="note" id="note"></p>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Colonnes copiées : date · jour · journal · pièce · libellé · débit · crédit</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script src="pdf.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var TAB = String.fromCharCode(9), SAUT = String.fromCharCode(10);
+  // Jours dans l'ordre de getDay() : 0 = dimanche, 6 = samedi.
+  var JOURS = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
+  var ORDRE_SEMAINE = [1, 2, 3, 4, 5, 6, 0];       // affichage du lundi au dimanche
+  var MAX_PDF = 24;                                // lignes détaillées dans le justificatif d'une page
+  var note = "", copie = "";
+  var dernier = null;   // dernier calcul valide, repris par le justificatif PDF
+
+  // Exemple fictif de départ : une consultation de compte ACD, ligne de titres comprise.
+  var TITRES_ACD = ["Date>", "Jnl", "Pièce", "Facture", "Libellé", "Débit ", "Lettrage", "Crédit ", "Solde cumulé", "Code TVA", "Rgl.", "D.", "Tx",
+                    "Montant", "Montant org.", "Rappro. le", "Intégrée le"];
+  var cumul = 0;
+  $("source").value = [TITRES_ACD].concat([
+    ["05/06/2026", "AC", "70101", "F-2026-061", "Restaurant du Marché", "48,20"],
+    ["12/06/2026", "AC", "70114", "F-2026-077", "Brasserie de la Gare", "64,09"],
+    ["13/06/2026", "AC", "70122", "F-2026-081", "Restaurant du Port", "52,40"],
+    ["14/06/2026", "AC", "70130", "F-2026-084", "Auberge des Tilleuls", "86,00"],
+    ["25/09/2026", "AC", "70218", "F-2026-143", "Café des Sports", "46,31"],
+    ["26/09/2026", "AC", "70225", "F-2026-149", "Pizzeria du Centre", "38,50"]
+  ].map(function (l) {
+    cumul += M.centimes(l[5]);
+    return [l[0], l[1], l[2], l[3], l[4], l[5], "", "0,00", M.affiche(cumul).replace(/\s/g, ""), "20", "R", "E", "1", l[5], l[5], "", ""];
+  })).map(function (l) { return l.join(TAB); }).join(SAUT);
+
+  // Place des colonnes (à partir de 0) ; -1 : colonne absente.
+  // Format court : date, journal, compte, pièce, libellé, débit, crédit.
+  var SEPT_COLONNES = { date: 0, journal: 1, piece: 3, facture: -1, libelle: 4, debit: 5, credit: 6 };
+  // Consultation de compte ACD : Date>, Jnl, Pièce, Facture, Libellé, Débit, Lettrage, Crédit, Solde cumulé…
+  var CONSULTATION_ACD = { date: 0, journal: 1, piece: 2, facture: 3, libelle: 4, debit: 5, credit: 7 };
+
+  // Lit une ligne de titres et repère chaque colonne par son nom, quel que soit l'ordre.
+  function lireTitres(c) {
+    var p = { date: -1, journal: -1, piece: -1, facture: -1, libelle: -1, debit: -1, credit: -1 };
+    c.forEach(function (t, k) {
+      var n = t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z ]/g, "").trim();
+      if (p.date === -1 && /^date/.test(n)) p.date = k;
+      else if (p.journal === -1 && /^(jnl|journal|code journal|jal)$/.test(n)) p.journal = k;
+      else if (p.piece === -1 && /^(piece|n piece|numero de piece)$/.test(n)) p.piece = k;
+      else if (p.facture === -1 && /^facture/.test(n)) p.facture = k;
+      else if (p.libelle === -1 && /^libelle/.test(n)) p.libelle = k;
+      else if (p.debit === -1 && n === "debit") p.debit = k;
+      else if (p.credit === -1 && n === "credit") p.credit = k;
+    });
+    return p;
+  }
+  function rang(d) { return d.a * 10000 + d.m * 100 + d.j; }
+  function cellule(tr, texte, classe) {
+    var td = document.createElement("td");
+    td.textContent = texte;
+    if (classe) td.className = classe;
+    tr.appendChild(td);
+  }
+  function pluriel(n, mot) { return n + " " + mot + (n > 1 ? "s" : ""); }
+
+  function calcule() {
+    var dossier = $("dossier").value.trim(), compte = $("compte").value.trim();
+    var vise = { 6: $("samedi").checked, 0: $("dimanche").checked };
+    var alertes = [], lues = 0, ignorees = 0, lignes = [], titres = null;
+
+    $("source").value.split(/\r?\n/).forEach(function (ligne, i) {
+      if (!ligne.trim()) return;
+      var c = ligne.split(TAB).map(function (x) { return x.trim(); });
+      // Ligne de titres (« Date », « Date> » dans ACD) : elle donne la place de chaque colonne.
+      if (/^date\b/i.test(c[0])) { titres = lireTitres(c); return; }
+      // Lignes de total ou de report, sans date : elles ne sont pas des écritures.
+      if (/^(total|report|solde|cumul)/i.test(c[0])) return;
+      lues++;
+      var p = titres || (c.length >= 8 ? CONSULTATION_ACD : SEPT_COLONNES);
+      var date = M.lireDate(c[p.date] || "");
+      var debit = p.debit === -1 ? 0 : M.centimes(c[p.debit] || ""), credit = p.credit === -1 ? 0 : M.centimes(c[p.credit] || "");
+      var refus = !date ? "date illisible (« " + (c[p.date] || "") + " »)" : (isNaN(debit) || isNaN(credit) ? "le débit ou le crédit n'est pas un nombre" : "");
+      if (refus) {
+        ignorees++;
+        if (ignorees <= 5) alertes.push("Ligne " + (i + 1) + " ignorée : " + refus + ".");
+        return;
+      }
+      var piece = p.piece === -1 ? "" : (c[p.piece] || "");
+      var facture = p.facture === -1 ? "" : (c[p.facture] || "");
+      lignes.push({ date: date, jour: new Date(date.a, date.m - 1, date.j).getDay(), journal: (c[p.journal] || "").toUpperCase(),
+                    piece: piece, facture: facture, libelle: p.libelle === -1 ? "" : (c[p.libelle] || ""), debit: debit, credit: credit });
+    });
+    if (ignorees > 5) alertes.push((ignorees - 5) + " autres lignes ignorées.");
+
+    // Répartition par jour de la semaine, puis lignes des jours visés, dans l'ordre des dates.
+    var semaine = {}, premiere = null, derniere = null;
+    JOURS.forEach(function (j, k) { semaine[k] = { lignes: 0, debit: 0, credit: 0 }; });
+    lignes.forEach(function (l) {
+      var s = semaine[l.jour];
+      s.lignes++; s.debit += l.debit; s.credit += l.credit;
+      if (!premiere || rang(l.date) < rang(premiere)) premiere = l.date;
+      if (!derniere || rang(l.date) > rang(derniere)) derniere = l.date;
+    });
+    var reperees = lignes.filter(function (l) { return vise[l.jour]; })
+                         .sort(function (a, b) { return rang(a.date) - rang(b.date); });
+    var totD = 0, totC = 0, nbSam = 0, nbDim = 0;
+    reperees.forEach(function (l) { totD += l.debit; totC += l.credit; if (l.jour === 6) nbSam++; else nbDim++; });
+
+    var blocage = "";
+    if (!lues) blocage = "Collez le contenu du compte dans le cadre « Contenu du compte ».";
+    else if (!lignes.length) blocage = "Aucune ligne exploitable : vérifiez le format collé.";
+    else if (!vise[6] && !vise[0]) blocage = "Choisissez les samedis, les dimanches ou les deux.";
+    var joursVises = [vise[6] ? "samedi" : "", vise[0] ? "dimanche" : ""].filter(Boolean).join(" ou ");
+    if (!blocage && !reperees.length) blocage = "Aucune écriture datée d'un " + joursVises + " parmi les " + pluriel(lignes.length, "ligne") + " lues.";
+
+    // Tableau des lignes repérées.
+    var corps = $("lignes");
+    corps.textContent = "";
+    reperees.forEach(function (l) {
+      var tr = document.createElement("tr");
+      cellule(tr, M.dateFr(l.date));
+      cellule(tr, JOURS[l.jour]);
+      cellule(tr, l.journal, "compte");
+      cellule(tr, l.piece + (l.facture ? " · " + l.facture : ""));
+      cellule(tr, l.libelle, "lib");
+      cellule(tr, l.debit ? M.affiche(l.debit) : "", "droite");
+      cellule(tr, l.credit ? M.affiche(l.credit) : "", "droite");
+      corps.appendChild(tr);
+    });
+    var corpsSemaine = $("semaine");
+    corpsSemaine.textContent = "";
+    ORDRE_SEMAINE.forEach(function (k) {
+      var s = semaine[k], tr = document.createElement("tr");
+      if (vise[k]) tr.className = "vise";
+      cellule(tr, JOURS[k].charAt(0).toUpperCase() + JOURS[k].slice(1), "lib");
+      cellule(tr, String(s.lignes), "droite");
+      cellule(tr, M.affiche(s.debit), "droite");
+      cellule(tr, M.affiche(s.credit), "droite");
+      corpsSemaine.appendChild(tr);
+    });
+
+    var periode = premiere ? "du " + M.dateFr(premiere) + " au " + M.dateFr(derniere) : "";
+    var montant = function (l) { return l.debit && l.credit ? M.affiche(l.debit) + " au débit et " + M.affiche(l.credit) + " au crédit"
+                                                             : M.affiche(l.debit || l.credit) + (l.credit ? " au crédit" : ""); };
+    note = ""; copie = ""; dernier = null;
+    if (lignes.length) {
+      var objet = "Compte" + (compte ? " " + compte : "") + (dossier ? " - " + dossier : "");
+      note = objet + " : " + pluriel(lignes.length, "écriture") + " lue" + (lignes.length > 1 ? "s" : "") + (periode ? " " + periode : "") + ". " +
+             (reperees.length
+               ? pluriel(reperees.length, "écriture") + " datée" + (reperees.length > 1 ? "s" : "") + " d'un " + joursVises +
+                 (vise[6] && vise[0] ? " (" + nbSam + " le samedi, " + nbDim + " le dimanche)" : "") + ", pour " + M.affiche(totD) + " Euros au débit" +
+                 (totC ? " et " + M.affiche(totC) + " Euros au crédit" : "") + " : " +
+                 reperees.map(function (l) {
+                   return M.dateFr(l.date) + " (" + JOURS[l.jour] + ")" + (l.piece ? " pièce " + l.piece : "") + (l.libelle ? " " + l.libelle : "") + " " + montant(l) + " Euros";
+                 }).join(" ; ") + ". Merci de nous préciser l'objet professionnel de ces dépenses."
+               : "Aucune écriture datée d'un " + joursVises + ".");
+      copie = [["Date", "Jour", "Journal", "Pièce", "Facture", "Libellé", "Débit", "Crédit"].join(TAB)].concat(reperees.map(function (l) {
+        return [M.dateFr(l.date), JOURS[l.jour], l.journal, l.piece, l.facture, l.libelle.replace(/[\t\r\n]+/g, " "),
+                l.debit ? M.affiche(l.debit).replace(/\s/g, "") : "", l.credit ? M.affiche(l.credit).replace(/\s/g, "") : ""].join(TAB);
+      })).join("\r\n");
+      dernier = { dossier: dossier, compte: compte, lues: lignes.length, periode: periode, joursVises: joursVises, reperees: reperees,
+                  nbSam: nbSam, nbDim: nbDim, totD: totD, totC: totC, semaine: semaine, vise: vise };
+    }
+    if (!reperees.length) copie = "";
+
+    $("resultat").textContent = lignes.length && (vise[6] || vise[0]) ? pluriel(reperees.length, "ligne") : "—";
+    $("nbSamedi").textContent = vise[6] && lignes.length ? String(nbSam) : "—";
+    $("nbDimanche").textContent = vise[0] && lignes.length ? String(nbDim) : "—";
+    $("totDebit").textContent = reperees.length ? M.affiche(totD) : "—";
+    $("totCredit").textContent = reperees.length ? M.affiche(totC) : "—";
+    $("nbLues").textContent = String(lues);
+    $("periode").textContent = periode || "—";
+    $("vide").hidden = !blocage;
+    $("vide").textContent = blocage;
+    $("note").textContent = note || "La note s'affichera une fois le contenu du compte collé.";
+    $("copier").disabled = !copie;
+    $("copierNote").disabled = !note;
+    $("pdf").disabled = !dernier;
+    $("etat").textContent = "";
+    $("etatNote").textContent = "";
+    var ul = $("alertes");
+    ul.textContent = "";
+    alertes.forEach(function (a) {
+      var li = document.createElement("li");
+      li.textContent = a;
+      ul.appendChild(li);
+    });
+  }
+
+  // Justificatif PDF d'une page : identification, synthèse, répartition et lignes repérées.
+  function justificatif(d) {
+    var f = window.MiniPdf.fiche("Écritures du week-end");
+    f.section("Identification");
+    f.ligne("Dossier", d.dossier).ligne("Compte", d.compte).ligne("Période du compte", d.periode)
+     .ligne("Écritures lues", String(d.lues)).ligne("Jours recherchés", d.joursVises);
+    f.section("Répartition par jour de la semaine");
+    f.tableau([{ nom: "Jour", largeur: 199 }, { nom: "Lignes", largeur: 80, droite: true }, { nom: "Débit", largeur: 110, droite: true },
+               { nom: "Crédit", largeur: 110, droite: true }],
+              ORDRE_SEMAINE.map(function (k) {
+                var s = d.semaine[k], r = [JOURS[k].charAt(0).toUpperCase() + JOURS[k].slice(1), String(s.lignes), M.affiche(s.debit), M.affiche(s.credit)];
+                r.gras = !!d.vise[k];
+                return r;
+              }));
+    f.total("Écritures du week-end : " + d.reperees.length, M.affiche(d.totD) + " €");
+    if (d.reperees.length) {
+      f.section("Lignes repérées");
+      var l = d.reperees.slice(0, MAX_PDF).map(function (x) {
+        return [M.dateFr(x.date), JOURS[x.jour], x.piece, x.libelle, x.debit ? M.affiche(x.debit) : "", x.credit ? M.affiche(x.credit) : ""];
+      });
+      f.tableau([{ nom: "Date", largeur: 60 }, { nom: "Jour", largeur: 60 }, { nom: "Pièce", largeur: 60 }, { nom: "Libellé", largeur: 179 },
+                 { nom: "Débit", largeur: 70, droite: true }, { nom: "Crédit", largeur: 70, droite: true }], l);
+      if (d.reperees.length > MAX_PDF) f.texte("Et " + (d.reperees.length - MAX_PDF) + " autres lignes, à copier depuis la page.");
+    }
+    return f;
+  }
+
+  $("copier").addEventListener("click", function () {
+    if (copie) M.copierTexte(copie, dernier.reperees.length + " lignes copiées");
+  });
+  $("copierNote").addEventListener("click", function () {
+    var fait = function () { $("etatNote").textContent = "Note copiée"; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(note).then(fait, function () { $("etatNote").textContent = "Copie impossible dans ce navigateur"; });
+    } else $("etatNote").textContent = "Copie impossible dans ce navigateur";
+  });
+  $("pdf").addEventListener("click", function () {
+    if (!dernier) return;
+    var nom = window.MiniPdf.nomFichier(["Dates week-end", dernier.compte, dernier.dossier].filter(Boolean).join(" "));
+    justificatif(dernier).telecharger(nom + ".pdf");
+    $("etatNote").textContent = "Justificatif téléchargé";
+  });
+  window.justificatifPdf = function () { return dernier ? justificatif(dernier) : null; };   // pour les contrôles
+  ["dossier", "compte", "samedi", "dimanche", "source"].forEach(function (id) {
+    $(id).addEventListener("input", calcule);
+    $(id).addEventListener("change", calcule);
+  });
+  calcule();
+})();
+</script>
+</body>
+</html>

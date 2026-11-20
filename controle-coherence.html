@@ -73,7 +73,7 @@ td.constats { min-width: 150px; }
             <input id="ecartMin" class="droite" type="text" inputmode="decimal">
           </div>
           <div class="champ">
-            <label for="masquer">Masquer sous le seuil de poids<span class="aide">Les comptes dont la variation ne dépasse pas ce seuil, en euros, ne sont pas listés</span></label>
+            <label for="masquer">Masquer sous les seuils<span class="aide">Les comptes qui ne dépassent ni le seuil de variation ni le seuil de poids ne sont pas listés</span></label>
             <input id="masquer" type="checkbox" class="bascule" role="switch" checked>
           </div>
           <div class="champ pleine">
@@ -116,7 +116,7 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
           <div class="champ"><span class="etiquette">Points prioritaires</span><span class="valeur droite" id="nbPrioritaires"></span></div>
           <div class="champ"><span class="etiquette">Autres points à regarder</span><span class="valeur droite" id="nbAutres"></span></div>
           <div class="champ"><span class="etiquette">Comptes sans remarque</span><span class="valeur droite" id="nbCalmes"></span></div>
-          <div class="champ"><span class="etiquette">Comptes masqués, sous le seuil</span><span class="valeur droite" id="nbMasques"></span></div>
+          <div class="champ"><span class="etiquette">Comptes masqués, sous les seuils</span><span class="valeur droite" id="nbMasques"></span></div>
           </div>
         </section>
       </div>
@@ -333,10 +333,11 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
         }
       });
 
-      // Interrupteur « Masquer sous le seuil de poids » : seuls les comptes dont la variation
-      // dépasse ce seuil, en euros, sont listés, dans les deux affichages.
+      // Périmètre de contrôle : un compte y entre dès que sa variation dépasse l'un ou l'autre
+      // seuil, le pourcentage ou le poids dans le total. L'interrupteur « Masquer sous les
+      // seuils » ne liste que ces comptes, dans les deux affichages.
       var masquer = $("masquer").checked;
-      var visibles = masquer ? r.comptes.filter(function (l) { return Math.abs(l.v) > seuils.euros; }) : r.comptes;
+      var visibles = masquer ? r.comptes.filter(function (l) { return l.rang > 0; }) : r.comptes;
       var masques = r.comptes.length - visibles.length;
       var signales = visibles.filter(function (l) { return l.rang > 0; });
       // Les comptes à justifier sont classés du plus prioritaire au moins prioritaire, puis
@@ -359,36 +360,33 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
       $("nbCalmes").textContent = visibles.length - signales.length;
       $("nbMasques").textContent = masquer ? masques : "—";
       $("vide").hidden = (v.vue === "tous" ? visibles.length : signales.length) > 0;
-      $("vide").textContent = "Aucun compte ne dépasse " + (masquer ? "le seuil de poids." : "les seuils.");
+      $("vide").textContent = "Aucun compte ne dépasse les seuils.";
       $("legende").textContent = "Pastille pleine : la variation dépasse " + seuils.totalTexte + " du total des soldes " + exo + " (" +
         M.affiche(seuils.euros) + " €) et un autre constat s'y ajoute, ou le compte de charge est créditeur. La variation et son pourcentage sont donnés en valeur absolue, sans signe ; le pourcentage est rapporté au solde N-1." +
-        (masquer && masques ? " " + masques + (masques > 1 ? " comptes ne sont pas listés : leur" : " compte n'est pas listé : sa") +
-                              " variation ne dépasse pas " + M.affiche(seuils.euros) + " €." : "");
+        (masquer && masques ? " " + masques + (masques > 1 ? " comptes ne sont pas listés : ils ne dépassent" : " compte n'est pas listé : il ne dépasse") +
+                              " aucun des deux seuils." : "");
       dernier = { dossier: v.dossier, exo: exo, seuils: seuils, min: min, tous: v.vue === "tous", nbComptes: r.comptes.length,
                   totalN: totalN, totalP: totalP, prioritaires: prioritaires, autres: signales.length - prioritaires,
                   calmes: visibles.length - signales.length, masquer: masquer, masques: masques, postes: lignesPostes,
                   comptes: v.vue === "tous" ? visibles : tries };
 
-      // Note prête à copier : elle met en avant les comptes dans le périmètre de contrôle,
-      // ceux dont la variation dépasse le seuil de poids en euros, du plus fort au plus faible.
+      // Note prête à copier : elle liste les comptes du périmètre de contrôle, ceux qui
+      // dépassent l'un ou l'autre seuil, de la plus forte variation à la plus faible.
       var decrit = function (l) {
-        var autres = l.constats.filter(function (c) { return c.indexOf("Poids") !== 0 && c.indexOf("Variation") !== 0; });
         return "- " + l.compte + " " + l.intitule + " : " + M.affiche(l.n) + " contre " + M.affiche(l.p) + ", soit une variation de " + signe(l.v) +
-               (l.pct === null ? "" : " (" + pourcent(l.pct) + ")") + (autres.length ? " - " + autres.join(", ").toLowerCase() : "") + ".";
+               (l.pct === null ? "" : " (" + pourcent(l.pct) + ")") + " - " + l.constats.join(", ").toLowerCase() + ".";
       };
-      var parEcart = function (a, b) { return Math.abs(b.v) - Math.abs(a.v); };
-      var perimetre = r.comptes.filter(function (l) { return Math.abs(l.v) > seuils.euros; }).sort(parEcart);
-      var hors = r.comptes.filter(function (l) { return l.rang > 0 && Math.abs(l.v) <= seuils.euros; }).sort(parEcart);
+      var perimetre = r.comptes.filter(function (l) { return l.rang > 0; }).sort(function (a, b) { return Math.abs(b.v) - Math.abs(a.v); });
+      var reste = r.comptes.length - perimetre.length;
       var pluriel = function (n, un, plusieurs) { return n + " " + (n > 1 ? plusieurs : un); };
       synthese = "Contrôle de cohérence " + exo + " / N-1" + (v.dossier ? " - " + v.dossier : "") + " : " +
-                 pluriel(r.comptes.length, "compte analysé", "comptes analysés") + ". Périmètre de contrôle : variation supérieure à " +
-                 seuils.totalTexte + " du total des soldes " + exo + ", soit " + M.affiche(seuils.euros) + " Euros.\n" +
+                 pluriel(r.comptes.length, "compte analysé", "comptes analysés") + ". Périmètre de contrôle : variation de plus de " +
+                 seuils.pctTexte + ", ou supérieure à " + seuils.totalTexte + " du total des soldes " + exo + " (soit " + M.affiche(seuils.euros) + " Euros)" +
+                 (min ? ", pour un écart d'au moins " + M.affiche(min) + " Euros" : "") + ".\n" +
                  (perimetre.length ? pluriel(perimetre.length, "compte dans le périmètre, à justifier", "comptes dans le périmètre, à justifier") +
                                      " :\n" + perimetre.map(decrit).join("\n")
-                                   : "Aucun compte dans le périmètre : aucune variation ne dépasse ce montant.") +
-                 (hors.length ? "\nHors périmètre, " + pluriel(hors.length, "compte varie", "comptes varient") + " de plus de " + seuils.pctTexte +
-                                " pour un montant inférieur au seuil" +
-                                (masquer ? "." : " :\n" + hors.map(decrit).join("\n")) : "");
+                                   : "Aucun compte dans le périmètre : aucune variation ne dépasse ces seuils.") +
+                 (reste ? "\n" + pluriel(reste, "compte reste", "comptes restent") + " sous les deux seuils." : "");
     } else {
       ["nbComptes", "totalN", "totalP", "varTotale", "seuilEuros", "nbPrioritaires", "nbAutres", "nbCalmes", "nbMasques"].forEach(function (id) { $(id).textContent = "—"; });
       $("vide").hidden = false;
@@ -426,13 +424,13 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
      .ligne("Seuil de poids", "plus de " + s.totalTexte + " du total des soldes, soit " + M.affiche(s.euros) + " €")
      .ligne("Écart minimal", d.min ? M.affiche(d.min) + " €" : "")
      .ligne("Comptes présentés", (d.tous ? "Tous les comptes" : "Comptes à justifier") +
-            (d.masquer ? ", variation supérieure au seuil de poids" : ""));
+            (d.masquer ? ", au-delà de l'un ou l'autre seuil" : ""));
     f.section("Synthèse");
     f.ligne("Total des soldes " + d.exo, M.affiche(d.totalN) + " €").ligne("Total des soldes N-1", M.affiche(d.totalP) + " €")
      .ligne("Variation d'ensemble", signe(d.totalN - d.totalP) + " €")
      .ligne("Points prioritaires", String(d.prioritaires)).ligne("Autres points à regarder", String(d.autres))
      .ligne("Comptes sans remarque", String(d.calmes))
-     .ligne("Comptes non listés, sous le seuil de poids", d.masquer ? String(d.masques) : "");
+     .ligne("Comptes non listés, sous les deux seuils", d.masquer ? String(d.masques) : "");
     f.section("Analyse par poste");
     f.tableau([{ nom: "Poste", largeur: 60 }, { nom: d.exo, largeur: 75, droite: true }, { nom: "N-1", largeur: 75, droite: true },
                { nom: "Variation", largeur: 75, droite: true }, { nom: "%", largeur: 54, droite: true }, { nom: "Constats", largeur: 160, taille: 7.5 }],

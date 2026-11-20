@@ -31,6 +31,7 @@ tr.calme td { color: var(--muted); }
 th.constats, td.constats { padding-left: 18px; }
 td.constats { min-width: 150px; }
 .legende { font-size: 13px; color: var(--muted); margin: 14px 0 0; }
+#note { white-space: pre-line; }
 </style>
 </head>
 <body>
@@ -137,9 +138,8 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
           <div class="barre">
             <p class="eyebrow">05 — Analyse par compte</p>
             <div class="actions">
-              <span class="etat" id="etat" role="status"></span>
+              <span class="etat" id="etatPdf" role="status"></span>
               <button class="btn ghost" id="pdf" type="button">Télécharger le justificatif PDF</button>
-              <button class="btn" id="copier" type="button">Copier la synthèse</button>
             </div>
           </div>
           <div class="cadre-table">
@@ -153,6 +153,17 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
           <div class="vide" id="vide" hidden></div>
           <p class="legende" id="legende"></p>
         </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">06 — Note de contrôle</p>
+            <div class="actions">
+              <span class="etat" id="etat" role="status"></span>
+              <button class="btn" id="copier" type="button">Copier la note</button>
+            </div>
+          </div>
+          <p class="note" id="note"></p>
+        </section>
       </div>
 
     </div>
@@ -161,7 +172,7 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
 
 <footer class="site-footer">
   <div class="conteneur">
-    <span>Variation = solde N − solde N-1 ; pourcentage rapporté au solde N-1</span>
+    <span>Variation = solde N − solde N-1, en valeurs absolues ; pourcentage rapporté au solde N-1</span>
     <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
   </div>
 </footer>
@@ -215,7 +226,9 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
 
   // Constats d'une ligne (compte ou poste). seuils : { pct, euros, min } ; pct en pour cent.
   function analyse(l, seuils, poste) {
-    l.v = l.n - l.p;
+    // La variation compare les soldes en valeur absolue : un solde créditeur (produit, charge
+    // créditrice) qui grossit est une hausse, quel que soit son signe.
+    l.v = Math.abs(l.n) - Math.abs(l.p);
     l.pct = l.p !== 0 ? l.v / Math.abs(l.p) * 100 : null;
     var constats = [], ecart = Math.abs(l.v), assez = ecart >= seuils.min && ecart > 0;
     var poids = assez && seuils.euros > 0 && ecart > seuils.euros;
@@ -337,7 +350,8 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
       $("nbComptes").textContent = r.comptes.length;
       $("totalN").textContent = M.affiche(totalN) + " €";
       $("totalP").textContent = M.affiche(totalP) + " €";
-      $("varTotale").textContent = signe(totalN - totalP) + " €" + (totalP ? " (" + pourcent((totalN - totalP) / Math.abs(totalP) * 100) + ")" : "");
+      var varTotale = Math.abs(totalN) - Math.abs(totalP);
+      $("varTotale").textContent = signe(varTotale) + " €" + (totalP ? " (" + pourcent(varTotale / Math.abs(totalP) * 100) + ")" : "");
       $("seuilEuros").textContent = M.affiche(seuils.euros) + " €";
       $("nbPrioritaires").textContent = prioritaires;
       $("nbAutres").textContent = signales.length - prioritaires;
@@ -346,7 +360,7 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
       $("vide").hidden = (v.vue === "tous" ? visibles.length : signales.length) > 0;
       $("vide").textContent = "Aucun compte ne dépasse " + (masquer ? "le seuil de poids." : "les seuils.");
       $("legende").textContent = "Pastille pleine : la variation dépasse " + seuils.totalTexte + " du total des soldes " + exo + " (" +
-        M.affiche(seuils.euros) + " €) et un autre constat s'y ajoute, ou le compte de charge est créditeur. Le pourcentage est rapporté à la valeur absolue du solde N-1." +
+        M.affiche(seuils.euros) + " €) et un autre constat s'y ajoute, ou le compte de charge est créditeur. La variation compare les soldes en valeur absolue ; le pourcentage est rapporté au solde N-1." +
         (masquer && masques ? " " + masques + (masques > 1 ? " comptes ne sont pas listés : leur" : " compte n'est pas listé : sa") +
                               " variation ne dépasse pas " + M.affiche(seuils.euros) + " €." : "");
       dernier = { dossier: v.dossier, exo: exo, seuils: seuils, min: min, tous: v.vue === "tous", nbComptes: r.comptes.length,
@@ -354,16 +368,26 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
                   calmes: visibles.length - signales.length, masquer: masquer, masques: masques, postes: lignesPostes,
                   comptes: v.vue === "tous" ? visibles : tries };
 
-      if (signales.length) {
-        synthese = "Contrôle de cohérence " + exo + " / N-1 - " + r.comptes.length + " comptes analysés, " + signales.length + " à justifier (" +
-                   (masquer ? "variation supérieure à " + seuils.totalTexte + " du total des soldes, soit " + M.affiche(seuils.euros) + " Euros"
-                            : "variation de plus de " + seuils.pctTexte + ", ou supérieure à " + seuils.totalTexte + " du total des soldes, soit " +
-                              M.affiche(seuils.euros) + " Euros") + ") :\n" +
-                   tries.map(function (l) {
-                     return "- " + l.compte + " " + l.intitule + " : " + M.affiche(l.n) + " contre " + M.affiche(l.p) + ", soit " + signe(l.v) +
-                            (l.pct === null ? "" : " (" + pourcent(l.pct) + ")") + " - " + l.constats.join(", ").toLowerCase() + ".";
-                   }).join("\n");
-      }
+      // Note prête à copier : elle met en avant les comptes dans le périmètre de contrôle,
+      // ceux dont la variation dépasse le seuil de poids en euros, du plus fort au plus faible.
+      var decrit = function (l) {
+        var autres = l.constats.filter(function (c) { return c.indexOf("Poids") !== 0 && c.indexOf("Variation") !== 0; });
+        return "- " + l.compte + " " + l.intitule + " : " + M.affiche(l.n) + " contre " + M.affiche(l.p) + ", soit " + signe(l.v) +
+               (l.pct === null ? "" : " (" + pourcent(l.pct) + ")") + (autres.length ? " - " + autres.join(", ").toLowerCase() : "") + ".";
+      };
+      var parEcart = function (a, b) { return Math.abs(b.v) - Math.abs(a.v); };
+      var perimetre = r.comptes.filter(function (l) { return Math.abs(l.v) > seuils.euros; }).sort(parEcart);
+      var hors = r.comptes.filter(function (l) { return l.rang > 0 && Math.abs(l.v) <= seuils.euros; }).sort(parEcart);
+      var pluriel = function (n, un, plusieurs) { return n + " " + (n > 1 ? plusieurs : un); };
+      synthese = "Contrôle de cohérence " + exo + " / N-1" + (v.dossier ? " - " + v.dossier : "") + " : " +
+                 pluriel(r.comptes.length, "compte analysé", "comptes analysés") + ". Périmètre de contrôle : variation supérieure à " +
+                 seuils.totalTexte + " du total des soldes " + exo + ", soit " + M.affiche(seuils.euros) + " Euros.\n" +
+                 (perimetre.length ? pluriel(perimetre.length, "compte dans le périmètre, à justifier", "comptes dans le périmètre, à justifier") +
+                                     " :\n" + perimetre.map(decrit).join("\n")
+                                   : "Aucun compte dans le périmètre : aucune variation ne dépasse ce montant.") +
+                 (hors.length ? "\nHors périmètre, " + pluriel(hors.length, "compte varie", "comptes varient") + " de plus de " + seuils.pctTexte +
+                                " pour un montant inférieur au seuil" +
+                                (masquer ? "." : " :\n" + hors.map(decrit).join("\n")) : "");
     } else {
       ["nbComptes", "totalN", "totalP", "varTotale", "seuilEuros", "nbPrioritaires", "nbAutres", "nbCalmes", "nbMasques"].forEach(function (id) { $(id).textContent = "—"; });
       $("vide").hidden = false;
@@ -372,6 +396,8 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
     }
 
     $("copier").disabled = !synthese;
+    $("note").textContent = synthese || "La note s'affichera une fois la balance collée.";
+    $("etatPdf").textContent = "";
     $("pdf").disabled = !dernier;
     $("etat").textContent = "";
     var ul = $("alertes");
@@ -402,7 +428,7 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
             (d.masquer ? ", variation supérieure au seuil de poids" : ""));
     f.section("Synthèse");
     f.ligne("Total des soldes " + d.exo, M.affiche(d.totalN) + " €").ligne("Total des soldes N-1", M.affiche(d.totalP) + " €")
-     .ligne("Variation d'ensemble", signe(d.totalN - d.totalP) + " €")
+     .ligne("Variation d'ensemble", signe(Math.abs(d.totalN) - Math.abs(d.totalP)) + " €")
      .ligne("Points prioritaires", String(d.prioritaires)).ligne("Autres points à regarder", String(d.autres))
      .ligne("Comptes sans remarque", String(d.calmes))
      .ligne("Comptes non listés, sous le seuil de poids", d.masquer ? String(d.masques) : "");
@@ -427,7 +453,7 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
     } else f.ligne("Résultat", "Aucun compte ne dépasse les seuils");
     f.texte("Ligne en gras : point prioritaire, la variation dépasse " + s.totalTexte + " du total des soldes " + d.exo + " (" +
             M.affiche(s.euros) + " €) et un autre constat s'y ajoute. Une charge créditrice est écrite en capitales. " +
-            "Le pourcentage est rapporté à la valeur absolue du solde N-1.");
+            "La variation compare les soldes en valeur absolue ; le pourcentage est rapporté au solde N-1.");
     return f;
   }
 
@@ -435,12 +461,12 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
     $(id).addEventListener("input", calcule);
     $(id).addEventListener("change", calcule);
   });
-  $("copier").addEventListener("click", function () { M.copierTexte(synthese, "Synthèse copiée"); });
+  $("copier").addEventListener("click", function () { M.copierTexte(synthese, "Note copiée"); });
   $("pdf").addEventListener("click", function () {
     if (!dernier) return;
     var nom = window.MiniPdf.nomFichier(["Controle de coherence", dernier.exo, dernier.dossier].filter(Boolean).join(" "));
     justificatif(dernier).telecharger(nom + ".pdf");
-    $("etat").textContent = "Justificatif téléchargé";
+    $("etatPdf").textContent = "Justificatif téléchargé";
   });
   window.justificatifPdf = function () { return dernier ? justificatif(dernier) : null; };   // pour les contrôles
   calcule();

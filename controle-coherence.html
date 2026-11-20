@@ -31,34 +31,6 @@ tr.calme td { color: var(--muted); }
 th.constats, td.constats { padding-left: 18px; }
 td.constats { min-width: 150px; }
 .legende { font-size: 13px; color: var(--muted); margin: 14px 0 0; }
-.impression-tete { display: none; }
-
-/* Impression de l'analyse : la synthèse, les postes et les comptes, sans le menu, les
-   seuils à saisir ni le collage. */
-@media print {
-  @page { size: A4 portrait; margin: 14mm 12mm; }
-  html, body { background: #fff !important; }
-  body::before, #menu, #fond, #barre-mobile, #copier-lien, #message-copie, .mobile-info, .site-footer, .lead, .maj, .bravo,
-  .panel.saisie-ecran, .barre .actions, #reinit { display: none !important; }
-  #contenu { zoom: 1 !important; margin: 0 !important; padding: 0 !important; width: auto !important; }
-  main { display: block !important; }
-  main, .conteneur { padding: 0 !important; margin: 0 !important; max-width: none !important; }
-  h1 { font-size: 26px !important; margin: 4px 0 6px !important; }
-  .impression-tete { display: block; font-size: 11px; color: var(--muted); margin: 0 0 12px; }
-  .grille, .colonne { display: block !important; }
-  .panel { box-shadow: none !important; border: 0 !important; background: none !important; padding: 0 !important; margin: 0 0 16px !important; }
-  .panel > .eyebrow, .barre { margin-bottom: 4px !important; }
-  .synthese { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; }
-  .synthese .champ { padding: 3px 0 !important; }
-  .cadre-table { overflow: visible !important; }
-  table { font-size: 10px; }
-  th, td { padding-top: 3px !important; padding-bottom: 3px !important; }
-  tr { break-inside: avoid; }
-  thead { display: table-header-group; }
-  .constat { font-size: 8px; padding: 1px 5px; }
-  .constat.fort { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .legende { font-size: 10px; }
-}
 </style>
 </head>
 <body>
@@ -76,14 +48,17 @@ td.constats { min-width: 150px; }
     <p class="eyebrow">Revue analytique — comparaison N / N-1</p>
     <h1>Contrôle de <em>cohérence.</em></h1>
     <p class="lead"><strong>But de la page :</strong> repérer, dans une balance comparative sur deux exercices, les comptes dont l'évolution demande une explication. Comme en revue analytique, la page croise deux seuils : la variation en pourcentage du compte, et le poids de cette variation dans le total des soldes de l'exercice. Elle signale aussi les comptes nouveaux, les comptes soldés et les soldes de sens inversé.</p>
-    <p class="impression-tete" id="impressionTete"></p>
     <p class="lead">Collez la balance copiée depuis ACDCompta. L'analyse est faite aussitôt ; elle désigne les points à regarder, elle ne les explique pas.</p>
 
     <div class="grille">
 
       <div class="colonne">
-        <section class="panel saisie-ecran">
+        <section class="panel">
           <p class="eyebrow">01 — Seuils</p>
+          <div class="champ">
+            <label for="dossier">Dossier<span class="aide">Facultatif, pour le justificatif PDF</span></label>
+            <input id="dossier" type="text" value="EXEMPLE SARL">
+          </div>
           <div class="champ">
             <label for="seuilPct">Variation du compte<span class="aide">Signalée au-delà de ce pourcentage</span></label>
             <input id="seuilPct" class="droite" type="text" inputmode="decimal" placeholder="10" value="10">
@@ -106,7 +81,7 @@ td.constats { min-width: 150px; }
           <ul class="alertes" id="alertes"></ul>
         </section>
 
-        <section class="panel saisie-ecran">
+        <section class="panel">
           <p class="eyebrow">02 — Balance comparative</p>
           <p class="aide-bloc">Copiez les lignes dans ACDCompta, en-tête compris si possible, puis collez-les ici. Colonnes attendues : cycle, compte, intitulé, collaborateur, superviseur, solde N, solde N-1. Les sous-totaux sont reconnus et recalculés.</p>
           <textarea id="source" class="saisie" spellcheck="false" wrap="off" aria-label="Balance comparative à coller">Cyc&#9;N° de compte&#9;Intitulé&#9;Collab.&#9;Superv.&#9;Sld. 31/12/2025&#9;Solde N-1&#9;Variation N/N-1&#9;% var. N/N-1
@@ -158,7 +133,7 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
             <p class="eyebrow">05 — Analyse par compte</p>
             <div class="actions">
               <span class="etat" id="etat" role="status"></span>
-              <button class="btn ghost" id="imprimer" type="button">Imprimer l'analyse</button>
+              <button class="btn ghost" id="pdf" type="button">Télécharger le justificatif PDF</button>
               <button class="btn" id="copier" type="button">Copier la synthèse</button>
             </div>
           </div>
@@ -188,12 +163,14 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
 </div>
 
 <script src="commun.js"></script>
+<script src="pdf.js"></script>
 <script>
 (function () {
   "use strict";
   var M = window.MiniOutils, $ = M.$;
-  var ids = ["seuilPct", "seuilTotal", "ecartMin", "vue", "source"];
+  var ids = ["dossier", "seuilPct", "seuilTotal", "ecartMin", "vue", "source"];
   var synthese = "";
+  var dernier = null;   // dernière analyse valide, reprise par le justificatif PDF
 
   function montant(texte) { return texte === "" ? NaN : M.centimes(texte); }
   function pourcent(p) { return (p > 0 ? "+" : "") + M.affiche(Math.round(p * 100)) + " %"; }
@@ -299,6 +276,7 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
     corpsPostes.textContent = "";
     corpsComptes.textContent = "";
     synthese = "";
+    dernier = null;
 
     if (!blocage) {
       // Le total qui sert de base au second seuil : somme des soldes N en valeur absolue,
@@ -318,7 +296,8 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
         parRacine[racine].p += l.p;
       });
       postes.forEach(function (l) { analyse(l, seuils, true); });
-      postes.concat([analyse({ compte: "Total", n: totalN, p: totalP }, { pct: Infinity, euros: 0, min: 0 }, true)]).forEach(function (l) {
+      var lignesPostes = postes.concat([analyse({ compte: "Total", n: totalN, p: totalP }, { pct: Infinity, euros: 0, min: 0 }, true)]);
+      lignesPostes.forEach(function (l) {
         var tr = ligneTable(l, [[l.compte, "compte"], [M.affiche(l.n), "droite"], [M.affiche(l.p), "droite"], [signe(l.v), "droite"],
                                 [l.pct === null ? "—" : pourcent(l.pct), "droite"], ["constats", "constats"]]);
         if (l.compte === "Total") tr.className = "debut";
@@ -357,6 +336,9 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
       $("vide").textContent = "Aucun compte ne dépasse les seuils.";
       $("legende").textContent = "Pastille pleine : la variation dépasse " + seuils.totalTexte + " du total des soldes " + exo + " (" +
         M.affiche(seuils.euros) + " €) et un autre constat s'y ajoute, ou le compte de charge est créditeur. Le pourcentage est rapporté à la valeur absolue du solde N-1.";
+      dernier = { dossier: v.dossier, exo: exo, seuils: seuils, min: min, tous: v.vue === "tous", nbComptes: r.comptes.length,
+                  totalN: totalN, totalP: totalP, prioritaires: prioritaires, autres: signales.length - prioritaires,
+                  calmes: r.comptes.length - signales.length, postes: lignesPostes, comptes: v.vue === "tous" ? r.comptes : tries };
 
       if (signales.length) {
         synthese = "Contrôle de cohérence " + exo + " / N-1 - " + r.comptes.length + " comptes analysés, " + signales.length + " à justifier (variation de plus de " +
@@ -374,14 +356,7 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
     }
 
     $("copier").disabled = !synthese;
-    $("imprimer").disabled = !!blocage;
-    // En-tête de la version imprimée : seuils retenus, affichage et date d'édition.
-    var jour = new Date();
-    $("impressionTete").textContent = blocage ? "" :
-      "Seuils : variation de plus de " + seuils.pctTexte + " ; variation supérieure à " + seuils.totalTexte + " du total des soldes " + exo +
-      (min ? " ; écart minimal de " + M.affiche(min) + " €" : "") + ". " +
-      (v.vue === "tous" ? "Tous les comptes" : "Comptes à justifier") + ". Édité le " + M.deux(jour.getDate()) + "/" +
-      M.deux(jour.getMonth() + 1) + "/" + jour.getFullYear() + " avec mini-outils-compta.fr.";
+    $("pdf").disabled = !dernier;
     $("etat").textContent = "";
     var ul = $("alertes");
     ul.textContent = "";
@@ -392,12 +367,64 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
     });
   }
 
+  // Justificatif PDF, comme pour les autres outils : identification et seuils, synthèse,
+  // analyse par poste puis par compte. Les pages suivantes s'ajoutent si la balance est longue.
+  // Pastilles du PDF : constats en clair ; ligne en gras si elle est prioritaire.
+  var COURT = { "Sens inversé": "Sens inv.", "Charge créditrice": "CHARGE CRÉDITRICE" };
+  function constatsPdf(l) {
+    return l.constats.map(function (c) { return COURT[c] || c.replace(/^Variation/, "Var."); }).join(", ");
+  }
+  function justificatif(d) {
+    var f = window.MiniPdf.fiche("Contrôle de cohérence " + d.exo);
+    var s = d.seuils, pct = function (l) { return l.pct === null ? "—" : pourcent(l.pct); };
+    f.section("Identification");
+    f.ligne("Dossier", d.dossier).ligne("Exercice", d.exo + " comparé à N-1").ligne("Comptes lus", String(d.nbComptes))
+     .ligne("Seuil de variation", "plus de " + s.pctTexte)
+     .ligne("Seuil de poids", "plus de " + s.totalTexte + " du total des soldes, soit " + M.affiche(s.euros) + " €")
+     .ligne("Écart minimal", d.min ? M.affiche(d.min) + " €" : "")
+     .ligne("Comptes présentés", d.tous ? "Tous les comptes" : "Comptes à justifier");
+    f.section("Synthèse");
+    f.ligne("Total des soldes " + d.exo, M.affiche(d.totalN) + " €").ligne("Total des soldes N-1", M.affiche(d.totalP) + " €")
+     .ligne("Variation d'ensemble", signe(d.totalN - d.totalP) + " €")
+     .ligne("Points prioritaires", String(d.prioritaires)).ligne("Autres points à regarder", String(d.autres))
+     .ligne("Comptes sans remarque", String(d.calmes));
+    f.section("Analyse par poste");
+    f.tableau([{ nom: "Poste", largeur: 60 }, { nom: d.exo, largeur: 75, droite: true }, { nom: "N-1", largeur: 75, droite: true },
+               { nom: "Variation", largeur: 75, droite: true }, { nom: "%", largeur: 54, droite: true }, { nom: "Constats", largeur: 160, taille: 7.5 }],
+              d.postes.map(function (l) {
+                var r = [l.compte, M.affiche(l.n), M.affiche(l.p), signe(l.v), pct(l), constatsPdf(l)];
+                r.gras = l.compte === "Total" || l.rang === 2;
+                return r;
+              }));
+    f.section(d.tous ? "Analyse par compte" : "Comptes à justifier");
+    if (d.comptes.length) {
+      f.tableau([{ nom: "Compte", largeur: 48 }, { nom: "Intitulé", largeur: 104 }, { nom: d.exo, largeur: 60, droite: true },
+                 { nom: "N-1", largeur: 60, droite: true }, { nom: "Variation", largeur: 62, droite: true }, { nom: "%", largeur: 45, droite: true },
+                 { nom: "Constats", largeur: 120, taille: 7.5 }],
+                d.comptes.map(function (l) {
+                  var r = [l.compte, l.intitule, M.affiche(l.n), M.affiche(l.p), signe(l.v), pct(l), constatsPdf(l)];
+                  r.gras = l.rang === 2;
+                  return r;
+                }));
+    } else f.ligne("Résultat", "Aucun compte ne dépasse les seuils");
+    f.texte("Ligne en gras : point prioritaire, la variation dépasse " + s.totalTexte + " du total des soldes " + d.exo + " (" +
+            M.affiche(s.euros) + " €) et un autre constat s'y ajoute. Une charge créditrice est écrite en capitales. " +
+            "Le pourcentage est rapporté à la valeur absolue du solde N-1.");
+    return f;
+  }
+
   ids.forEach(function (id) {
     $(id).addEventListener("input", calcule);
     $(id).addEventListener("change", calcule);
   });
   $("copier").addEventListener("click", function () { M.copierTexte(synthese, "Synthèse copiée"); });
-  $("imprimer").addEventListener("click", function () { window.print(); });
+  $("pdf").addEventListener("click", function () {
+    if (!dernier) return;
+    var nom = window.MiniPdf.nomFichier(["Controle de coherence", dernier.exo, dernier.dossier].filter(Boolean).join(" "));
+    justificatif(dernier).telecharger(nom + ".pdf");
+    $("etat").textContent = "Justificatif téléchargé";
+  });
+  window.justificatifPdf = function () { return dernier ? justificatif(dernier) : null; };   // pour les contrôles
   calcule();
 })();
 </script>

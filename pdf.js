@@ -94,10 +94,18 @@
   }
 
   function creer() {
-    var contenu = [];
+    // Une liste d'instructions par page ; les dessins vont toujours sur la dernière page.
+    var pages = [[]], contenu = pages[0];
     var doc = {
       largeur: LARGEUR, hauteur: HAUTEUR,
       mesure: largeur,
+      // Ouvre une nouvelle page A4 : les dessins suivants s'y placent.
+      nouvellePage: function () {
+        contenu = [];
+        pages.push(contenu);
+        return doc;
+      },
+      nbPages: function () { return pages.length; },
       // options : taille (10), gras, couleur (nom dans COULEURS), align ("droite" : x est le bord droit).
       texte: function (x, y, texte, o) {
         o = o || {};
@@ -129,16 +137,20 @@
       },
       // Le fichier, sous forme de tableau d'octets.
       octets: function () {
-        var flux = contenu.join("\n");
-        var objets = [
-          "<< /Type /Catalog /Pages 2 0 R >>",
-          "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-          "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 " + LARGEUR + " " + HAUTEUR + "] /Contents 4 0 R " +
-            "/Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> >>",
-          "<< /Length " + flux.length + " >>\nstream\n" + flux + "\nendstream",
-          "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
-          "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>"
-        ];
+        // Objets : 1 catalogue, 2 arbre des pages, puis pour chaque page son objet et son
+        // contenu (3 et 4 pour la première page), enfin les deux polices.
+        var n = pages.length, f1 = 3 + 2 * n, f2 = f1 + 1, kids = [];
+        var objets = ["<< /Type /Catalog /Pages 2 0 R >>", ""];
+        pages.forEach(function (p, i) {
+          var flux = p.join("\n");
+          kids.push((3 + 2 * i) + " 0 R");
+          objets.push("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 " + LARGEUR + " " + HAUTEUR + "] /Contents " + (4 + 2 * i) + " 0 R " +
+                      "/Resources << /Font << /F1 " + f1 + " 0 R /F2 " + f2 + " 0 R >> >> >>",
+                      "<< /Length " + flux.length + " >>\nstream\n" + flux + "\nendstream");
+        });
+        objets[1] = "<< /Type /Pages /Kids [" + kids.join(" ") + "] /Count " + n + " >>";
+        objets.push("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
+                    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
         // Chaque caractère de « pdf » vaut un octet : les textes sont déjà en WinAnsi.
         var pdf = "%PDF-1.4\n%\xE2\xE3\xCF\xD3\n", positions = [];
         objets.forEach(function (o, i) {
@@ -178,12 +190,36 @@
   //   var f = MiniPdf.fiche("Forfait blanchisserie 2025");
   //   f.section("Calcul"); f.ligne("Semaines travaillées", "48"); f.total("Forfait", "240,00 €");
   //   f.telecharger("forfait.pdf");
+  // Un justificatif trop long continue sur une page suivante, avec un en-tête réduit ; les
+  // en-têtes de colonnes d'un tableau coupé sont répétés. Chaque page porte le pied de page.
   function fiche(titre) {
-    var doc = creer(), G = 48, D = LARGEUR - 48, y = 86, fini = false;
+    var doc = creer(), G = 48, D = LARGEUR - 48, y = 86, fini = false, BAS = 774;
+    var jour = new Date(), deux = function (n) { return (n < 10 ? "0" : "") + n; };
     doc.rectangle(0, 0, LARGEUR, 5, "bleu");
     doc.texte(G, 44, "MINI-OUTILS", { taille: 8, gras: true, couleur: "bleu" });
     doc.texte(D, 44, "Justificatif de calcul", { taille: 8, couleur: "gris", align: "droite" });
     doc.texte(G, 78, titre, { taille: 22, gras: true });
+
+    // Pied de la page en cours ; le numéro n'est écrit que pour un document de plusieurs pages.
+    var pied = function (numero) {
+      doc.trait(G, 792, D, 792);
+      // Date et heure du poste, au moment où le justificatif est produit.
+      doc.texte(G, 806, "Document établi le " + deux(jour.getDate()) + "/" + deux(jour.getMonth() + 1) + "/" + jour.getFullYear() +
+                " à " + deux(jour.getHours()) + "h" + deux(jour.getMinutes()) +
+                " avec mini-outils-compta.fr", { taille: 8, couleur: "gris" });
+      doc.texte(D, 806, (numero ? "Page " + doc.nbPages() + " · " : "") + "Calcul à contrôler avant utilisation",
+                { taille: 8, couleur: "gris", align: "droite" });
+    };
+    var saut = function () {
+      pied(true);
+      doc.nouvellePage();
+      doc.rectangle(0, 0, LARGEUR, 5, "bleu");
+      doc.texte(G, 36, "MINI-OUTILS", { taille: 8, gras: true, couleur: "bleu" });
+      doc.texte(D, 36, titre + " (suite)", { taille: 8, couleur: "gris", align: "droite" });
+      y = 48;
+    };
+    // Passe à la page suivante si la hauteur demandée ne tient plus sur celle-ci.
+    var place = function (hauteur) { if (y + hauteur > BAS) saut(); };
 
     // Raccourcit un texte trop large pour sa colonne.
     var ajuste = function (texte, max, taille, gras) {
@@ -195,6 +231,7 @@
     var f = {
       doc: doc,
       section: function (texte) {
+        place(60);   // le titre de section ne reste pas seul en bas de page
         y += 30;
         doc.texte(G, y, texte.toUpperCase(), { taille: 8, gras: true, couleur: "bleu" });
         y += 7;
@@ -205,6 +242,7 @@
       // Une ligne dont la valeur est vide n'est pas écrite.
       ligne: function (nom, valeur, o) {
         if (valeur === "" || valeur === null || valeur === undefined) return f;
+        place(17);
         y += 17;
         doc.texte(G, y, nom, { couleur: "gris" });
         doc.texte(D, y, ajuste(valeur, D - G - largeur(nom, 10) - 16, 10, o && o.gras), { align: "droite", gras: o && o.gras, couleur: o && o.couleur });
@@ -212,6 +250,7 @@
         return f;
       },
       total: function (nom, valeur) {
+        place(46);
         y += 12;
         doc.rectangle(G, y, D - G, 34, "fond");
         doc.texte(G + 12, y + 21, nom, { taille: 11, gras: true });
@@ -220,23 +259,30 @@
         return f;
       },
       // colonnes : [{ nom, largeur (en points, 499 au total), droite }]. lignes : tableaux de
-      // textes ; une ligne peut porter la propriété gras (ligne de total).
+      // textes ; une ligne peut porter la propriété gras (ligne de total). Une colonne peut
+      // préciser sa taille de caractères (9 par défaut).
       tableau: function (colonnes, lignes) {
         var x = G, bords = colonnes.map(function (c) { var debut = x; x += c.largeur; return c.droite ? x : debut; });
         var ecrit = function (cellules, o) {
           y += 15;
           cellules.forEach(function (t, k) {
             if (t === "" || t === null || t === undefined) return;
-            var c = colonnes[k];
-            doc.texte(bords[k], y, ajuste(t, c.largeur - 6, o.taille, o.gras), { taille: o.taille, gras: o.gras, couleur: o.couleur, align: c.droite ? "droite" : "" });
+            var c = colonnes[k], taille = o.entete ? o.taille : (c.taille || o.taille);
+            doc.texte(bords[k], y, ajuste(t, c.largeur - 6, taille, o.gras), { taille: taille, gras: o.gras, couleur: o.couleur, align: c.droite ? "droite" : "" });
           });
           doc.trait(G, y + 5, D, y + 5);
         };
-        ecrit(colonnes.map(function (c) { return c.nom; }), { taille: 8, gras: true, couleur: "gris" });
-        lignes.forEach(function (l) { ecrit(l, { taille: 9, gras: !!l.gras }); });
+        var entete = function () { ecrit(colonnes.map(function (c) { return c.nom; }), { taille: 8, gras: true, couleur: "gris", entete: true }); };
+        place(30);
+        entete();
+        lignes.forEach(function (l) {
+          if (y + 15 > BAS) { saut(); entete(); }
+          ecrit(l, { taille: 9, gras: !!l.gras });
+        });
         return f;
       },
       texte: function (texte) {
+        place(20 + couper(texte, D - G, 8.5).length * 8.5 * 1.45);
         y += 20;
         y = doc.paragraphe(G, y, D - G, texte, { taille: 8.5, couleur: "gris" }) - 12;
         return f;
@@ -255,13 +301,7 @@
       fin: function () {
         if (fini) return doc;
         fini = true;
-        var jour = new Date(), deux = function (n) { return (n < 10 ? "0" : "") + n; };
-        doc.trait(G, 792, D, 792);
-        // Date et heure du poste, au moment où le justificatif est produit.
-        doc.texte(G, 806, "Document établi le " + deux(jour.getDate()) + "/" + deux(jour.getMonth() + 1) + "/" + jour.getFullYear() +
-                  " à " + deux(jour.getHours()) + "h" + deux(jour.getMinutes()) +
-                  " avec mini-outils-compta.fr", { taille: 8, couleur: "gris" });
-        doc.texte(D, 806, "Calcul à contrôler avant utilisation", { taille: 8, couleur: "gris", align: "droite" });
+        pied(doc.nbPages() > 1);
         return doc;
       },
       octets: function () { return f.fin().octets(); },

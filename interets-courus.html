@@ -113,6 +113,8 @@
           <div class="champ"><span class="etiquette">Lignes retenues</span><span class="valeur droite" id="nbRetenues"></span></div>
           <div class="champ avecMax"><span class="etiquette">Taux maximal déductible</span><span class="valeur droite" id="tauxMaxRetenu"></span></div>
           <div class="champ avecMax"><span class="etiquette">Intérêts non déductibles</span><span class="valeur droite" id="nonDeductible"></span></div>
+          <div class="champ avecMax"><span class="etiquette">2033-B (régime simplifié)<span class="aide">Case 247, à inclure en ligne 330</span></span><span class="valeur droite" id="case2033"></span></div>
+          <div class="champ avecMax"><span class="etiquette">2058-A (régime normal)<span class="aide">Case SU, à inclure en ligne WQ</span></span><span class="valeur droite" id="case2058"></span></div>
         </section>
 
         <section class="panel">
@@ -256,6 +258,10 @@
     tr.appendChild(td);
     return td;
   }
+  // Cases de la liasse fiscale où reporter les intérêts non déductibles d'un compte courant
+  // d'associé (formulaires 2026) : 2033-B, ligne 330 « Divers à réintégrer », dont case 247 ;
+  // 2058-A, ligne WQ « Réintégrations diverses », dont case SU.
+  var LIASSE = "case 247 du 2033-B (comprise dans la ligne 330) ou case SU du 2058-A (comprise dans la ligne WQ)";
   function libClotures(l) { return "Du " + M.dateFr(M.lireDate(l[0])) + " au " + M.dateFr(M.lireDate(l[1])); }
 
   // Taux maximal pour une date de clôture : la ligne qui la contient ; après la dernière ligne
@@ -399,7 +405,7 @@
              " période" + (periodes.length > 1 ? "s" : "") + " de solde constant. Intérêts = solde x " + pct(t) + " x jours / " + base +
              " = " + M.affiche(total) + " Euros, comptabilisés au " + M.dateFr(cloture) + " au compte " + cptCourus + "." +
              (max ? " Taux maximal déductible pour une clôture au " + M.dateFr(cloture) + " : " + pct(max.taux) + (max.provisoire ? " (dernier publié, provisoire)" : "") +
-                    (nonDeductible ? ", soit " + M.affiche(nonDeductible) + " Euros d'intérêts non déductibles à réintégrer." : ", taux appliqué inférieur ou égal : intérêts déductibles.") : "");
+                    (nonDeductible ? ", soit " + M.affiche(nonDeductible) + " Euros d'intérêts non déductibles à réintégrer : " + LIASSE + "." : ", taux appliqué inférieur ou égal : intérêts déductibles.") : "");
 
       if (total > 0) {
         var piece = v.piece || M.code6(["courus", v.nature, iso(debut), iso(cloture), t, base, total, cptResultat, cptCourus].join("|"));
@@ -422,6 +428,7 @@
     $("nbRetenues").textContent = String(lignes.length) + " sur " + lues;
     $("tauxMaxRetenu").textContent = max ? pct(max.taux) + (max.provisoire ? " (provisoire)" : "") : "—";
     $("nonDeductible").textContent = dernier && max ? M.affiche(nonDeductible) + " €" : "—";
+    $("case2033").textContent = $("case2058").textContent = dernier && max ? (nonDeductible ? M.affiche(nonDeductible) + " €" : "Rien à réintégrer") : "—";
     $("aideTaux").textContent = cca && max ? "Taux maximal déductible : " + pct(max.taux) : "Taux prévu par la convention";
     $("note").textContent = note || "La note s'affichera une fois le contenu du compte collé.";
     $("copierNote").disabled = !note;
@@ -450,9 +457,14 @@
       f.section("Taux maximal déductible");
       f.ligne("Taux pour une clôture au " + d.cloture, pct(d.max.taux) + (d.max.provisoire ? " (dernier publié, provisoire)" : ""))
        .ligne("Intérêts non déductibles", M.affiche(d.nonDeductible) + " €", { gras: true });
+      if (d.nonDeductible) {
+        f.ligne("2033-B (régime simplifié) : case 247, comprise en ligne 330", M.affiche(d.nonDeductible) + " €")
+         .ligne("2058-A (régime normal) : case SU, comprise en ligne WQ", M.affiche(d.nonDeductible) + " €");
+      }
     }
     f.texte("Intérêts = solde x taux annuel x nombre de jours / " + d.base + ", pour chaque période de solde constant ; le mouvement d'une ligne compte " +
-            "à partir de sa date et le jour de clôture porte intérêts." + (d.max ? " Part non déductible = intérêts x (taux appliqué - taux maximal) / taux appliqué." : ""));
+            "à partir de sa date et le jour de clôture porte intérêts." + (d.max ? " Part non déductible = intérêts x (taux appliqué - taux maximal) / taux appliqué, " +
+            "réintégrée extra-comptablement : " + LIASSE + "." : ""));
     f.ecritures(d.ecritures, M.affiche);
     return f;
   }

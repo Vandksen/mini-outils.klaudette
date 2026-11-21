@@ -116,7 +116,7 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
 }
 .effacer-recherche[hidden] { display: none; }
 .effacer-recherche:hover { opacity: 1; }
-.effacer-recherche:focus-visible { outline: 2px solid var(--on-blue); outline-offset: 2px; border-radius: 4px; }
+.effacer-recherche:focus-visible { outline: 2px solid var(--on-blue); outline-offset: 2px; border-radius: 50%; }
 /* Texte par défaut en Inter Tight, plus étroite que la mono : « Chercher un outil en cliquant Ctrl+K » tient dans le champ. */
 #recherche-menu::placeholder { color: var(--on-blue-muted); opacity: .85; font-family: var(--sans); font-size: 11.5px; }
 #recherche-menu:focus { outline: 2px solid var(--on-blue); outline-offset: 1px; background: rgba(248, 243, 230, .16); }

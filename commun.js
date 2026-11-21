@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.24.19";
+  var VERSION = "1.24.20";
 
   // Catégorie « Outils de production » du menu : écritures courantes de la tenue.
   // Pour ajouter un outil : une ligne ici, à sa place dans l'ordre d'affichage.
@@ -155,7 +155,8 @@ window.MiniOutils = (function () {
   var CHEVRON = '<svg class="chevron" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5"/></svg>';
   var ICONE_INSTALLER = '<svg class="icone-installer" width="16" height="16" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M30.9999 16C31.0062 18.3814 30.2336 20.6996 28.7999 22.6012C28.7209 22.7063 28.6221 22.7948 28.5089 22.8616C28.3958 22.9284 28.2705 22.9724 28.1404 22.9908C28.0103 23.0093 27.8778 23.0019 27.7505 22.9692C27.6233 22.9364 27.5037 22.8789 27.3986 22.8C27.2936 22.721 27.2051 22.6221 27.1383 22.509C27.0714 22.3958 27.0275 22.2706 27.0091 22.1405C26.9906 22.0104 26.9979 21.8779 27.0307 21.7506C27.0634 21.6234 27.1209 21.5038 27.1999 21.3987C28.3734 19.844 29.0056 17.9478 28.9999 16C28.9999 13.613 28.0517 11.3238 26.3638 9.63601C24.676 7.94819 22.3868 6.99997 19.9999 6.99997C17.6129 6.99997 15.3238 7.94819 13.6359 9.63601C11.9481 11.3238 10.9999 13.613 10.9999 16C10.9999 16.2652 10.8945 16.5195 10.707 16.7071C10.5195 16.8946 10.2651 17 9.99988 17C9.73467 17 9.48031 16.8946 9.29278 16.7071C9.10524 16.5195 8.99988 16.2652 8.99988 16C8.9994 14.9908 9.13778 13.9864 9.41113 13.015C9.27489 13 9.13738 13 8.99988 13C7.40859 13 5.88246 13.6321 4.75724 14.7573C3.63203 15.8826 2.99988 17.4087 2.99988 19C2.99988 20.5913 3.63203 22.1174 4.75724 23.2426C5.88246 24.3678 7.40859 25 8.99988 25H11.9999C12.2651 25 12.5195 25.1053 12.707 25.2929C12.8945 25.4804 12.9999 25.7348 12.9999 26C12.9999 26.2652 12.8945 26.5195 12.707 26.7071C12.5195 26.8946 12.2651 27 11.9999 27H8.99988C7.9001 27.0002 6.81208 26.7737 5.80377 26.3346C4.79546 25.8955 3.88853 25.2532 3.1396 24.4478C2.39068 23.6424 1.81585 22.6913 1.45103 21.6538C1.08621 20.6162 0.939225 19.5147 1.01926 18.4178C1.09929 17.3209 1.40462 16.2523 1.91619 15.2788C2.42775 14.3052 3.13455 13.4476 3.99245 12.7595C4.85035 12.0713 5.84092 11.5675 6.90229 11.2794C7.96366 10.9913 9.07304 10.9251 10.1611 11.085C11.2691 8.86892 13.0928 7.09182 15.3368 6.04151C17.5808 4.99121 20.1136 4.72922 22.525 5.29798C24.9365 5.86674 27.0853 7.23294 28.6234 9.17529C30.1616 11.1176 30.9989 13.5224 30.9999 16ZM22.2924 21.2925L19.9999 23.5862V16C19.9999 15.7348 19.8945 15.4804 19.707 15.2929C19.5195 15.1053 19.2651 15 18.9999 15C18.7347 15 18.4803 15.1053 18.2928 15.2929C18.1052 15.4804 17.9999 15.7348 17.9999 16V23.5862L15.7074 21.2925C15.5197 21.1048 15.2652 20.9994 14.9999 20.9994C14.7345 20.9994 14.48 21.1048 14.2924 21.2925C14.1047 21.4801 13.9993 21.7346 13.9993 22C13.9993 22.2653 14.1047 22.5198 14.2924 22.7075L18.2924 26.7075C18.3853 26.8005 18.4955 26.8742 18.6169 26.9245C18.7383 26.9749 18.8685 27.0008 18.9999 27.0008C19.1313 27.0008 19.2614 26.9749 19.3828 26.9245C19.5042 26.8742 19.6145 26.8005 19.7074 26.7075L23.7074 22.7075C23.895 22.5198 24.0004 22.2653 24.0004 22C24.0004 21.7346 23.895 21.4801 23.7074 21.2925C23.5197 21.1048 23.2652 20.9994 22.9999 20.9994C22.7345 20.9994 22.48 21.1048 22.2924 21.2925Z"/></svg>';
   var ICONE_LIEN = '<svg width="18" height="18" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M30.0002 11.0287C29.9501 12.7695 29.2342 14.4248 28.0002 15.6537L23.6565 19.9999C23.0238 20.636 22.2713 21.1403 21.4424 21.4837C20.6136 21.827 19.7249 22.0024 18.8277 21.9999H18.8215C17.909 21.9993 17.0059 21.8158 16.1656 21.4603C15.3253 21.1048 14.5647 20.5844 13.9288 19.93C13.2929 19.2756 12.7947 18.5004 12.4634 17.6502C12.1322 16.8 11.9747 15.892 12.0002 14.9799C12.0077 14.7147 12.1202 14.4633 12.313 14.2811C12.5058 14.0988 12.7631 14.0006 13.0283 14.0081C13.2936 14.0155 13.545 14.128 13.7272 14.3209C13.9095 14.5137 14.0077 14.771 14.0002 15.0362C13.982 15.6811 14.0933 16.3231 14.3274 16.9243C14.5615 17.5255 14.9138 18.0736 15.3633 18.5364C15.8129 18.9991 16.3507 19.367 16.9448 19.6184C17.539 19.8698 18.1776 19.9995 18.8227 19.9999C19.4569 20.0016 20.0852 19.8775 20.6711 19.6348C21.2571 19.3921 21.7891 19.0357 22.2365 18.5862L26.5802 14.2424C27.4764 13.335 27.9772 12.1098 27.9732 10.8343C27.9692 9.55891 27.4608 8.33686 26.5589 7.435C25.6571 6.53313 24.435 6.0247 23.1596 6.02071C21.8842 6.01672 20.659 6.51749 19.7515 7.41369L18.3765 8.78869C18.1874 8.96831 17.9357 9.06697 17.6749 9.06363C17.4141 9.0603 17.165 8.95522 16.9806 8.77082C16.7962 8.58642 16.6911 8.33728 16.6878 8.07652C16.6844 7.81576 16.7831 7.56401 16.9627 7.37494L18.3377 5.99994C18.9721 5.36536 19.7253 4.86196 20.5542 4.51851C21.3832 4.17506 22.2717 3.99829 23.169 3.99829C24.0663 3.99829 24.9548 4.17506 25.7837 4.51851C26.6127 4.86196 27.3659 5.36536 28.0002 5.99994C28.6573 6.65864 29.1735 7.44416 29.5173 8.30868C29.8611 9.1732 30.0254 10.0986 30.0002 11.0287ZM13.6252 23.2074L12.2502 24.5824C11.8018 25.0339 11.268 25.3917 10.68 25.635C10.0921 25.8784 9.46157 26.0024 8.82522 25.9999C7.8706 25.9992 6.93763 25.7155 6.14418 25.1847C5.35073 24.6539 4.73242 23.8998 4.36737 23.0177C4.00232 22.1357 3.9069 21.1652 4.09319 20.2289C4.27947 19.2926 4.73909 18.4326 5.41398 17.7574L9.75023 13.4137C10.4332 12.7271 11.3069 12.2617 12.2577 12.0781C13.2086 11.8944 14.1927 12.0008 15.0823 12.3836C15.9718 12.7664 16.7258 13.4078 17.2461 14.2246C17.7665 15.0413 18.0292 15.9957 18.0002 16.9637C17.9928 17.2289 18.091 17.4862 18.2732 17.679C18.4555 17.8719 18.7069 17.9844 18.9721 17.9918C19.2373 17.9993 19.4946 17.9011 19.6874 17.7188C19.8803 17.5366 19.9928 17.2852 20.0002 17.0199C20.0242 16.0914 19.8593 15.1676 19.5155 14.3046C19.1717 13.4417 18.6562 12.6576 18.0002 11.9999C16.7192 10.7195 14.9821 10.0002 13.1708 10.0002C11.3596 10.0002 9.6225 10.7195 8.34148 11.9999L4.00023 16.3437C3.04551 17.298 2.39512 18.5139 2.13124 19.8378C1.86736 21.1616 2.00183 22.534 2.51766 23.7814C3.0335 25.0289 3.90754 26.0954 5.02934 26.8463C6.15113 27.5971 7.47033 27.9986 8.82022 27.9999C9.71756 28.0025 10.6065 27.8271 11.4356 27.4838C12.2647 27.1405 13.0174 26.6361 13.6502 25.9999L15.0252 24.6249C15.1871 24.4343 15.2716 24.19 15.2622 23.9401C15.2528 23.6902 15.1501 23.453 14.9744 23.275C14.7987 23.0971 14.5627 22.9915 14.3129 22.979C14.0632 22.9665 13.8178 23.048 13.6252 23.2074Z"/></svg>';
-  var ICONE_ACCUEIL = '<svg width="14" height="14" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M27.4138 13.585L17.4138 3.58496C17.0387 3.21017 16.5302 2.99963 16 2.99963C15.4698 2.99963 14.9613 3.21017 14.5863 3.58496L4.58626 13.585C4.39964 13.7702 4.25171 13.9907 4.15107 14.2336C4.05042 14.4765 3.99908 14.737 4.00001 15V27C4.00001 27.2652 4.10537 27.5195 4.29291 27.7071C4.48044 27.8946 4.7348 28 5.00001 28H27C27.2652 28 27.5196 27.8946 27.7071 27.7071C27.8947 27.5195 28 27.2652 28 27V15C28.0009 14.737 27.9496 14.4765 27.849 14.2336C27.7483 13.9907 27.6004 13.7702 27.4138 13.585ZM26 26H6.00001V15L16 4.99996L26 15V26Z"/></svg>';
+  // Icône de l'entrée « Accueil » du menu : House (Phosphor, graisse Fill).
+  var ICONE_ACCUEIL = '<svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,120v96a8,8,0,0,1-8,8H160a8,8,0,0,1-8-8V164a4,4,0,0,0-4-4H108a4,4,0,0,0-4,4v52a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V120a16,16,0,0,1,4.69-11.31l80-80a16,16,0,0,1,22.62,0l80,80A16,16,0,0,1,224,120Z"/></svg>';
 
   // Remplit <nav id="menu"> et branche l'ouverture du menu sur petit écran.
   // Le site et les outils sont en bêta : étiquette sur le logo du menu et dans la barre mobile.
@@ -615,6 +616,71 @@ window.MiniOutils = (function () {
     });
   }
 
+  // Second menu repliable des pages du référentiel (colonne #filtres) : un chevron en haut de
+  // la colonne la replie sur ordinateur. Le champ de recherche (le même, avec sa croix) passe
+  // alors au-dessus de la liste (#liste), avec le nombre de résultats, un bouton « Filtres »
+  // qui rouvre la colonne et le rappel des filtres restés actifs. La colonne est affichée à
+  // chaque visite ; sur téléphone, elle reste un volet.
+  //   var repli = M.secondMenu(["compte", "comptes"]);
+  //   repli.maj(nombre, ["catégorie « D. Charges »"]);   // à la fin de chaque affichage
+  var CHEVRON_GAUCHE = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg>';
+  var CHEVRON_DROITE = '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5"/></svg>';
+  function secondMenu(unite) {
+    var filtres = $("filtres"), liste = $("liste"), champ = $("recherche");
+    if (!filtres || !liste || !champ) return { maj: function () {} };
+    var cadre = champ.parentNode, ancre = cadre.nextElementSibling;
+    var replier = document.createElement("button");
+    replier.type = "button";
+    replier.id = "replier-filtres";
+    replier.className = "replier-filtres";
+    replier.setAttribute("aria-controls", "filtres");
+    replier.setAttribute("aria-expanded", "true");
+    replier.setAttribute("aria-label", "Replier la recherche et les filtres");
+    replier.title = "Replier la recherche et les filtres";
+    replier.innerHTML = CHEVRON_GAUCHE;
+    filtres.querySelector("header div").appendChild(replier);
+    var barre = document.createElement("div");
+    barre.className = "pcg-recherche-haut";
+    barre.id = "recherche-haut";
+    barre.hidden = true;
+    barre.innerHTML = '<div class="ligne"><div class="emplacement" id="emplacement-haut"></div><span class="etat" id="compteur-haut"></span>' +
+      '<button id="deplier-filtres" class="btn ghost" type="button" aria-controls="filtres" aria-expanded="false" ' +
+      'title="Afficher la recherche et les filtres">Filtres ' + CHEVRON_DROITE + '</button></div>' +
+      '<p class="filtre-actif" id="filtre-haut" hidden><span id="filtre-haut-texte"></span> <button type="button" id="effacer-haut">Tout afficher</button></p>';
+    liste.parentNode.insertBefore(barre, liste);
+    var large = window.matchMedia("(min-width: 821px)"), choisi = false;
+    // Une version précédente gardait le repli du plan de comptes d'une visite à l'autre.
+    try { localStorage.removeItem("mini-outils-pcg-filtres-replies"); } catch (e) {}
+    var replie = function (etat) {
+      etat = etat && large.matches;
+      document.body.classList.toggle("filtres-replies", etat);
+      barre.hidden = !etat;
+      if (etat) $("emplacement-haut").appendChild(cadre);
+      else filtres.querySelector(".defile").insertBefore(cadre, ancre);
+      replier.setAttribute("aria-expanded", String(!etat));
+      $("deplier-filtres").setAttribute("aria-expanded", String(!etat));
+    };
+    var choisit = function (etat) {
+      choisi = etat;
+      replie(etat);
+      (etat ? champ : replier).focus();
+    };
+    replier.addEventListener("click", function () { choisit(true); });
+    $("deplier-filtres").addEventListener("click", function () { choisit(false); });
+    $("effacer-haut").addEventListener("click", function () { if ($("effacer")) $("effacer").click(); });
+    var suit = function () { replie(choisi); };
+    if (large.addEventListener) large.addEventListener("change", suit); else if (large.addListener) large.addListener(suit);
+    return {
+      maj: function (nombre, actifs) {
+        $("compteur-haut").textContent = ($("compteur") ? $("compteur").textContent : String(nombre)) + " " + unite[nombre > 1 ? 1 : 0];
+        $("filtre-haut").hidden = !actifs.length;
+        $("filtre-haut-texte").textContent = actifs.length ? "Filtre actif : " + actifs.join(", ") + "." : "";
+      }
+    };
+  }
+
   // Ajoute « Réinitialiser » en tête du premier panneau de saisie : tous les champs
   // reprennent les données de départ de l'outil (exemple compris), puis le calcul est relancé.
   // Ces valeurs sont relevées une fois la page chargée, après que son propre script a rempli
@@ -1024,5 +1090,6 @@ window.MiniOutils = (function () {
   lienPage();
 
   return { VERSION: VERSION, $: $, centimes: centimes, deux: deux, code6: code6, affiche: affiche, lireDate: lireDate,
-           decale: decale, dateFr: dateFr, copierTexte: copierTexte, fete: fete, tempsGagne: tempsGagne, verifieVersion: verifieVersion, rendre: rendre, texteACopier: texteACopier, brancher: brancher };
+           decale: decale, dateFr: dateFr, copierTexte: copierTexte, fete: fete, tempsGagne: tempsGagne, verifieVersion: verifieVersion, rendre: rendre, texteACopier: texteACopier, brancher: brancher,
+           secondMenu: secondMenu };
 })();

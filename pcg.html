@@ -26,15 +26,12 @@
 
 <nav id="menu" aria-label="Outils"></nav>
 
-<!-- Second menu : recherche et filtre par catégorie. Une colonne à gauche, que le bouton
-     « Replier » masque : la recherche passe alors en haut de la page. Sur téléphone, un volet
-     ouvert par le bouton « Filtres » de la barre du haut. -->
+<!-- Second menu : recherche et filtre par catégorie. Une colonne à gauche, que le chevron de
+     son en-tête replie (commun.js, secondMenu) : la recherche passe alors au-dessus de la liste.
+     Sur téléphone, un volet ouvert par le bouton « Filtres » de la barre du haut. -->
 <aside id="filtres" aria-label="Recherche et filtres">
   <header>
-    <div><span class="eyebrow">Plan de comptes</span><span class="etat" id="compteur" role="status"></span>
-      <button id="replier-filtres" class="replier-filtres" type="button" aria-controls="filtres" aria-expanded="true"
-              aria-label="Replier les filtres" title="Replier les filtres"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"
-              stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 3.5 4 8l4.5 4.5M13 3.5 8.5 8l4.5 4.5"/></svg></button></div>
+    <div><span class="eyebrow">Plan de comptes</span><span class="etat" id="compteur" role="status"></span></div>
     <strong id="titre-filtre"></strong>
   </header>
   <div class="defile">
@@ -62,19 +59,6 @@
     <h1>Plan de comptes <em>normé.</em></h1>
     <p class="lead"><strong>But de la page :</strong> retrouver un compte du plan de comptes normé, avec un numéro à six chiffres et un libellé intelligible, pour tenir tous les dossiers avec les mêmes comptes.</p>
     <p class="lead">Tapez un numéro ou un mot du libellé, ou choisissez une catégorie. Les comptes sont regroupés par racine, c'est-à-dire par leurs deux premiers chiffres. Le bouton placé après chaque libellé le copie. Une pastille signale les comptes touchés par la réforme du plan comptable de 2025 : « ✓ PCG 2025 » pour un compte du nouveau plan, « Avant 2025 » pour un compte de l'ancien plan.</p>
-
-    <!-- Recherche en haut de page, affichée quand le second menu est replié. -->
-    <div class="pcg-recherche-haut" id="recherche-haut" hidden>
-      <div class="ligne">
-        <div class="emplacement" id="emplacement-haut"></div>
-        <span class="etat" id="compteur-haut"></span>
-        <button id="deplier-filtres" class="btn ghost" type="button" aria-controls="filtres" aria-expanded="false"
-                title="Afficher les catégories et les filtres">Filtres <svg width="12" height="12" viewBox="0 0 16 16" fill="none"
-                stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 3.5 12 8l-4.5 4.5M3 3.5 7.5 8 3 12.5"/></svg></button>
-      </div>
-      <p class="filtre-actif" id="filtre-haut" hidden><span id="filtre-haut-texte"></span>
-        <button type="button" id="effacer-haut">Tout afficher</button></p>
-    </div>
 
     <div id="liste"></div>
     <p class="vide" id="aucun" hidden>Aucun compte ne correspond à cette recherche.</p>
@@ -215,13 +199,11 @@ function demarre() {
     $("effacer").disabled = !filtre;
     // Barre du haut (second menu replié) : le compteur et, s'il y en a, les filtres actifs
     // autres que la recherche, pour qu'un filtre ne reste pas appliqué sans être visible.
-    $("compteur-haut").textContent = $("compteur").textContent + " compte" + (nombre > 1 ? "s" : "");
     var autres = [];
     if (categorie !== -1) autres.push("catégorie « " + CATEGORIES[categorie] + " »");
     if (reforme === 1) autres.push("nouveau plan (PCG 2025)");
     if (reforme === 2) autres.push("ancien plan (avant 2025)");
-    $("filtre-haut").hidden = !autres.length;
-    $("filtre-haut-texte").textContent = autres.length ? "Filtre actif : " + autres.join(", ") + "." : "";
+    repli.maj(nombre, autres);
   }
 
   // Met à jour le nombre affiché sur chaque bouton d'un filtre, et estompe ceux à zéro.
@@ -316,36 +298,12 @@ function demarre() {
   $("ouvrir").addEventListener("click", function () { volet(false); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") volet(false); });
 
-  // Ordinateur : le second menu se replie. La recherche (le même champ, avec sa croix) passe
-  // alors en haut de la page, sous le texte d'introduction. À chaque visite, le second menu
-  // est affiché ; sur téléphone, il reste un volet.
-  var cadreRecherche = $("recherche").parentNode, LARGE = window.matchMedia("(min-width: 821px)"), replieChoisi = false;
-  // Une version précédente gardait le repli d'une visite à l'autre : on efface ce choix.
-  try { localStorage.removeItem("mini-outils-pcg-filtres-replies"); } catch (e) {}
-  function replie(etat) {
-    etat = etat && LARGE.matches;
-    document.body.classList.toggle("filtres-replies", etat);
-    $("recherche-haut").hidden = !etat;
-    if (etat) $("emplacement-haut").appendChild(cadreRecherche);
-    else $("titre-categories").parentNode.insertBefore(cadreRecherche, $("titre-categories"));
-    $("replier-filtres").setAttribute("aria-expanded", String(!etat));
-    $("deplier-filtres").setAttribute("aria-expanded", String(!etat));
-  }
-  var choisitRepli = function (etat) {
-    replieChoisi = etat;
-    replie(etat);
-    (etat ? $("recherche") : $("replier-filtres")).focus();
-  };
-  $("replier-filtres").addEventListener("click", function () { choisitRepli(true); });
-  $("deplier-filtres").addEventListener("click", function () { choisitRepli(false); });
-  $("effacer-haut").addEventListener("click", function () { $("effacer").click(); });
-  var suitLargeur = function () { replie(replieChoisi); };
-  if (LARGE.addEventListener) LARGE.addEventListener("change", suitLargeur); else if (LARGE.addListener) LARGE.addListener(suitLargeur);
+  // Ordinateur : le second menu se replie (voir secondMenu dans commun.js).
+  var repli = window.MiniOutils.secondMenu(["compte", "comptes"]);
 
   boutonsCategories();
   if (!AVEC_REFORME) { $("titre-reforme").hidden = true; $("reforme").hidden = true; }
   affiche();
-  replie(false);
 }
 </script>
 </body>

@@ -26,8 +26,9 @@
 
 <nav id="menu" aria-label="Outils"></nav>
 
-<!-- Second menu : recherche et filtre par cycle, comme sur le plan de comptes. Toujours une
-     colonne à gauche ; sur téléphone, un volet ouvert par le bouton « Filtres ». -->
+<!-- Second menu : recherche et filtre par cycle, comme sur le plan de comptes. Une colonne à
+     gauche, que le chevron de son en-tête replie (commun.js, secondMenu) : la recherche passe
+     alors au-dessus de la liste. Sur téléphone, un volet ouvert par le bouton « Filtres ». -->
 <aside id="filtres" aria-label="Recherche et filtres">
   <header>
     <div><span class="eyebrow">Questions</span><span class="etat" id="compteur" role="status"></span></div>
@@ -159,6 +160,8 @@ function demarre() {
     $("titre-filtre").textContent = cycle === -1 ? "Tous les cycles" : CYCLES[cycle];
     $("aucun").hidden = nombre > 0;
     $("effacer").disabled = !filtre;
+    // Barre du haut (second menu replié) : le compteur et le cycle resté choisi.
+    repli.maj(nombre, cycle === -1 ? [] : ["cycle « " + CYCLES[cycle] + " »"]);
   }
 
   function choisit(rang) {
@@ -227,6 +230,9 @@ function demarre() {
   $("fond").addEventListener("click", function () { volet(false); });
   $("ouvrir").addEventListener("click", function () { volet(false); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") volet(false); });
+
+  // Ordinateur : le second menu se replie (voir secondMenu dans commun.js).
+  var repli = window.MiniOutils.secondMenu(["question", "questions"]);
 
   boutonsCycles();
   affiche();

@@ -14,43 +14,54 @@ window.MiniOutils = (function () {
   // Mettre le MÊME numéro dans version.json : c'est ce petit fichier que les pages ouvertes
   // consultent pour savoir si une nouvelle version est publiée.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.25.2";
+  var VERSION = "1.25.3";
+
+  // Type de chaque outil (champ « type ») : ce sur quoi il travaille, affiché en étiquette sur
+  // sa page et sur sa carte de l'accueil (voir etiquettesType).
+  //   calcul  : des paramètres saisis (taux, montants, dates) ;
+  //   balance : une balance collée ;
+  //   detail  : le détail collé d'un compte (grand livre, relevé, écritures).
+  var TYPES = {
+    calcul: { nom: "Calcul", aide: "Outil de calcul : il travaille sur les paramètres que vous saisissez." },
+    balance: { nom: "Balance", aide: "Il travaille sur une balance collée." },
+    detail: { nom: "Détail d'un compte", aide: "Il travaille sur le détail collé d'un compte : grand livre, relevé ou écritures." }
+  };
 
   // Catégorie « Outils de production » du menu : écritures courantes de la tenue.
   // Pour ajouter un outil : une ligne ici, à sa place dans l'ordre d'affichage.
   var PRODUCTION = [
-    { fichier: "extournes.html", nom: "Extournes" },
-    { fichier: "abo-mensuel.html", nom: "Abonnement mensuel" },
-    { fichier: "rem-gerance.html", nom: "Rémunération gérance" },
-    { fichier: "indemnites-km.html", nom: "Indemnités kilométriques" },
-    { fichier: "import-banque.html", nom: "Import banque" }
+    { fichier: "extournes.html", nom: "Extournes", type: "detail" },
+    { fichier: "abo-mensuel.html", nom: "Abonnement mensuel", type: "calcul" },
+    { fichier: "rem-gerance.html", nom: "Rémunération gérance", type: "calcul" },
+    { fichier: "indemnites-km.html", nom: "Indemnités kilométriques", type: "calcul" },
+    { fichier: "import-banque.html", nom: "Import banque", type: "detail" }
   ];
   // Catégorie « Outils de révision » du menu : calculs et écritures de clôture.
   var REVISION = [
-    { fichier: "fnp.html", nom: "Calcul de FNP" },
-    { fichier: "avantage-nature.html", nom: "Avantage en nature" },
-    { fichier: "tva-avantages-nature.html", nom: "TVA avantages en nature" },
-    { fichier: "tva-annee.html", nom: "TVA de l'année" },
-    { fichier: "interets-courus.html", nom: "Intérêts courus" },
-    { fichier: "decomposition-immeuble.html", nom: "Décomposition immeuble" },
-    { fichier: "plafond-vehicule.html", nom: "Plafond véhicule" },
-    { fichier: "medecins-secteur1.html", nom: "Médecins secteur 1" },
-    { fichier: "revenu-brut-social.html", nom: "Revenu brut social" },
-    { fichier: "revalorisation-loyer.html", nom: "Revalorisation de loyer" }
+    { fichier: "fnp.html", nom: "Calcul de FNP", type: "calcul" },
+    { fichier: "avantage-nature.html", nom: "Avantage en nature", type: "calcul" },
+    { fichier: "tva-avantages-nature.html", nom: "TVA avantages en nature", type: "calcul" },
+    { fichier: "tva-annee.html", nom: "TVA de l'année", type: "detail" },
+    { fichier: "interets-courus.html", nom: "Intérêts courus", type: "detail" },
+    { fichier: "decomposition-immeuble.html", nom: "Décomposition immeuble", type: "calcul" },
+    { fichier: "plafond-vehicule.html", nom: "Plafond véhicule", type: "calcul" },
+    { fichier: "medecins-secteur1.html", nom: "Médecins secteur 1", type: "calcul" },
+    { fichier: "revenu-brut-social.html", nom: "Revenu brut social", type: "calcul" },
+    { fichier: "revalorisation-loyer.html", nom: "Revalorisation de loyer", type: "detail" }
   ];
   var OUTILS = PRODUCTION.concat(REVISION);
   // Catégorie « Analyse » du menu : contrôles et revues à partir de données collées.
   // Pour y ajouter une page : une ligne ici, de la même forme que dans OUTILS.
   var ANALYSE = [
-    { fichier: "controle-coherence.html", nom: "Contrôle de cohérence" },
-    { fichier: "dates-week-end.html", nom: "Dates de week-end" },
-    { fichier: "analyse-fournisseurs.html", nom: "Analyse des fournisseurs" }
+    { fichier: "controle-coherence.html", nom: "Contrôle de cohérence", type: "balance" },
+    { fichier: "dates-week-end.html", nom: "Dates de week-end", type: "detail" },
+    { fichier: "analyse-achats.html", nom: "Analyse des achats", type: "detail" }
   ];
   // Catégorie « Dashboard » du menu : outils qui s'appuient sur les comptes 4886 et 4887
   // tenus par cycle. Pour y ajouter une page :
   // une ligne ici, de la même forme que dans OUTILS.
   var DASHBOARD = [
-    { fichier: "etalement.html", nom: "Cutter" }
+    { fichier: "etalement.html", nom: "Cutter", type: "calcul" }
   ];
   // Catégorie « Référentiel » du menu : pages de consultation, lisibles aussi sur téléphone.
   // Pour y ajouter une page : une ligne ici, de la même forme que dans OUTILS.
@@ -751,6 +762,30 @@ window.MiniOutils = (function () {
     };
   }
 
+  // Étiquette du type d'outil (Calcul, Balance, Détail d'un compte) : sur la page de l'outil, à la
+  // suite du surtitre au-dessus du titre ; sur l'accueil, sur la carte de chaque outil.
+  function etiquettesType() {
+    var tous = OUTILS.concat(ANALYSE, DASHBOARD);
+    var etiquette = function (outil) {
+      var t = TYPES[outil.type];
+      if (!t) return null;
+      var e = document.createElement("span");
+      e.className = "type-outil type-" + outil.type;
+      e.textContent = t.nom;
+      e.title = t.aide;
+      return e;
+    };
+    var page = location.pathname.split("/").pop() || "index.html";
+    var outil = tous.filter(function (o) { return o.fichier === page; })[0];
+    var surtitre = document.querySelector("main .conteneur > .eyebrow");
+    if (outil && surtitre) { var e = etiquette(outil); if (e) surtitre.appendChild(e); }
+    Array.prototype.forEach.call(document.querySelectorAll("a.carte[href]"), function (carte) {
+      var o = tous.filter(function (x) { return x.fichier === carte.getAttribute("href"); })[0];
+      var e = o && etiquette(o), suite = carte.querySelector(".suite");
+      if (e) carte.insertBefore(e, suite);
+    });
+  }
+
   // Ajoute « Réinitialiser » en tête du premier panneau de saisie : tous les champs
   // reprennent les données de départ de l'outil (exemple compris), puis le calcul est relancé.
   // Ces valeurs sont relevées une fois la page chargée, après que son propre script a rempli
@@ -1176,6 +1211,7 @@ window.MiniOutils = (function () {
   icone();
   reinitialisation();
   croixRecherche();
+  etiquettesType();
   lienPage();
 
   return { VERSION: VERSION, $: $, centimes: centimes, deux: deux, code6: code6, affiche: affiche, lireDate: lireDate,

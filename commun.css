@@ -397,6 +397,17 @@ div.segments button:focus-visible { outline: 2px solid var(--blue); outline-offs
 
 .cadre-table { overflow-x: auto; }
 
+/* Étiquette du type d'outil (commun.js, etiquettesType) : à la suite du surtitre d'une page
+   d'outil, et sur les cartes de l'accueil. */
+.type-outil {
+  display: inline-flex; align-items: center; height: 20px; padding: 0 9px; border-radius: 9999px;
+  border: 1px solid rgba(17, 54, 219, .4); background: rgba(17, 54, 219, .06); color: var(--blue);
+  font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase;
+  white-space: nowrap; vertical-align: 2px;
+}
+.eyebrow .type-outil { margin-left: 12px; }
+.carte .type-outil { align-self: flex-start; margin-top: 4px; }
+
 /* Fenêtre (élément <dialog>) : un cadre bleuté au centre, sur un fond assombri. Le contenu est
    dans .fenetre-corps, pour qu'un clic sur le fond, hors du cadre, la ferme. */
 dialog.fenetre {

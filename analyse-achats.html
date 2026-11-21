@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1136DB">
+<meta name="description" content="Analyse le détail collé d'un compte d'achat : fournisseurs regroupés, fournisseurs récurrents, achats ponctuels au-dessus d'un seuil, loi de Benford et doublons possibles. Note et justificatif PDF. Gratuit, sans envoi de données.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/icone-m-180.png">
+<title>Analyse des achats — Mini-outils</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mini-outils">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Analyse des achats — Mini-outils">
+<meta property="og:description" content="Analyse le détail collé d'un compte d'achat : fournisseurs regroupés, fournisseurs récurrents, achats ponctuels au-dessus d'un seuil, loi de Benford et doublons possibles. Note et justificatif PDF. Gratuit, sans envoi de données.">
+<meta property="og:url" content="https://mini-outils-compta.fr/analyse-achats.html">
+<link rel="canonical" href="https://mini-outils-compta.fr/analyse-achats.html">
+<meta property="og:image" content="https://mini-outils-compta.fr/images/og-tempete.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Un navire dans la tempête, avec le slogan « Quand la période fiscale se déchaîne, gardez le cap. »">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="commun.css">
+<!-- Polices de tout écran, demandées dès l'en-tête plutôt qu'après la lecture du style. -->
+<link rel="preload" href="polices/inter-tight-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="polices/jetbrains-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="polices/instrument-serif-italique-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+/* Tableaux longs (fournisseurs, lignes) : hauteur bornée, défilement dans le cadre. */
+.cadre-table.long { max-height: 420px; overflow-y: auto; }
+.cadre-table.long thead th { position: sticky; top: 0; background: var(--paper); }
+/* Ligne mise en avant : achat ponctuel au-dessus du seuil, chiffre de Benford en excès. */
+tr.excede td { color: var(--rouge); font-weight: 600; }
+tr.excede td.lib { font-weight: 600; }
+td .marque { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+/* Une colonne après un montant aligné à droite : un espace, pour que les deux ne se touchent pas. */
+td.droite + td:not(.droite), th.droite + th:not(.droite) { padding-left: 18px; }
+
+/* Loi de Benford : une barre par premier chiffre (part observée), un trait pour la part attendue. */
+.benford-legende { display: flex; gap: 18px; flex-wrap: wrap; margin: 4px 0 12px; font-size: 13px; color: var(--muted); }
+.benford-legende span { display: inline-flex; align-items: center; gap: 6px; }
+.benford-legende .pastille-obs { width: 12px; height: 12px; border-radius: 3px; background: var(--blue); }
+.benford-legende .pastille-att { width: 14px; height: 2px; background: var(--ink); }
+.benford { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 2px; align-items: end; height: 180px;
+           border-bottom: 1px solid var(--line); background: linear-gradient(to top, var(--line) 1px, transparent 1px) 0 0 / 100% 25%; }
+.benford .col { position: relative; height: 100%; display: flex; align-items: flex-end; justify-content: center; cursor: default; }
+.benford .col:hover { background: rgba(17, 54, 219, .05); }
+.benford .barre-obs { width: 62%; background: var(--blue); border-radius: 4px 4px 0 0; min-height: 1px; }
+.benford .col.excede .barre-obs { background: var(--rouge); }
+.benford .trait-att { position: absolute; left: 12%; right: 12%; height: 2px; background: var(--ink); box-shadow: 0 0 0 2px var(--paper); }
+.benford-chiffres { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 2px; margin-top: 6px;
+                    font-family: var(--mono); font-size: 12px; color: var(--muted); text-align: center; }
+/* Explication repliable de la loi de Benford. */
+details.explication { margin: 0 0 14px; padding: 10px 14px; border-radius: 8px; background: var(--cream); font-size: 14px; line-height: 1.55; }
+/* Flèche de l'accordéon : Arrow Square Down Right (Phosphor, graisse Fill), en bleu ; ouverte, elle se retourne. */
+details.explication summary { display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--blue); font-weight: 600; list-style: none; }
+details.explication summary::-webkit-details-marker { display: none; }
+details.explication summary::before {
+  content: ""; flex: none; width: 20px; height: 20px; background: var(--blue); transition: transform .2s ease;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath d='M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM168,160a8,8,0,0,1-8,8H112a8,8,0,0,1,0-16h28.69L90.34,101.66a8,8,0,0,1,11.32-11.32L152,140.69V112a8,8,0,0,1,16,0Z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath d='M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM168,160a8,8,0,0,1-8,8H112a8,8,0,0,1,0-16h28.69L90.34,101.66a8,8,0,0,1,11.32-11.32L152,140.69V112a8,8,0,0,1,16,0Z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+details.explication[open] summary::before { transform: rotate(180deg); }
+details.explication[open] summary { margin-bottom: 8px; }
+details.explication p { margin: 8px 0 0; }
+details.explication h3 { display: flex; align-items: center; gap: 8px; margin: 18px 0 2px; font-size: 15px; font-weight: 600; color: var(--ink); }
+details.explication .etape { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--blue); color: var(--on-blue); font-family: var(--mono); font-size: 12px; font-weight: 700; flex: none; }
+details.explication ul { margin: 6px 0 0; padding-left: 20px; }
+details.explication li { margin: 3px 0; }
+details.explication ul.exemples { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; font-family: var(--mono); font-size: 13px; }
+details.explication ul.exemples strong { color: var(--blue); }
+details.explication table { width: 100%; margin: 8px 0 0; border-collapse: collapse; font-size: 13px; background: var(--paper); border-radius: 6px; }
+details.explication table th, details.explication table td { padding: 5px 6px; border-bottom: 1px solid var(--line); text-align: center; }
+details.explication table th:first-child { text-align: left; font-weight: 600; white-space: nowrap; }
+details.explication table.niveaux td { text-align: left; font-family: var(--sans); font-size: 13px; }
+details.explication table.niveaux td:first-child { font-family: var(--mono); white-space: nowrap; }
+details.explication .lecture { padding: 10px 12px; border-left: 3px solid var(--blue); background: var(--paper); border-radius: 0 6px 6px 0; }
+.verdict { margin: 14px 0 0; padding: 10px 12px; border-radius: 8px; background: var(--cream); font-size: 14px; }
+.verdict strong { color: var(--blue); }
+.verdict.alerte strong { color: var(--rouge); }
+</style>
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">Contenu d'un compte d'achat — fournisseurs</p>
+    <h1>Analyse des <em>achats.</em></h1>
+    <p class="lead"><strong>But de la page :</strong> passer en revue un compte d'achat volumineux. La page reconnaît le fournisseur au début de chaque libellé, regroupe les fournisseurs récurrents, met en avant les achats ponctuels au-dessus d'un seuil, confronte les montants à la loi de Benford et signale les doublons possibles.</p>
+    <p class="lead">Collez le contenu du compte. Le résultat est calculé aussitôt.</p>
+
+    <div class="grille">
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">01 — Configuration</p>
+          <div class="champ">
+            <label for="dossier">Dossier<span class="aide">Facultatif</span></label>
+            <input id="dossier" type="text" value="Restaurant MIRABELLE">
+          </div>
+          <div class="champ">
+            <label for="compte">Compte analysé<span class="aide">Facultatif, pour la note</span></label>
+            <input id="compte" type="text" value="607000">
+          </div>
+          <div class="champ">
+            <label for="seuil">Seuil des achats ponctuels<span class="aide">En euros : un fournisseur non récurrent au-dessus est mis en avant</span></label>
+            <input id="seuil" class="droite" type="text" inputmode="decimal" value="100">
+          </div>
+          <div class="champ">
+            <label for="recurrence">Fournisseur récurrent<span class="aide">À partir de ce nombre de lignes</span></label>
+            <input id="recurrence" class="droite" type="text" inputmode="numeric" value="3">
+          </div>
+          <div class="champ pleine">
+            <label for="mots">Nom du fournisseur<span class="aide">Nombre de mots du libellé retenus pour reconnaître un fournisseur</span></label>
+            <select id="mots" class="segments">
+              <option value="1">1 mot</option>
+              <option value="2" selected>2 mots</option>
+              <option value="3">3 mots</option>
+            </select>
+          </div>
+          <div class="champ">
+            <label for="ecart">Doublons<span class="aide">Même fournisseur et même montant, à ce nombre de jours près</span></label>
+            <input id="ecart" class="droite" type="text" inputmode="numeric" value="3">
+          </div>
+          <ul class="alertes" id="alertes"></ul>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">02 — Contenu du compte</p>
+          <p class="aide-bloc">Dans ACD, ouvrez le détail du compte en mode grand livre, copiez son contenu avec Ctrl+C puis collez-le dans cette zone avec Ctrl+V (la ligne de titres peut être copiée ou non). Le fournisseur est lu au début du libellé, avant le premier séparateur (« - », « / », « * ») ou la première référence chiffrée ; « CB », « PRLV SEPA » ou « FACTURE » en tête sont ignorés.</p>
+          <textarea id="source" class="saisie" spellcheck="false" wrap="off" aria-label="Contenu du compte à coller"></textarea>
+        </section>
+      </div>
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">03 — Synthèse</p>
+          <p class="resultat" id="resultat"></p>
+          <div class="champ"><span class="etiquette">Fournisseurs récurrents</span><span class="valeur droite" id="nbRecurrents"></span></div>
+          <div class="champ"><span class="etiquette">Fournisseurs ponctuels</span><span class="valeur droite" id="nbPonctuels"></span></div>
+          <div class="champ"><span class="etiquette">Achats ponctuels au-dessus du seuil</span><span class="valeur droite" id="nbAuDessus"></span></div>
+          <div class="champ"><span class="etiquette">Doublons possibles</span><span class="valeur droite" id="nbDoublons"></span></div>
+          <div class="champ"><span class="etiquette">Loi de Benford</span><span class="valeur droite" id="benfordCourt"></span></div>
+          <div class="champ"><span class="etiquette">Total du compte</span><span class="valeur droite" id="total"></span></div>
+          <div class="champ"><span class="etiquette">Lignes lues</span><span class="valeur droite" id="nbLues"></span></div>
+          <div class="champ"><span class="etiquette">Période du compte</span><span class="valeur droite" id="periode"></span></div>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">04 — Achats ponctuels au-dessus du seuil</p>
+            <div class="actions">
+              <span class="etat" id="etat" role="status"></span>
+              <button class="btn" id="copier" type="button">Copier les lignes</button>
+            </div>
+          </div>
+          <p class="aide-bloc" id="aidePonctuels"></p>
+          <div class="cadre-table long">
+            <table>
+              <thead>
+                <tr><th>Date</th><th>Fournisseur</th><th>Pièce</th><th>Libellé</th><th class="droite">Montant</th></tr>
+              </thead>
+              <tbody id="lignes"></tbody>
+            </table>
+          </div>
+          <div class="vide" id="vide" hidden></div>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">05 — Fournisseurs</p>
+          <p class="aide-bloc">Tous les fournisseurs reconnus, du plus gros montant au plus petit. Les récurrents d'abord ; les ponctuels ensuite, en rouge quand une de leurs lignes dépasse le seuil.</p>
+          <div class="cadre-table long">
+            <table>
+              <thead>
+                <tr><th>Fournisseur</th><th class="droite">Lignes</th><th class="droite">Total</th><th class="droite">Moyenne</th><th>Du</th><th>Au</th></tr>
+              </thead>
+              <tbody id="fournisseurs"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">06 — Loi de Benford</p>
+          <p class="aide-bloc">Dans des montants réels, le premier chiffre n'est pas réparti au hasard : un montant commence par 1 près d'une fois sur trois, et par 9 moins d'une fois sur vingt. La page compare le compte à cette répartition attendue ; un écart marqué invite à regarder les montants de plus près. Montants de 10 € et plus.</p>
+          <details class="explication" id="explicationBenford">
+            <summary>Comprendre la loi de Benford, pas à pas</summary>
+
+            <h3><span class="etape">1</span> Ce qu'on regarde</h3>
+            <p>Pour chaque montant du compte, on ne garde que son <strong>premier chiffre</strong>, celui de tête :</p>
+            <ul class="exemples">
+              <li><span>1 250,00 €</span> → <strong>1</strong></li>
+              <li><span>48,20 €</span> → <strong>4</strong></li>
+              <li><span>312,40 €</span> → <strong>3</strong></li>
+              <li><span>9 860,00 €</span> → <strong>9</strong></li>
+            </ul>
+            <p>Puis on compte combien de montants commencent par 1, par 2… jusqu'à 9.</p>
+
+            <h3><span class="etape">2</span> Ce qu'on attend</h3>
+            <p>On pourrait croire que chaque chiffre arrive une fois sur neuf (11 %). Ce n'est pas le cas. Dans des montants réels, factures, achats, ventes, <strong>les petits chiffres sont bien plus fréquents</strong> :</p>
+            <table class="attendu">
+              <thead><tr><th>Premier chiffre</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th></tr></thead>
+              <tbody>
+                <tr><th>Part attendue</th><td>30,1 %</td><td>17,6 %</td><td>12,5 %</td><td>9,7 %</td><td>7,9 %</td><td>6,7 %</td><td>5,8 %</td><td>5,1 %</td><td>4,6 %</td></tr>
+                <tr><th>Sur 100 montants, environ</th><td>30</td><td>18</td><td>13</td><td>10</td><td>8</td><td>7</td><td>6</td><td>5</td><td>5</td></tr>
+              </tbody>
+            </table>
+            <p>Autrement dit, sur 100 factures, une trentaine commencent par 1, et seulement cinq par 9. C'est la <strong>loi de Benford</strong>, du nom du physicien qui l'a décrite en 1938.</p>
+
+            <h3><span class="etape">3</span> Pourquoi</h3>
+            <p>Imaginez un chiffre d'affaires qui grandit de 10 % par an, en partant de 1 000 €. Il lui faut <strong>7 ans</strong> pour doubler et passer de 1 000 € à 2 000 € : pendant 7 ans, il commence par 1. Mais pour passer de 9 000 € à 10 000 €, <strong>un peu plus d'un an</strong> suffit : il ne commence par 9 que très peu de temps. Les montants « vivent » donc plus longtemps dans les 1 que dans les 9. Sur des centaines de montants variés, cet effet donne exactement la répartition du tableau.</p>
+
+            <h3><span class="etape">4</span> Lire le graphique</h3>
+            <ul>
+              <li>Chaque <strong>barre bleue</strong> est la part réelle d'un chiffre dans le compte.</li>
+              <li>Chaque <strong>trait noir</strong> est la part attendue par la loi.</li>
+              <li>Une barre proche de son trait : rien à signaler.</li>
+              <li>Une <strong>barre rouge</strong>, nettement au-dessus de son trait : ce chiffre est <strong>en excès</strong>. Il y a plus de montants qui commencent par lui que la loi ne le prévoit, et l'écart est trop grand pour être dû au hasard (test statistique au seuil de 5 %).</li>
+            </ul>
+
+            <h3><span class="etape">5</span> Le verdict</h3>
+            <p>Pour juger l'ensemble, la page fait la moyenne des écarts entre la part réelle et la part attendue des neuf chiffres : c'est <strong>l'écart moyen absolu</strong>. Plus il est petit, plus le compte ressemble à la loi. Les seuils sont ceux de Mark Nigrini, la référence de l'audit sur le sujet :</p>
+            <table class="niveaux">
+              <tbody>
+                <tr><td>jusqu'à 0,006</td><td><strong>conformité étroite</strong></td><td>le compte suit la loi de très près</td></tr>
+                <tr><td>jusqu'à 0,012</td><td><strong>conformité acceptable</strong></td><td>rien d'anormal</td></tr>
+                <tr><td>jusqu'à 0,015</td><td><strong>conformité marginale</strong></td><td>à surveiller</td></tr>
+                <tr><td>au-delà</td><td><strong>non-conformité</strong></td><td>le compte s'écarte nettement de la loi</td></tr>
+              </tbody>
+            </table>
+
+            <h3><span class="etape">6</span> Dans ce compte</h3>
+            <p id="benfordLecture" class="lecture"></p>
+
+            <h3><span class="etape">7</span> Que faire d'un chiffre en excès</h3>
+            <p>Un écart n'est <strong>jamais une preuve</strong> d'anomalie : c'est une piste qui dit où regarder. Les causes les plus courantes :</p>
+            <ul>
+              <li><strong>Un abonnement ou un fournisseur régulier</strong> au même montant chaque mois (par exemple 49,90 € douze fois : beaucoup de 4) : c'est normal.</li>
+              <li><strong>Une même facture saisie deux fois</strong> : voyez la section « Doublons possibles ».</li>
+              <li><strong>Des montants arrondis ou estimés</strong>, saisis à la main.</li>
+              <li><strong>Des dépenses fixées juste sous un seuil</strong> d'autorisation ou de contrôle (beaucoup de 4 sous 500 €, de 9 sous 1 000 €).</li>
+              <li>Plus rarement, <strong>des montants inventés</strong> : une personne qui invente des chiffres les répartit trop régulièrement.</li>
+            </ul>
+            <p>En pratique : repérez dans le tableau des fournisseurs ceux dont les montants commencent par le chiffre en excès, puis demandez les pièces au client si l'explication n'est pas évidente.</p>
+
+            <h3><span class="etape">8</span> Quand ne pas s'y fier</h3>
+            <ul>
+              <li><strong>Trop peu de montants</strong> : sous 50, le résultat n'a pas de sens ; sous 300, il reste indicatif.</li>
+              <li><strong>Des montants fixés à l'avance</strong>, comme un loyer ou des abonnements identiques chaque mois.</li>
+              <li><strong>Des montants tous de la même fourchette</strong>, par exemple des tickets de 20 à 60 € : un écart y est normal, la loi a besoin de montants qui couvrent plusieurs ordres de grandeur (des dizaines, des centaines, des milliers d'euros).</li>
+            </ul>
+          </details>
+          <div class="benford-legende" aria-hidden="true">
+            <span><i class="pastille-obs"></i>Part observée</span>
+            <span><i class="pastille-att"></i>Part attendue (loi de Benford)</span>
+          </div>
+          <div class="benford" id="benford" role="img" aria-label="Répartition des premiers chiffres des montants, observée et attendue"></div>
+          <div class="benford-chiffres" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></div>
+          <p class="verdict" id="verdict"></p>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr><th>Premier chiffre</th><th class="droite">Montants</th><th class="droite">Observé</th><th class="droite">Attendu</th><th class="droite">Écart</th><th></th></tr>
+              </thead>
+              <tbody id="tableBenford"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">07 — Doublons possibles</p>
+          <p class="aide-bloc" id="aideDoublons"></p>
+          <div class="cadre-table long">
+            <table>
+              <thead>
+                <tr><th>Fournisseur</th><th class="droite">Montant</th><th>Première ligne</th><th>Seconde ligne</th><th>Motif</th></tr>
+              </thead>
+              <tbody id="doublons"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">08 — Note</p>
+            <div class="actions">
+              <span class="etat" id="etatNote" role="status"></span>
+              <button class="btn ghost" id="copierNote" type="button">Copier la note</button>
+              <button class="btn ghost" id="pdf" type="button">Télécharger le justificatif PDF</button>
+            </div>
+          </div>
+          <p class="note" id="note"></p>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Colonnes copiées : date · fournisseur · journal · pièce · libellé · montant</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script src="pdf.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var TAB = String.fromCharCode(9), SAUT = String.fromCharCode(10);
+  var MAX_PDF = 20;          // lignes détaillées par tableau dans le justificatif
+  var MIN_BENFORD = 1000;    // montants retenus pour Benford : 10 € et plus, en centimes
+  var MAX_DOUBLONS = 500;    // paires de doublons relevées au plus : la page reste fluide sur un très gros compte
+  var MAX_NOTE = 15;         // lignes citées par liste dans la note ; les autres sont comptées
+  var note = "", copie = "";
+  var dernier = null;        // dernier calcul valide, repris par le justificatif PDF
+
+  // Exemple fictif de départ : un compte d'achats de l'année, au format de la consultation de
+  // compte ACD. Montants tirés d'une suite pseudo-aléatoire fixe : l'exemple est toujours le même.
+  var TITRES_ACD = ["Date>", "Jnl", "Pièce", "Facture", "Libellé", "Débit ", "Lettrage", "Crédit ", "Solde cumulé", "Code TVA", "Rgl.", "D.", "Tx",
+                    "Montant", "Montant org.", "Rappro. le", "Intégrée le"];
+  function exemple() {
+    var graine = 7, alea = function () { graine = (graine * 16807) % 2147483647; return (graine - 1) / 2147483646; };
+    var euros = function (min, max) { return M.affiche(Math.round((min + alea() * (max - min)) * 100)).replace(/\s/g, ""); };
+    var l = [], n = 100;
+    var ajoute = function (j, m, libelle, debit, credit) {
+      n++;
+      l.push({ date: M.deux(j) + "/" + M.deux(m) + "/2026", piece: "AC" + n, facture: "F26-" + n, libelle: libelle, debit: debit || "", credit: credit || "" });
+    };
+    for (var m = 1; m <= 12; m++) {
+      ajoute(5, m, "BOULANGERIE DU CENTRE - Facture 2026." + M.deux(m), euros(160, 290));
+      ajoute(8, m, "Primeur des Halles FA26" + M.deux(m), euros(540, 980));
+      ajoute(15, m, "PRLV SEPA BOISSONS DE L'OUEST 2026" + M.deux(m), euros(380, 760));
+      if (m !== 8) ajoute(20, m, "CB CAVE DES VIGNERONS " + M.deux(18) + "/" + M.deux(m), euros(240, 520));
+      if (m % 3 === 0) ajoute(24, m, "FROMAGERIE DES ALPES - Facture " + (300 + m), euros(120, 330));
+    }
+    // Un avoir, un doublon (même facture saisie deux fois à deux jours d'écart) et des achats ponctuels.
+    ajoute(12, 4, "Primeur des Halles - Avoir 2026.04", "", "85,00");
+    ajoute(22, 6, "CB CAVE DES VIGNERONS 20/06", l.filter(function (x) { return x.date === "20/06/2026"; })[0].debit);
+    ajoute(3, 3, "EQUIPEMENT CUISINE PRO - Facture 1458", "1840,00");
+    ajoute(17, 9, "MATÉRIEL HÔTELIER SUD FA2026-77", "624,50");
+    ajoute(9, 5, "IMPRIMERIE DU PORT - Menus été", "186,00");
+    ajoute(14, 11, "IMPRIMERIE DU PORT - Cartes", "94,80");
+    ajoute(2, 7, "FLEURS DU MARCHÉ", "45,00");
+    ajoute(19, 10, "QUINCAILLERIE DE LA GARE 1903", "38,90");
+    ajoute(28, 2, "Cabinet MARCHAL - Formation hygiène", "350,00");
+    l.sort(function (a, b) { return a.date.split("/").reverse().join("").localeCompare(b.date.split("/").reverse().join("")); });
+    var cumul = 0;
+    return [TITRES_ACD].concat(l.map(function (x) {
+      cumul += M.centimes(x.debit) - M.centimes(x.credit);
+      return [x.date, "AC", x.piece, x.facture, x.libelle, x.debit, "", x.credit || "0,00", M.affiche(cumul).replace(/\s/g, ""), "20", "R", "E", "1",
+              x.debit || x.credit, x.debit || x.credit, "", ""];
+    })).map(function (c) { return c.join(TAB); }).join(SAUT);
+  }
+  $("source").value = exemple();
+
+  // Place des colonnes (à partir de 0) ; -1 : colonne absente.
+  // Format court : date, journal, compte, pièce, libellé, débit, crédit.
+  var SEPT_COLONNES = { date: 0, journal: 1, piece: 3, facture: -1, libelle: 4, debit: 5, credit: 6 };
+  // Consultation de compte ACD : Date>, Jnl, Pièce, Facture, Libellé, Débit, Lettrage, Crédit, Solde cumulé…
+  var CONSULTATION_ACD = { date: 0, journal: 1, piece: 2, facture: 3, libelle: 4, debit: 5, credit: 7 };
+
+  // Lit une ligne de titres et repère chaque colonne par son nom, quel que soit l'ordre.
+  function lireTitres(c) {
+    var p = { date: -1, journal: -1, piece: -1, facture: -1, libelle: -1, debit: -1, credit: -1 };
+    c.forEach(function (t, k) {
+      var n = t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z ]/g, "").trim();
+      if (p.date === -1 && /^date/.test(n)) p.date = k;
+      else if (p.journal === -1 && /^(jnl|journal|code journal|jal)$/.test(n)) p.journal = k;
+      else if (p.piece === -1 && /^(piece|n piece|numero de piece)$/.test(n)) p.piece = k;
+      else if (p.facture === -1 && /^facture/.test(n)) p.facture = k;
+      else if (p.libelle === -1 && /^libelle/.test(n)) p.libelle = k;
+      else if (p.debit === -1 && n === "debit") p.debit = k;
+      else if (p.credit === -1 && n === "credit") p.credit = k;
+    });
+    return p;
+  }
+
+  // ---------- Nom du fournisseur ----------
+  // Le début du libellé, avant le premier séparateur (« - », « / », « | », « : », « * », « # »,
+  // une parenthèse) ; les mots de paiement ou de pièce en tête (« CB », « PRLV SEPA »,
+  // « FACTURE ») sont ignorés ; la lecture s'arrête au premier mot chiffré (référence, date) ou
+  // à un mot de pièce (« FACTURE », « AVOIR »). On garde « mots » mots significatifs, avec les
+  // petits mots qui les relient (« DU », « DE LA ») : « BOULANGERIE DU CENTRE » compte deux mots.
+  var EN_TETE = /^(?:(?:PRLV|PRELEVEMENT|PRÉLÈVEMENT|SEPA|CB|CARTE|PAIEMENT|VIR|VIREMENT|FACTURE|FACT|FAC|FA|ACHAT|ACHATS|REGLEMENT|RÈGLEMENT)(?:\s+|[.:]\s*))+/i;
+  var MOT_PIECE = /^(?:FACTURE|FACT|FAC|FA|AVOIR|REF|RÉF|N°|NO|NUM|CDE|COMMANDE)\.?$/i;
+  var LIAISON = /^(?:DU|DE|DES|LA|LE|LES|ET|D'|L'|&|AU|AUX|EN|SUR)$/i;
+  function simple(s) {
+    return s.toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Z0-9' &]/g, " ").replace(/\s+/g, " ").trim();
+  }
+  function fournisseur(libelle, nbMots) {
+    var s = libelle.replace(/\s+/g, " ").trim().split(/ [-–—\/|:] |[*#(]/)[0].trim().replace(EN_TETE, "");
+    var mots = s.split(" "), garde = [], significatifs = 0;
+    for (var k = 0; k < mots.length && significatifs < nbMots; k++) {
+      var mot = mots[k];
+      if (!mot) continue;
+      if (/\d/.test(mot) || MOT_PIECE.test(mot)) break;
+      garde.push(mot);
+      if (!LIAISON.test(mot)) significatifs++;   // « L'OUEST » compte, « DE » ou « L' » seul non
+    }
+    while (garde.length && LIAISON.test(garde[garde.length - 1])) garde.pop();
+    var nom = garde.join(" ");
+    return nom || "(libellé sans nom)";
+  }
+
+  function jour(d) { return Math.round(Date.UTC(d.a, d.m - 1, d.j) / 86400000); }
+  function rang(d) { return d.a * 10000 + d.m * 100 + d.j; }
+  function cellule(tr, texte, classe) {
+    var td = document.createElement("td");
+    td.textContent = texte;
+    if (classe) td.className = classe;
+    tr.appendChild(td);
+    return td;
+  }
+  function pluriel(n, mot) { return n + " " + mot + (n > 1 ? "s" : ""); }
+  function pct(x) { return (x * 100).toFixed(1).replace(".", ",") + " %"; }
+
+  // ---------- Loi de Benford ----------
+  // Part attendue du premier chiffre d : log10(1 + 1/d). Conformité jugée par l'écart moyen
+  // absolu (MAD) des neuf parts, selon les seuils de Nigrini pour le premier chiffre : jusqu'à
+  // 0,006 conformité étroite, 0,012 acceptable, 0,015 marginale, au-delà non-conformité. Un
+  // chiffre est « en excès » quand sa part observée dépasse l'attendue avec un écart significatif
+  // (test z à 5 %, avec correction de continuité).
+  var ATTENDU = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(function (d) { return Math.log10(1 + 1 / d); });
+  function benford(montants) {
+    var n = montants.length, compte = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+    montants.forEach(function (c) { compte[Number(String(c).charAt(0)) - 1]++; });
+    var chiffres = compte.map(function (nb, k) {
+      var obs = n ? nb / n : 0, att = ATTENDU[k];
+      var z = n ? (Math.abs(obs - att) - 1 / (2 * n)) / Math.sqrt(att * (1 - att) / n) : 0;
+      return { chiffre: k + 1, nb: nb, obs: obs, att: att, ecart: obs - att, exces: n > 0 && obs > att && z > 1.96 };
+    });
+    var mad = n ? chiffres.reduce(function (s, c) { return s + Math.abs(c.ecart); }, 0) / 9 : 0;
+    var niveau = mad <= 0.006 ? "conformité étroite" : mad <= 0.012 ? "conformité acceptable" : mad <= 0.015 ? "conformité marginale" : "non-conformité";
+    return { n: n, chiffres: chiffres, mad: mad, niveau: niveau, conforme: mad <= 0.012 };
+  }
+
+  function calcule() {
+    var dossier = $("dossier").value.trim(), compte = $("compte").value.trim();
+    var seuil = M.centimes($("seuil").value || "100");
+    var recurrence = /^\d+$/.test($("recurrence").value.trim()) ? parseInt($("recurrence").value, 10) : NaN;
+    var ecart = /^\d*$/.test($("ecart").value.trim()) ? parseInt($("ecart").value || "0", 10) : NaN;
+    var nbMots = parseInt($("mots").value, 10) || 2;
+    var alertes = [], lues = 0, ignorees = 0, lignes = [], titres = null;
+    $("seuil").classList.toggle("erreur", isNaN(seuil) || seuil < 0);
+    $("recurrence").classList.toggle("erreur", isNaN(recurrence) || recurrence < 2);
+    $("ecart").classList.toggle("erreur", isNaN(ecart));
+
+    $("source").value.split(/\r?\n/).forEach(function (ligne, i) {
+      if (!ligne.trim()) return;
+      var c = ligne.split(TAB).map(function (x) { return x.trim(); });
+      // Ligne de titres (« Date », « Date> » dans ACD) : elle donne la place de chaque colonne.
+      if (/^date\b/i.test(c[0])) { titres = lireTitres(c); return; }
+      // Lignes de total ou de report, sans date : elles ne sont pas des écritures.
+      if (/^(total|report|solde|cumul)/i.test(c[0])) return;
+      lues++;
+      var p = titres || (c.length >= 8 ? CONSULTATION_ACD : SEPT_COLONNES);
+      var date = M.lireDate(c[p.date] || "");
+      var debit = p.debit === -1 ? 0 : M.centimes(c[p.debit] || ""), credit = p.credit === -1 ? 0 : M.centimes(c[p.credit] || "");
+      var refus = !date ? "date illisible (« " + (c[p.date] || "") + " »)" : (isNaN(debit) || isNaN(credit) ? "le débit ou le crédit n'est pas un nombre" : "");
+      if (refus) {
+        ignorees++;
+        if (ignorees <= 5) alertes.push("Ligne " + (i + 1) + " ignorée : " + refus + ".");
+        return;
+      }
+      if (!debit && !credit) return;
+      var libelle = p.libelle === -1 ? "" : (c[p.libelle] || "");
+      var nom = fournisseur(libelle, nbMots);
+      lignes.push({ date: date, n: jour(date), journal: (c[p.journal] || "").toUpperCase(), piece: p.piece === -1 ? "" : (c[p.piece] || ""),
+                    facture: p.facture === -1 ? "" : (c[p.facture] || ""), libelle: libelle, montant: debit - credit,
+                    nom: nom, cle: simple(nom) });
+    });
+    if (ignorees > 5) alertes.push((ignorees - 5) + " autres lignes ignorées.");
+
+    var blocage = "";
+    if (isNaN(seuil) || seuil < 0) blocage = "Le seuil des achats ponctuels doit être un montant positif.";
+    else if (isNaN(recurrence) || recurrence < 2) blocage = "Un fournisseur récurrent compte au moins 2 lignes.";
+    else if (isNaN(ecart)) blocage = "L'écart des doublons est un nombre de jours.";
+    else if (!lues) blocage = "Collez le contenu du compte dans le cadre « Contenu du compte ».";
+    else if (!lignes.length) blocage = "Aucune ligne exploitable : vérifiez le format collé.";
+
+    // ---------- Regroupement par fournisseur ----------
+    var groupes = {}, liste = [], total = 0, premiere = null, derniere = null;
+    lignes.forEach(function (l) {
+      var g = groupes[l.cle];
+      if (!g) { g = groupes[l.cle] = { nom: l.nom.toUpperCase(), cle: l.cle, lignes: [], total: 0 }; liste.push(g); }
+      g.lignes.push(l); g.total += l.montant; total += l.montant;
+      if (!premiere || l.n < premiere.n) premiere = l;
+      if (!derniere || l.n > derniere.n) derniere = l;
+    });
+    liste.forEach(function (g) {
+      g.lignes.sort(function (a, b) { return a.n - b.n; });
+      g.recurrent = !blocage && g.lignes.length >= recurrence;
+      g.du = g.lignes[0].date; g.au = g.lignes[g.lignes.length - 1].date;
+    });
+    liste.sort(function (a, b) { return (b.recurrent - a.recurrent) || (b.total - a.total); });
+    var recurrents = liste.filter(function (g) { return g.recurrent; }), ponctuels = liste.filter(function (g) { return !g.recurrent; });
+    var auDessus = [];
+    ponctuels.forEach(function (g) {
+      g.lignes.forEach(function (l) { if (!blocage && l.montant > seuil) { auDessus.push(l); g.excede = true; } });
+    });
+    auDessus.sort(function (a, b) { return b.montant - a.montant; });
+    var totAuDessus = auDessus.reduce(function (s, l) { return s + l.montant; }, 0);
+    var totRecurrents = recurrents.reduce(function (s, g) { return s + g.total; }, 0);
+
+    // ---------- Doublons : même fournisseur, même montant, à « ecart » jours près, ou même
+    // numéro de facture. Chaque paire n'est signalée qu'une fois. ----------
+    var doublons = [], tropDeDoublons = false;
+    if (!blocage) liste.forEach(function (g) {
+      var paires = {};
+      var signale = function (a, b, motif) {
+        if (doublons.length >= MAX_DOUBLONS) { tropDeDoublons = true; return; }
+        var cle = a.n + "|" + b.n + "|" + g.lignes.indexOf(a) + "|" + g.lignes.indexOf(b);
+        if (paires[cle]) { paires[cle].motif = "même montant et même facture"; return; }
+        paires[cle] = { g: g, a: a, b: b, motif: motif };
+        doublons.push(paires[cle]);
+      };
+      // Même montant : les lignes sont dans l'ordre des dates, on s'arrête dès que l'écart est dépassé.
+      g.lignes.forEach(function (a, i) {
+        for (var j = i + 1; j < g.lignes.length && g.lignes[j].n - a.n <= ecart && !tropDeDoublons; j++) {
+          var b = g.lignes[j];
+          if (a.montant === b.montant && a.montant !== 0) signale(a, b, a.n === b.n ? "même montant, même date" : "même montant à " + pluriel(b.n - a.n, "jour") + " d'écart");
+        }
+      });
+      // Même numéro de facture, quelle que soit la date.
+      var parFacture = {};
+      g.lignes.forEach(function (l) {
+        if (!l.facture) return;
+        var k = simple(l.facture);
+        if (parFacture[k]) signale(parFacture[k], l, "même numéro de facture");
+        else parFacture[k] = l;
+      });
+    });
+
+    // ---------- Loi de Benford sur les montants de 10 € et plus ----------
+    var b = benford(lignes.filter(function () { return !blocage; }).map(function (l) { return Math.abs(l.montant); })
+                          .filter(function (c) { return c >= MIN_BENFORD; }));
+    var petit = b.n < 50, indicatif = b.n < 300;
+    var verdictTexte = !b.n ? "Aucun montant de 10 € ou plus."
+      : "Écart moyen absolu de " + b.mad.toFixed(4).replace(".", ",") + " sur " + pluriel(b.n, "montant") + "." +
+        (petit ? " Échantillon trop petit (moins de 50 montants) : le résultat n'est pas significatif."
+               : indicatif ? " Échantillon réduit (moins de 300 montants) : résultat indicatif." : "");
+    var exces = b.chiffres.filter(function (c) { return c.exces; });
+
+    // ---------- Affichage ----------
+    var corps = $("lignes");
+    corps.textContent = "";
+    auDessus.forEach(function (l) {
+      var tr = document.createElement("tr");
+      tr.className = "excede";
+      cellule(tr, M.dateFr(l.date));
+      cellule(tr, l.nom.toUpperCase(), "lib");
+      cellule(tr, l.piece + (l.facture ? " · " + l.facture : ""));
+      cellule(tr, l.libelle, "lib");
+      cellule(tr, M.affiche(l.montant), "droite");
+      corps.appendChild(tr);
+    });
+    var cf = $("fournisseurs");
+    cf.textContent = "";
+    liste.forEach(function (g) {
+      var tr = document.createElement("tr");
+      if (g.excede) tr.className = "excede";
+      var td = cellule(tr, g.nom, "lib");
+      var m = document.createElement("span");
+      m.className = "marque";
+      m.textContent = g.recurrent ? "  récurrent" : (g.excede ? "  ponctuel > seuil" : "  ponctuel");
+      td.appendChild(m);
+      cellule(tr, String(g.lignes.length), "droite");
+      cellule(tr, M.affiche(g.total), "droite");
+      cellule(tr, M.affiche(Math.round(g.total / g.lignes.length)), "droite");
+      cellule(tr, M.dateFr(g.du));
+      cellule(tr, M.dateFr(g.au));
+      cf.appendChild(tr);
+    });
+    var graph = $("benford"), tb = $("tableBenford");
+    graph.textContent = ""; tb.textContent = "";
+    var echelle = Math.max(0.35, Math.max.apply(null, b.chiffres.map(function (c) { return c.obs; })) * 1.1);
+    b.chiffres.forEach(function (c) {
+      var col = document.createElement("div");
+      col.className = "col" + (c.exces ? " excede" : "");
+      col.title = "Chiffre " + c.chiffre + " : " + pct(c.obs) + " observé (" + pluriel(c.nb, "montant") + "), " + pct(c.att) + " attendu" + (c.exces ? " — en excès" : "");
+      var barre = document.createElement("div");
+      barre.className = "barre-obs";
+      barre.style.height = (b.n ? c.obs / echelle * 100 : 0) + "%";
+      var trait = document.createElement("div");
+      trait.className = "trait-att";
+      trait.style.bottom = (c.att / echelle * 100) + "%";
+      col.appendChild(barre); col.appendChild(trait);
+      graph.appendChild(col);
+      var tr = document.createElement("tr");
+      if (c.exces) tr.className = "excede";
+      cellule(tr, String(c.chiffre));
+      cellule(tr, String(c.nb), "droite");
+      cellule(tr, pct(c.obs), "droite");
+      cellule(tr, pct(c.att), "droite");
+      cellule(tr, (c.ecart >= 0 ? "+" : "") + (c.ecart * 100).toFixed(1).replace(".", ","), "droite");
+      cellule(tr, c.exces ? "en excès" : "");
+      tb.appendChild(tr);
+    });
+    $("verdict").className = "verdict" + (b.n && !b.conforme && !petit ? " alerte" : "");
+    $("verdict").innerHTML = "";
+    var fort = document.createElement("strong");
+    fort.textContent = b.n ? b.niveau.charAt(0).toUpperCase() + b.niveau.slice(1) : "Pas de montant";
+    $("verdict").append(fort, " — " + verdictTexte + (exces.length ? " Chiffre" + (exces.length > 1 ? "s" : "") + " en excès : " + exces.map(function (c) { return c.chiffre; }).join(", ") + "." : ""));
+
+    // « Dans ce compte » : la lecture du résultat en clair, chiffre par chiffre, pour l'explication.
+    var lecture = !b.n ? "Le compte collé ne contient aucun montant de 10 € ou plus : il n'y a rien à analyser."
+      : "La page a analysé " + pluriel(b.n, "montant") + ". " +
+        (exces.length
+          ? exces.map(function (c, k) {
+              return (k ? "le" : "Le") + " chiffre " + c.chiffre + " ouvre " + pluriel(c.nb, "montant") + " (" + pct(c.obs) + "), alors qu'on en attendrait environ " +
+                     Math.round(c.att * b.n) + " (" + pct(c.att) + ")";
+            }).join(" ; ") + ". "
+          : "Aucun chiffre n'est nettement en excès. ") +
+        "L'écart moyen absolu vaut " + b.mad.toFixed(4).replace(".", ",") + " : " + b.niveau + ". " +
+        (petit ? "Mais avec moins de 50 montants, ce résultat ne permet aucune conclusion."
+          : indicatif ? "Avec moins de 300 montants, prenez ce résultat comme une simple indication."
+          : b.conforme ? "Le compte se comporte comme des montants réels : rien à signaler de ce côté."
+          : "Le compte s'écarte de la loi : regardez d'abord les fournisseurs dont les montants commencent par " + (exces.length ? exces.map(function (c) { return c.chiffre; }).join(" ou ") : "les chiffres les plus éloignés de leur trait") + ".");
+    $("benfordLecture").textContent = blocage ? "" : lecture;
+
+    var cd = $("doublons");
+    cd.textContent = "";
+    doublons.forEach(function (d) {
+      var tr = document.createElement("tr");
+      cellule(tr, d.g.nom, "lib");
+      cellule(tr, M.affiche(d.a.montant), "droite");
+      cellule(tr, M.dateFr(d.a.date) + (d.a.piece ? " · " + d.a.piece : ""));
+      cellule(tr, M.dateFr(d.b.date) + (d.b.piece ? " · " + d.b.piece : ""));
+      cellule(tr, d.motif);
+      cd.appendChild(tr);
+    });
+    $("aideDoublons").textContent = blocage ? "" : (tropDeDoublons ? "Plus de " + MAX_DOUBLONS + " paires de lignes au même montant : les " + MAX_DOUBLONS + " premières sont listées. Vérifiez que le compte n'a pas été collé plusieurs fois."
+                                                   : doublons.length ? pluriel(doublons.length, "paire") + " de lignes à vérifier : même fournisseur et même montant à " + pluriel(ecart, "jour") + " près, ou même numéro de facture."
+                                                                     : "Aucun doublon possible : pas deux lignes d'un même fournisseur au même montant à " + pluriel(ecart, "jour") + " près, ni de numéro de facture répété.");
+    $("aidePonctuels").textContent = blocage ? "" : (auDessus.length ? pluriel(auDessus.length, "ligne") + " de fournisseurs ponctuels (moins de " + recurrence + " lignes) au-dessus de " + M.affiche(seuil) + " €, de la plus forte à la plus faible : pièces à demander en priorité."
+                                                                    : "Aucun fournisseur ponctuel au-dessus de " + M.affiche(seuil) + " €.");
+
+    var periode = premiere ? "du " + M.dateFr(premiere.date) + " au " + M.dateFr(derniere.date) : "";
+    note = ""; copie = ""; dernier = null;
+    if (!blocage) {
+      var objet = "Compte" + (compte ? " " + compte : "") + (dossier ? " - " + dossier : "");
+      note = objet + " : " + pluriel(lignes.length, "écriture") + " lue" + (lignes.length > 1 ? "s" : "") + (periode ? " " + periode : "") +
+             ", pour " + M.affiche(total) + " Euros. " +
+             pluriel(liste.length, "fournisseur") + " reconnu" + (liste.length > 1 ? "s" : "") + ", dont " + recurrents.length + " récurrent" + (recurrents.length > 1 ? "s" : "") +
+             " (" + recurrence + " lignes ou plus) pour " + M.affiche(totRecurrents) + " Euros et " + ponctuels.length + " ponctuel" + (ponctuels.length > 1 ? "s" : "") + ". " +
+             (auDessus.length
+               ? "Achats ponctuels au-dessus de " + M.affiche(seuil) + " Euros : " + pluriel(auDessus.length, "ligne") + " pour " + M.affiche(totAuDessus) + " Euros : " +
+                 auDessus.slice(0, MAX_NOTE).map(function (l) { return l.nom.toUpperCase() + " " + M.affiche(l.montant) + " Euros le " + M.dateFr(l.date) + (l.piece ? " (pièce " + l.piece + ")" : ""); })
+                   .concat(auDessus.length > MAX_NOTE ? ["et " + (auDessus.length - MAX_NOTE) + " autres lignes, dans la liste à copier"] : []).join(" ; ") + ". "
+               : "Aucun achat ponctuel au-dessus de " + M.affiche(seuil) + " Euros. ") +
+             (b.n ? "Loi de Benford sur " + pluriel(b.n, "montant") + " de 10 Euros et plus : écart moyen absolu de " + b.mad.toFixed(4).replace(".", ",") + ", " + b.niveau +
+                    (petit ? " (échantillon trop petit, résultat non significatif)" : indicatif ? " (échantillon réduit, résultat indicatif)" : "") +
+                    (exces.length ? ", chiffre" + (exces.length > 1 ? "s" : "") + " " + exces.map(function (c) { return c.chiffre; }).join(", ") + " en excès" : "") + ". " : "") +
+             (doublons.length
+               ? "Doublons possibles : " + doublons.slice(0, MAX_NOTE).map(function (d) {
+                   return d.g.nom + " " + M.affiche(d.a.montant) + " Euros les " + M.dateFr(d.a.date) + " et " + M.dateFr(d.b.date) + " (" + d.motif + ")";
+                 }).concat(doublons.length > MAX_NOTE ? ["et " + (tropDeDoublons ? "plus de " + (MAX_DOUBLONS - MAX_NOTE) : doublons.length - MAX_NOTE) + " autres paires, listées sur la page"] : []).join(" ; ") + ". "
+               : "Aucun doublon possible relevé. ") +
+             (auDessus.length || doublons.length ? "Merci de nous transmettre les factures correspondantes." : "");
+      copie = [["Date", "Fournisseur", "Journal", "Pièce", "Facture", "Libellé", "Montant"].join(TAB)].concat(auDessus.map(function (l) {
+        return [M.dateFr(l.date), l.nom.toUpperCase(), l.journal, l.piece, l.facture, l.libelle.replace(/[\t\r\n]+/g, " "),
+                M.affiche(l.montant).replace(/\s/g, "")].join(TAB);
+      })).join("\r\n");
+      dernier = { dossier: dossier, compte: compte, lues: lignes.length, periode: periode, total: total, seuil: seuil, recurrence: recurrence, ecart: ecart,
+                  liste: liste, recurrents: recurrents, ponctuels: ponctuels, auDessus: auDessus, totAuDessus: totAuDessus,
+                  totRecurrents: totRecurrents, benford: b, verdict: verdictTexte, doublons: doublons };
+    }
+    if (!auDessus.length) copie = "";
+
+    $("resultat").textContent = blocage ? "—" : pluriel(liste.length, "fournisseur");
+    $("nbRecurrents").textContent = blocage ? "—" : recurrents.length + " · " + M.affiche(totRecurrents) + " €";
+    $("nbPonctuels").textContent = blocage ? "—" : String(ponctuels.length);
+    $("nbAuDessus").textContent = blocage ? "—" : auDessus.length + (auDessus.length ? " · " + M.affiche(totAuDessus) + " €" : "");
+    $("nbDoublons").textContent = blocage ? "—" : (tropDeDoublons ? "plus de " : "") + doublons.length;
+    $("benfordCourt").textContent = blocage || !b.n ? "—" : b.niveau + (petit ? " (non significatif)" : indicatif ? " (indicatif)" : "");
+    $("total").textContent = blocage ? "—" : M.affiche(total) + " €";
+    $("nbLues").textContent = String(lues);
+    $("periode").textContent = periode || "—";
+    $("vide").hidden = !blocage;
+    $("vide").textContent = blocage;
+    note = M.aLaLigne(note);   // une phrase par ligne, à l'écran comme dans la copie
+    M.afficheNote($("note"), note || "La note s'affichera une fois le contenu du compte collé.");
+    $("copier").disabled = !copie;
+    $("copierNote").disabled = !note;
+    $("pdf").disabled = !dernier;
+    $("etat").textContent = "";
+    $("etatNote").textContent = "";
+    var ul = $("alertes");
+    ul.textContent = "";
+    alertes.forEach(function (a) {
+      var li = document.createElement("li");
+      li.textContent = a;
+      ul.appendChild(li);
+    });
+  }
+
+  // Justificatif PDF : identification, synthèse, achats ponctuels, fournisseurs, Benford, doublons.
+  function justificatif(d) {
+    var f = window.MiniPdf.fiche("Analyse des achats");
+    f.section("Identification");
+    f.ligne("Dossier", d.dossier).ligne("Compte", d.compte).ligne("Période du compte", d.periode)
+     .ligne("Écritures lues", String(d.lues)).ligne("Total du compte", M.affiche(d.total) + " €");
+    f.section("Synthèse");
+    f.ligne("Fournisseurs reconnus", String(d.liste.length))
+     .ligne("Fournisseurs récurrents (" + d.recurrence + " lignes ou plus)", d.recurrents.length + " · " + M.affiche(d.totRecurrents) + " €")
+     .ligne("Fournisseurs ponctuels", String(d.ponctuels.length))
+     .ligne("Doublons possibles", String(d.doublons.length));
+    f.total("Achats ponctuels au-dessus de " + M.affiche(d.seuil) + " € : " + d.auDessus.length, M.affiche(d.totAuDessus) + " €");
+    if (d.auDessus.length) {
+      f.section("Achats ponctuels au-dessus du seuil");
+      f.tableau([{ nom: "Date", largeur: 62 }, { nom: "Fournisseur", largeur: 150 }, { nom: "Pièce", largeur: 60 }, { nom: "Libellé", largeur: 157 },
+                 { nom: "Montant", largeur: 70, droite: true }],
+                d.auDessus.slice(0, MAX_PDF).map(function (l) { return [M.dateFr(l.date), l.nom.toUpperCase(), l.piece, l.libelle, M.affiche(l.montant)]; }));
+      if (d.auDessus.length > MAX_PDF) f.texte("Et " + (d.auDessus.length - MAX_PDF) + " autres lignes, à copier depuis la page.");
+    }
+    f.section("Fournisseurs");
+    f.tableau([{ nom: "Fournisseur", largeur: 200 }, { nom: "Type", largeur: 80 }, { nom: "Lignes", largeur: 50, droite: true },
+               { nom: "Total", largeur: 85, droite: true }, { nom: "Moyenne", largeur: 84, droite: true }],
+              d.liste.slice(0, MAX_PDF).map(function (g) {
+                var r = [g.nom, g.recurrent ? "récurrent" : "ponctuel", String(g.lignes.length), M.affiche(g.total), M.affiche(Math.round(g.total / g.lignes.length))];
+                r.gras = !!g.excede;
+                return r;
+              }));
+    if (d.liste.length > MAX_PDF) f.texte("Et " + (d.liste.length - MAX_PDF) + " autres fournisseurs, listés sur la page.");
+    f.section("Loi de Benford (premier chiffre, montants de 10 € et plus)");
+    f.tableau([{ nom: "Chiffre", largeur: 70 }, { nom: "Montants", largeur: 80, droite: true }, { nom: "Observé", largeur: 100, droite: true },
+               { nom: "Attendu", largeur: 100, droite: true }, { nom: "Écart (points)", largeur: 149, droite: true }],
+              d.benford.chiffres.map(function (c) {
+                var r = [String(c.chiffre) + (c.exces ? " (en excès)" : ""), String(c.nb), pct(c.obs), pct(c.att), (c.ecart >= 0 ? "+" : "") + (c.ecart * 100).toFixed(1).replace(".", ",")];
+                r.gras = c.exces;
+                return r;
+              }));
+    f.texte((d.benford.n ? d.benford.niveau.charAt(0).toUpperCase() + d.benford.niveau.slice(1) + ". " : "") + d.verdict);
+    f.section("Doublons possibles");
+    if (d.doublons.length) {
+      f.tableau([{ nom: "Fournisseur", largeur: 150 }, { nom: "Montant", largeur: 70, droite: true }, { nom: "Première", largeur: 70 },
+                 { nom: "Seconde", largeur: 70 }, { nom: "Motif", largeur: 139 }],
+                d.doublons.slice(0, MAX_PDF).map(function (x) { return [x.g.nom, M.affiche(x.a.montant), M.dateFr(x.a.date), M.dateFr(x.b.date), x.motif]; }));
+    } else f.texte("Aucun doublon possible relevé : pas deux lignes d'un même fournisseur au même montant à " + pluriel(d.ecart, "jour") + " près, ni de numéro de facture répété.");
+    return f;
+  }
+
+  $("copier").addEventListener("click", function () {
+    if (copie) M.copierTexte(copie, dernier.auDessus.length + " lignes copiées");
+  });
+  $("copierNote").addEventListener("click", function () {
+    var fait = function () { $("etatNote").textContent = "Note copiée"; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(note).then(fait, function () { $("etatNote").textContent = "Copie impossible dans ce navigateur"; });
+    } else $("etatNote").textContent = "Copie impossible dans ce navigateur";
+  });
+  $("pdf").addEventListener("click", function () {
+    if (!dernier) return;
+    var nom = window.MiniPdf.nomFichier(["Analyse achats", dernier.compte, dernier.dossier].filter(Boolean).join(" "));
+    justificatif(dernier).telecharger(nom + ".pdf");
+    $("etatNote").textContent = "Justificatif téléchargé";
+  });
+  window.justificatifPdf = function () { return dernier ? justificatif(dernier) : null; };   // pour les contrôles
+  window.nomFournisseur = fournisseur;                                                    // pour les contrôles
+  ["dossier", "compte", "seuil", "recurrence", "mots", "ecart", "source"].forEach(function (id) {
+    $(id).addEventListener("input", calcule);
+    $(id).addEventListener("change", calcule);
+  });
+  calcule();
+})();
+</script>
+</body>
+</html>

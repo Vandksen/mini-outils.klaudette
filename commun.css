@@ -98,6 +98,9 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
 #menu .rubrique .chevron { flex: none; transition: transform .15s; }
 #menu .rubrique[aria-expanded="false"] .chevron { transform: rotate(-90deg); }
 .entree-vide { display: block; padding: 5px 12px; font-family: var(--mono); font-size: 11px; color: var(--on-blue-muted); opacity: .75; }
+/* Recherche sans résultat : fantôme crème centré au-dessus du message. */
+#menu-aucun { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 18px 12px; text-align: center; opacity: 1; }
+#menu-aucun .fantome { color: var(--on-blue); }
 .entree .num svg { display: block; width: 14px; height: 14px; position: relative; top: 2px; }
 /* Un nom de logiciel garde sa casse, même dans un libellé en majuscules. */
 .nom-propre { text-transform: none; }
@@ -118,9 +121,10 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
 .effacer-recherche:hover { opacity: 1; }
 .effacer-recherche:focus-visible { outline: 2px solid var(--on-blue); outline-offset: 2px; border-radius: 50%; }
 /* Texte par défaut en Inter Tight, plus étroite que la mono : « Chercher un outil en cliquant Ctrl+K » tient dans le champ. */
-/* Le texte d'invite est centré ; ce que l'on tape reste aligné à gauche. Champ vide : marges égales
-   des deux côtés, pour que l'invite tombe bien au milieu malgré la place gardée pour la croix. */
-#recherche-menu:placeholder-shown { padding-left: 38px; }
+/* Le texte d'invite est centré ; ce que l'on tape reste aligné à gauche. Champ vide : la croix est
+   masquée, on rend donc à l'invite la place gardée pour elle (marges égales de 14 px), sinon la fin
+   « ⌘K » est coupée. */
+#recherche-menu:placeholder-shown { padding-left: 14px; padding-right: 14px; }
 #recherche-menu::placeholder { color: var(--on-blue-muted); opacity: .85; font-family: var(--sans); font-size: 11.5px; text-align: center; }
 #recherche-menu:focus { outline: 2px solid var(--on-blue); outline-offset: 1px; background: rgba(248, 243, 230, .16); }
 #menu h2[hidden] { display: none; }

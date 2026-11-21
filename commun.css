@@ -224,16 +224,15 @@ h1 em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-
 .grille { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 32px; align-items: start; }
 .colonne { display: grid; grid-template-columns: minmax(0, 1fr); gap: 32px; } /* un contenu large ne peut pas élargir la colonne */
 
+/* Tous les cadres des outils portent le liseré bleu, saisie comme résultats. */
 .panel {
   background: var(--paper);
-  border: 1px solid rgba(255, 255, 255, .8);
+  border: 1px solid var(--blue);
   border-radius: 10px;
   box-shadow: 0 30px 60px -30px rgba(17, 54, 219, .32), 0 2px 6px rgba(27, 36, 80, .05);
   padding: 24px 26px 26px;
 }
 .panel .eyebrow { margin-bottom: 8px; }
-/* Panneaux de saisie : même fond que les autres, avec une bordure bleue pour les distinguer. */
-.panel.panel-config { border: 1px solid var(--blue); }
 
 .champ {
   display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 14px; align-items: center;

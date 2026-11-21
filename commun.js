@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.24.16";
+  var VERSION = "1.24.17";
 
   // Catégorie « Outils de production » du menu : écritures courantes de la tenue.
   // Pour ajouter un outil : une ligne ici, à sa place dans l'ordre d'affichage.
@@ -625,12 +625,6 @@ window.MiniOutils = (function () {
     var champs = document.querySelectorAll("#contenu input, #contenu select, #contenu textarea");
     if (!champs.length) return;
     var panneau = champs[0].closest(".panel");
-    // Tout panneau où l'on saisit ou colle quelque chose (« 01 — Configuration »,
-    // « 02 — Relevé », « 02 — Écritures d'origine ») est signalé par une bordure bleue.
-    Array.prototype.forEach.call(champs, function (c) {
-      var p = c.closest(".panel");
-      if (p) p.classList.add("panel-config");
-    });
     var titre = panneau.querySelector(".eyebrow");
     var barre = document.createElement("div");
     barre.className = "barre";

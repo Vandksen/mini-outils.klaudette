@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Visuels des goodies — source</title>
+<!--
+  Source des goodies de la page « Goodies » (stickers, planche A4, fonds d'écran).
+  Ce fichier n'est pas publié comme page : scripts/goodies.py l'ouvre dans Chrome sans
+  fenêtre, une fois par visuel (le visuel est choisi par l'ancre, ex. #sticker-creme),
+  et enregistre le résultat dans goodies/.
+  Le « M » (PIXELS) et les lettres du logo (LETTRES, PENTE) sont recopiés de commun.js :
+  les garder identiques si le logo change.
+-->
+<style>
+@font-face { font-family: 'Inter Tight'; font-weight: 100 900; src: url(../../polices/inter-tight-latin.woff2) format('woff2'); }
+@font-face { font-family: 'Instrument Serif'; font-style: italic; src: url(../../polices/instrument-serif-italique-latin.woff2) format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-weight: 100 900; src: url(../../polices/jetbrains-mono-latin.woff2) format('woff2'); }
+:root { --blue: #1136DB; --ink: #1B2450; --cream: #F4EFE3; --on-blue: #F8F3E6; --on-blue-muted: #DCE1FA; --nuit: #0A1F8C; --clair: #9BB0FF; }
+* { box-sizing: border-box; margin: 0; }
+html, body { background: transparent; }
+body { font-family: 'Inter Tight', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+svg { display: block; }
+em { font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-weight: 400; letter-spacing: -0.01em; font-size: 1.08em; }
+
+/* Sticker : 560 × 160, coins arrondis, pas de contour ni d'ombre. */
+.sticker { width: 560px; height: 160px; border-radius: 22px; display: flex; align-items: center; gap: 20px; padding: 0 30px 0 22px; }
+.sticker.creme { background: var(--cream); }
+.sticker.bleu { background: var(--blue); }
+.sticker .m { width: 112px; height: 112px; flex: none; }
+.sticker .texte { display: flex; flex-direction: column; gap: 14px; }
+.sticker .mot { width: 380px; height: auto; }
+.sticker p { font-size: 21px; font-weight: 500; line-height: 1; white-space: nowrap; letter-spacing: -0.005em; }
+.sticker.creme p { color: var(--ink); }
+.sticker.creme p b { color: var(--blue); font-weight: 600; }
+.sticker.bleu p { color: var(--on-blue); }
+.sticker.bleu p b { color: var(--on-blue-muted); font-weight: 600; }
+
+/* Planche A4 : 10 stickers de 9 cm de large, 5 crème et 5 bleus, trait de coupe rose. */
+@page { size: A4; margin: 0; }
+.planche { width: 210mm; height: 297mm; padding: 16mm 10mm; background: #fff; display: grid; grid-template-columns: 90mm 90mm;
+           justify-content: space-between; align-content: start; row-gap: 12mm; }
+.planche .case { width: 90mm; height: calc(90mm * 160 / 560); position: relative; }
+.planche .sticker { zoom: calc(340.157 / 560); }   /* 90 mm = 340,157 px CSS */
+.planche .case::after { content: ""; position: absolute; inset: 0; border: 0.2mm solid #FF4FA3; border-radius: calc(22px * 340.157 / 560); }
+.planche .legende { grid-column: 1 / -1; margin-top: 6mm; font-family: 'JetBrains Mono', monospace; font-size: 8pt; color: #565D78; line-height: 1.6; }
+
+/* Fonds d'écran. */
+.fond { position: relative; overflow: hidden; }
+.tempete { background: var(--blue) url(../../images/fond-tempete.jpg) no-repeat; background-size: cover; color: var(--on-blue); }
+.tempete::before { content: ""; position: absolute; inset: 0; }
+.tempete .slogan { position: absolute; }
+.tempete h1 { font-weight: 600; line-height: 1.02; letter-spacing: -0.02em; }
+.tempete .site { font-family: 'JetBrains Mono', monospace; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--on-blue-muted); }
+.bureau.tempete { width: 2560px; height: 1440px; background-position: center 78%; }
+.bureau.tempete::before { background: linear-gradient(90deg, rgba(8, 20, 110, .78) 0%, rgba(8, 20, 110, .45) 42%, rgba(8, 20, 110, 0) 70%); }
+.bureau.tempete .slogan { left: 190px; top: 50%; transform: translateY(-50%); width: 1150px; }
+.bureau.tempete h1 { font-size: 118px; }
+.bureau.tempete .site { font-size: 26px; margin-top: 56px; }
+.telephone.tempete { width: 1179px; height: 2556px; background-position: 84% center; }
+.telephone.tempete::before { background: linear-gradient(180deg, rgba(8, 20, 110, 0) 40%, rgba(8, 20, 110, .55) 62%, rgba(8, 20, 110, .85) 100%); }
+.telephone.tempete .slogan { left: 96px; right: 96px; bottom: 470px; }
+.telephone.tempete h1 { font-size: 104px; }
+.telephone.tempete .site { font-size: 30px; margin-top: 48px; }
+.logo { background: var(--blue); display: flex; align-items: center; justify-content: center; }
+.bureau.logo { width: 2560px; height: 1440px; }
+.bureau.logo .mot { width: 1100px; height: auto; }
+.telephone.logo { width: 1179px; height: 2556px; }
+.telephone.logo .mot { width: 860px; height: auto; }
+</style>
+</head>
+<body>
+<div id="scene"></div>
+<script>
+(function () {
+  "use strict";
+  // Recopié de commun.js : le « M » sur 24 × 24 cases ("1" principal, "3" ombre).
+  var PIXELS = [
+    "........................", "........................", "........................", "........................",
+    "...1111........1111.....", "...1111........1111.....", "...111111....11111133...", "...111111....11111133...",
+    "...111111111111111133...", "...111111111111111133...", "...111133111133111133...", "...111133111133111133...",
+    "...111133..3333111133...", "...111133..3333111133...", "...111133......111133...", "...111133......111133...",
+    "...111133......111133...", "...111133......111133...", ".....3333........3333...", ".....3333........3333...",
+    "........................", "........................", "........................", "........................"
+  ];
+  // Recopié de commun.js : les lettres du logo, sur 7 cases de haut.
+  var LETTRES = {
+    M: ["11....11", "111..111", "11111111", "11.11.11", "11....11", "11....11", "11....11"],
+    I: ["11", "11", "11", "11", "11", "11", "11"],
+    N: ["11...11", "111..11", "1111.11", "11.1111", "11..111", "11...11", "11...11"],
+    "-": ["..", "..", "..", "11", "..", "..", ".."],
+    O: [".1111.", "11..11", "11..11", "11..11", "11..11", "11..11", ".1111."],
+    U: ["11..11", "11..11", "11..11", "11..11", "11..11", "11..11", ".1111."],
+    T: ["111111", "..11..", "..11..", "..11..", "..11..", "..11..", "..11.."],
+    L: ["11...", "11...", "11...", "11...", "11...", "11...", "11111"],
+    S: [".1111.", "11..11", "11....", ".1111.", "....11", "11..11", ".1111."]
+  };
+  var PENTE = [2, 2, 1, 1, 1, 0, 0];
+
+  function iconeM(couleur, ombre) {
+    var forme = "", principal = "";
+    PIXELS.forEach(function (ligne, y) {
+      for (var x = 0; x < ligne.length; x++) {
+        if (ligne[x] === ".") continue;
+        var c = "M" + x + " " + y + "h1v1h-1z";
+        forme += c;
+        if (ligne[x] !== "3") principal += c;
+      }
+    });
+    return '<svg class="m" xmlns="http://www.w3.org/2000/svg" viewBox="2 2 20 20" shape-rendering="crispEdges">' +
+      '<path fill="' + ombre + '" d="' + forme + '"/><path fill="' + couleur + '" d="' + principal + '"/></svg>';
+  }
+  function motPixel(couleur, ombre) {
+    var droit = "MINI-", penche = "OUTILS", trace = "", x0 = 0;
+    (droit + penche).split("").forEach(function (lettre, i) {
+      var dessin = LETTRES[lettre], incline = i >= droit.length;
+      dessin.forEach(function (ligne, y) {
+        for (var x = 0; x < ligne.length; x++) {
+          if (ligne[x] === "1") trace += "M" + (x0 + x + (incline ? PENTE[y] : 0)) + " " + y + "h1v1h-1z";
+        }
+      });
+      x0 += dessin[0].length + 1;
+    });
+    var l = x0 + 2, h = 8;
+    return '<svg class="mot" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + l + ' ' + h + '" width="' + l + '" height="' + h +
+      '" shape-rendering="crispEdges"><path fill="' + ombre + '" transform="translate(1 1)" d="' + trace + '"/>' +
+      '<path fill="' + couleur + '" d="' + trace + '"/></svg>';
+  }
+
+  function sticker(variante) {
+    var creme = variante === "creme";
+    return '<div class="sticker ' + variante + '">' +
+      (creme ? iconeM("#1136DB", "#9BB0FF") : iconeM("#FFFFFF", "#9BB0FF")) +
+      '<div class="texte">' + (creme ? motPixel("#1136DB", "#9BB0FF") : motPixel("#FFFFFF", "#0A1F8C")) +
+      '<p>Gardez le cap sur <b>mini-outils-compta.fr</b></p></div></div>';
+  }
+  var SLOGAN = '<div class="slogan"><h1>Quand la période fiscale se déchaîne, <em>gardez le cap.</em></h1>' +
+               '<p class="site">mini-outils-compta.fr</p></div>';
+
+  var scenes = {
+    "sticker-creme": function () { return sticker("creme"); },
+    "sticker-bleu": function () { return sticker("bleu"); },
+    "planche": function () {
+      var cases = "";
+      for (var i = 0; i < 10; i++) cases += '<div class="case">' + sticker(i % 2 ? "bleu" : "creme") + '</div>';
+      return '<div class="planche">' + cases + '<p class="legende">Mini-outils — planche de 10 stickers de 9 cm. ' +
+        'Imprimer à 100 % (taille réelle) sur papier adhésif A4, puis découper le long du trait rose.</p></div>';
+    },
+    "fond-tempete-bureau": function () { return '<div class="fond bureau tempete">' + SLOGAN + '</div>'; },
+    "fond-tempete-telephone": function () { return '<div class="fond telephone tempete">' + SLOGAN + '</div>'; },
+    "fond-logo-bureau": function () { return '<div class="fond bureau logo">' + motPixel("#FFFFFF", "#0A1F8C") + '</div>'; },
+    "fond-logo-telephone": function () { return '<div class="fond telephone logo">' + motPixel("#FFFFFF", "#0A1F8C") + '</div>'; }
+  };
+  var nom = location.hash.slice(1) || "sticker-creme";
+  document.getElementById("scene").innerHTML = (scenes[nom] || scenes["sticker-creme"])();
+})();
+</script>
+</body>
+</html>

@@ -229,6 +229,8 @@
   $("source").value = exemple.map(function (l) { return l.join(TAB); }).join(SAUT);
   texteLu = $("source").value;
   coche = 9;   // l'exemple coche le loyer d'octobre
+  // « Réinitialiser » remet l'exemple : sa ligne d'octobre redevient la ligne cochée.
+  document.addEventListener("mini-outils-reinitialise", function () { texteLu = $("source").value; coche = 9; });
 
   // Place des colonnes ; -1 : colonne absente.
   var SEPT_COLONNES = { date: 0, journal: 1, piece: 3, libelle: 4, debit: 5, credit: 6 };

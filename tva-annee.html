@@ -392,6 +392,8 @@
   window.justificatifPdf = function () { return dernier ? justificatif(dernier) : null; };   // pour les contrôles
   // Changer de nature remet les cases à leur état d'office (AC ou VE).
   $("nature").addEventListener("change", function () { choix = {}; });
+  // « Réinitialiser » : les journaux retenus redeviennent ceux retenus d'office.
+  document.addEventListener("mini-outils-reinitialise", function () { choix = {}; });
   ["nature", "dossier", "source"].forEach(function (id) {
     $(id).addEventListener("input", calcule);
     $(id).addEventListener("change", calcule);

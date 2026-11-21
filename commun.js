@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.24.11";
+  var VERSION = "1.24.12";
 
   // Catégorie « Outils de production » du menu : écritures courantes de la tenue.
   // Pour ajouter un outil : une ligne ici, à sa place dans l'ordre d'affichage.
@@ -591,7 +591,11 @@ window.MiniOutils = (function () {
   }
 
   // Ajoute « Réinitialiser » en tête du premier panneau de saisie : tous les champs
-  // sont vidés (cases décochées, listes sur leur premier choix), puis le calcul est relancé.
+  // reprennent les données de départ de l'outil (exemple compris), puis le calcul est relancé.
+  // Ces valeurs sont relevées une fois la page chargée, après que son propre script a rempli
+  // ses champs. Une page qui garde un choix en mémoire hors des champs (ligne ou journal
+  // cochés dans un tableau) écoute l'évènement « mini-outils-reinitialise », envoyé quand les
+  // champs ont repris leurs valeurs et avant que le calcul soit relancé.
   function reinitialisation() {
     var champs = document.querySelectorAll("#contenu input, #contenu select, #contenu textarea");
     if (!champs.length) return;
@@ -612,14 +616,27 @@ window.MiniOutils = (function () {
     bouton.id = "reinit";
     bouton.className = "btn ghost";
     bouton.textContent = "Réinitialiser";
-    bouton.title = "Vider les champs de configuration";
+    bouton.title = "Remettre les données de départ de l'outil";
     barre.appendChild(bouton);
+    // Données de départ : relevées au chargement complet de la page. Un champ de fichier ne
+    // peut pas être rempli par le script : il est seulement vidé.
+    var depart = null;
+    var releve = function () {
+      depart = Array.prototype.map.call(champs, function (c) { return c.type === "checkbox" || c.type === "radio" ? c.checked : c.value; });
+    };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", releve);
+    else setTimeout(releve, 0);
     bouton.addEventListener("click", function () {
+      if (!depart) releve();
+      Array.prototype.forEach.call(champs, function (c, k) {
+        if (c.type === "checkbox" || c.type === "radio") c.checked = depart[k];
+        else if (c.type === "file") c.value = "";
+        else c.value = depart[k];
+      });
+      document.dispatchEvent(new Event("mini-outils-reinitialise"));
       Array.prototype.forEach.call(champs, function (c) {
-        if (c.type === "checkbox") c.checked = false;
-        else if (c.tagName === "SELECT") c.selectedIndex = 0; // une liste ne peut pas être vide
-        else c.value = "";
         c.dispatchEvent(new Event("input", { bubbles: true }));
+        if (c.tagName === "SELECT" || c.type === "checkbox" || c.type === "radio") c.dispatchEvent(new Event("change", { bubbles: true }));
       });
       champs[0].focus();
     });

@@ -1,7 +1,7 @@
 // Fichier produit par scripts/loyers-communes.py : ne pas le modifier à la main.
-// Loyers d'annonce au m², charges comprises, par commune (« Carte des loyers », data.gouv.fr).
+// Loyers d'annonce au m2, charges comprises, par commune (« Carte des loyers », data.gouv.fr).
 // communes : une commune par ligne, « code INSEE|nom|département|loyer appartement en
-// centimes par m²|prudence (1 ou 0)|loyer maison en centimes par m²|prudence ».
+// centimes par m2|prudence (1 ou 0)|loyer maison en centimes par m2|prudence ».
 window.LOYERS_COMMUNES = {
   titre: "« Carte des loyers » - Indicateurs de loyers d'annonce par commune en 2025",
   source: "https://www.data.gouv.fr/datasets/693aa2feed1bf4da603faa49/",

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#1136DB">
-<meta name="description" content="Loyer d'un bureau au domicile du dirigeant pris en charge par sa société : loyer mensuel calculé sur la surface et le loyer au m² de la commune (Carte des loyers du ministère), charges en 614, écritures des 12 mois et aide à la déclaration des revenus fonciers. Gratuit, sans envoi de données.">
+<meta name="description" content="Loyer d'un bureau au domicile du dirigeant pris en charge par sa société : loyer mensuel calculé sur la surface et le loyer au m2 de la commune (Carte des loyers du ministère), charges en 614, écritures des 12 mois et aide à la déclaration des revenus fonciers. Gratuit, sans envoi de données.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icones/icone-m-180.png">
 <title>Loyer du bureau à domicile — Mini-outils</title>
@@ -12,7 +12,7 @@
 <meta property="og:site_name" content="Mini-outils">
 <meta property="og:locale" content="fr_FR">
 <meta property="og:title" content="Loyer du bureau à domicile — Mini-outils">
-<meta property="og:description" content="Loyer d'un bureau au domicile du dirigeant pris en charge par sa société : loyer calculé sur la surface et le loyer au m² de la commune, charges en 614, écritures des 12 mois et aide à la déclaration.">
+<meta property="og:description" content="Loyer d'un bureau au domicile du dirigeant pris en charge par sa société : loyer calculé sur la surface et le loyer au m2 de la commune, charges en 614, écritures des 12 mois et aide à la déclaration.">
 <meta property="og:url" content="https://mini-outils-compta.fr/loyer-bureau.html">
 <link rel="canonical" href="https://mini-outils-compta.fr/loyer-bureau.html">
 <meta property="og:image" content="https://mini-outils-compta.fr/images/og-tempete.jpg">
@@ -54,7 +54,7 @@
   <div class="conteneur">
     <p class="eyebrow">Générateur d'écritures — bureau au domicile du dirigeant</p>
     <h1>Loyer du bureau <em>à domicile.</em></h1>
-    <p class="lead"><strong>But de la page :</strong> quand le dirigeant consacre une pièce de son logement à son activité, sa société peut lui verser un loyer pour ce bureau. La page calcule un loyer au prix du marché (surface de la pièce × loyer au m² de la commune, d'après la carte officielle des loyers), y ajoute un pourcentage de charges, prépare les écritures des 12 mois et indique au dirigeant comment déclarer ce loyer.</p>
+    <p class="lead"><strong>But de la page :</strong> quand le dirigeant consacre une pièce de son logement à son activité, sa société peut lui verser un loyer pour ce bureau. La page calcule un loyer au prix du marché (surface de la pièce × loyer au m2 de la commune, d'après la carte officielle des loyers), y ajoute un pourcentage de charges, prépare les écritures des 12 mois et indique au dirigeant comment déclarer ce loyer.</p>
     <p class="lead">Choisissez la commune et renseignez la configuration. Les écritures sont générées aussitôt, prêtes à être copiées puis collées dans ACDCompta.</p>
 
     <div class="grille">
@@ -85,11 +85,11 @@
             </select>
           </div>
           <div class="champ">
-            <label for="surface">Surface du bureau (m²)<span class="aide">Mesurez la pièce. 12 m², taille courante d'une chambre dans un logement récent, est indicatif</span></label>
+            <label for="surface">Surface du bureau (m2)<span class="aide">Mesurez la pièce. 12 m2, taille courante d'une chambre dans un logement récent, est indicatif</span></label>
             <input id="surface" class="droite" type="text" inputmode="decimal" value="12">
           </div>
           <div class="champ">
-            <label for="m2Force">Loyer au m² forcé<span class="aide" id="aideM2">Vide : loyer de la commune</span></label>
+            <label for="m2Force">Loyer au m2 forcé<span class="aide" id="aideM2">Vide : loyer de la commune</span></label>
             <input id="m2Force" class="droite" type="text" inputmode="decimal">
           </div>
           <div class="champ">
@@ -140,8 +140,8 @@
         <section class="panel">
           <p class="eyebrow">03 — Calcul du loyer</p>
           <p class="resultat" id="resultat"></p>
-          <div class="champ"><span class="etiquette">Loyer au m² de la commune</span><span class="valeur droite" id="m2Commune"></span></div>
-          <div class="champ"><span class="etiquette">Loyer au m² retenu</span><span class="valeur droite" id="m2Retenu"></span></div>
+          <div class="champ"><span class="etiquette">Loyer au m2 de la commune</span><span class="valeur droite" id="m2Commune"></span></div>
+          <div class="champ"><span class="etiquette">Loyer au m2 retenu</span><span class="valeur droite" id="m2Retenu"></span></div>
           <div class="champ"><span class="etiquette">Loyer mensuel</span><span class="valeur droite" id="loyerMois"></span></div>
           <div class="champ"><span class="etiquette">Charges mensuelles</span><span class="valeur droite" id="chargesMois"></span></div>
           <div class="champ"><span class="etiquette">Loyer de la période</span><span class="valeur droite" id="loyerPeriode"></span></div>
@@ -203,7 +203,7 @@
 
 <script src="commun.js"></script>
 <script src="pdf.js"></script>
-<!-- Loyers au m² des 34 900 communes (environ 400 Ko compressés) : chargés sans retenir la page. -->
+<!-- Loyers au m2 des 34 900 communes (environ 400 Ko compressés) : chargés sans retenir la page. -->
 <script src="loyers-communes.js" async id="scriptLoyers"></script>
 <script>
 (function () {
@@ -305,7 +305,7 @@
     var m2Commune = commune ? (maison ? commune.mai : commune.app) : null;
     var prudenceCommune = commune ? (maison ? commune.maiPrudence : commune.appPrudence) : false;
     var m2Force = v.m2Force ? M.centimes(v.m2Force) : null;
-    var surface = M.centimes(v.surface);          // en centièmes de m²
+    var surface = M.centimes(v.surface);          // en centièmes de m2
     var taux = M.centimes(v.charges);             // en centièmes de %
     var d = M.lireDate(v.date), nb = parseInt(v.mois, 10), moisValide = /^\d+$/.test(v.mois) && nb >= 1 && nb <= 36;
     $("surface").classList.toggle("erreur", isNaN(surface) || surface <= 0);
@@ -314,13 +314,13 @@
     $("commune").classList.toggle("erreur", !!COMMUNES && !commune && !m2Force);
     $("date").classList.toggle("erreur", !d);
     $("mois").classList.toggle("erreur", !moisValide);
-    $("aideM2").textContent = m2Commune ? "Vide : " + nombre(m2Commune) + " €/m² à " + commune.nom : "Vide : loyer de la commune";
+    $("aideM2").textContent = m2Commune ? "Vide : " + nombre(m2Commune) + " €/m2 à " + commune.nom : "Vide : loyer de la commune";
 
     var m2 = m2Force || m2Commune;
     if (!COMMUNES && !m2Force) blocage = "Chargement des loyers des communes…";
-    else if (!m2) blocage = "Choisissez la commune du logement dans la liste, ou saisissez un loyer au m² forcé.";
-    else if (isNaN(m2) || m2 <= 0) blocage = "Le loyer au m² forcé n'est pas un montant valide.";
-    else if (isNaN(surface) || surface <= 0) blocage = "Indiquez la surface du bureau en m².";
+    else if (!m2) blocage = "Choisissez la commune du logement dans la liste, ou saisissez un loyer au m2 forcé.";
+    else if (isNaN(m2) || m2 <= 0) blocage = "Le loyer au m2 forcé n'est pas un montant valide.";
+    else if (isNaN(surface) || surface <= 0) blocage = "Indiquez la surface du bureau en m2.";
     else if (isNaN(taux) || taux < 0) blocage = "Le pourcentage de charges n'est pas valide.";
     else if (!d || !moisValide) blocage = "Renseignez la date et le nombre de mois (entre 1 et 36).";
 
@@ -329,7 +329,7 @@
       loyer = Math.round(m2 * surface / 100);         // centimes par mois
       charges = Math.round(loyer * taux / 10000);
       if (prudenceCommune && !m2Force) alertes.push("Le ministère invite à lire avec prudence le loyer de " + commune.nom + " (peu d'annonces ou estimation à partir de communes voisines) : vérifiez-le avec des annonces locales ou un avis de valeur.");
-      if (surface > 3000) alertes.push("Un bureau de plus de 30 m² est inhabituel : la surface doit correspondre à la pièce réellement consacrée à l'activité.");
+      if (surface > 3000) alertes.push("Un bureau de plus de 30 m2 est inhabituel : la surface doit correspondre à la pièce réellement consacrée à l'activité.");
       if (taux > 3000) alertes.push("Des charges de plus de 30 % du loyer sont élevées : elles doivent correspondre aux frais réels du bureau.");
       [{ cpt: v.cptLoyer, nom: "le compte du loyer" }, { cpt: v.cptCharges, nom: "le compte des charges" }, { cpt: v.cptDirigeant, nom: "le compte du dirigeant" }]
         .forEach(function (c) { if (!c.cpt) alertes.push("Renseignez " + c.nom + " : ses lignes ne sont pas générées."); });
@@ -351,9 +351,9 @@
     var annuel = loyer * 12;
     $("mensuel").textContent = blocage ? "—" : M.affiche(loyer + charges) + " €";
     $("resultat").textContent = blocage ? "—" : M.affiche(loyer) + " €";
-    $("m2Commune").textContent = m2Commune ? nombre(m2Commune) + " €/m²" + (prudenceCommune ? " (prudence)" : "") : "—";
-    $("m2Retenu").textContent = blocage ? "—" : nombre(m2) + " €/m²" + (m2Force ? " (forcé)" : "");
-    $("loyerMois").textContent = blocage ? "—" : nombre(m2) + " × " + M.affiche(surface).replace(/,00$/, "") + " m² = " + M.affiche(loyer) + " €";
+    $("m2Commune").textContent = m2Commune ? nombre(m2Commune) + " €/m2" + (prudenceCommune ? " (prudence)" : "") : "—";
+    $("m2Retenu").textContent = blocage ? "—" : nombre(m2) + " €/m2" + (m2Force ? " (forcé)" : "");
+    $("loyerMois").textContent = blocage ? "—" : nombre(m2) + " × " + M.affiche(surface).replace(/,00$/, "") + " m2 = " + M.affiche(loyer) + " €";
     $("chargesMois").textContent = blocage ? "—" : M.affiche(charges) + " € (" + M.affiche(taux).replace(/,00$/, "") + " %)";
     $("loyerPeriode").textContent = blocage ? "—" : M.affiche(loyerPeriode) + " € sur " + nb + " mois";
     $("chargesPeriode").textContent = blocage ? "—" : M.affiche(chargesPeriode) + " €";
@@ -364,9 +364,9 @@
       var a = document.createElement("a");
       a.href = L.source; a.target = "_blank"; a.rel = "noopener";
       a.textContent = L.titre;
-      src.append("Loyer au m² : ", a, ", " + L.producteur + ", publié le " + M.dateFr(M.lireDate(L.misAJour)) +
+      src.append("Loyer au m2 : ", a, ", " + L.producteur + ", publié le " + M.dateFr(M.lireDate(L.misAJour)) +
                  ". Loyer d'annonce estimé pour " + (maison ? "une maison louée" : "un appartement loué") +
-                 " vide, charges comprises ; ce n'est pas une moyenne mais une estimation à partir des annonces. La surface de 12 m² proposée par défaut est indicative : retenez la surface mesurée du bureau.");
+                 " vide, charges comprises ; ce n'est pas une moyenne mais une estimation à partir des annonces. La surface de 12 m2 proposée par défaut est indicative : retenez la surface mesurée du bureau.");
     }
 
     // ---------- Aide à la déclaration du dirigeant ----------
@@ -394,8 +394,8 @@
 
       var objet = (v.dossier ? v.dossier + " : " : "") + "loyer du bureau de " + (v.dirigeant || "du dirigeant") + (commune ? " à " + commune.nom : "");
       note = objet + ", " + (maison ? "maison" : "appartement") + ". " +
-             "Loyer mensuel = " + nombre(m2) + " €/m² x " + M.affiche(surface).replace(/,00$/, "") + " m² = " + M.affiche(loyer) + " Euros" +
-             (m2Force ? " (loyer au m² forcé)" : " (loyer au m² de la commune, " + (L ? L.titre.replace(/\s*-\s*Indicateurs.*$/, "") + " " + L.millesime : "carte des loyers") + ", charges comprises)") + ". " +
+             "Loyer mensuel = " + nombre(m2) + " €/m2 x " + M.affiche(surface).replace(/,00$/, "") + " m2 = " + M.affiche(loyer) + " Euros" +
+             (m2Force ? " (loyer au m2 forcé)" : " (loyer au m2 de la commune, " + (L ? L.titre.replace(/\s*-\s*Indicateurs.*$/, "") + " " + L.millesime : "carte des loyers") + ", charges comprises)") + ". " +
              "Charges mensuelles = " + M.affiche(loyer) + " x " + M.affiche(taux).replace(/,00$/, "") + " % = " + M.affiche(charges) + " Euros. " +
              "Sur " + nb + " mois : " + M.affiche(loyerPeriode) + " Euros au compte " + v.cptLoyer + " et " + M.affiche(chargesPeriode) + " Euros au compte " + v.cptCharges +
              ", au crédit du compte " + v.cptDirigeant + ". " +
@@ -424,13 +424,13 @@
      .ligne("Commune", d.commune ? d.commune.nom + " (" + d.commune.dep + "), code INSEE " + d.commune.code : "—")
      .ligne("Logement", d.maison ? "Maison" : "Appartement");
     f.section("Calcul du loyer");
-    f.ligne("Surface du bureau", M.affiche(d.surface).replace(/,00$/, "") + " m²")
-     .ligne("Loyer au m² de la commune", d.m2Commune ? M.affiche(d.m2Commune) + " €" + (d.prudence ? " (à lire avec prudence)" : "") : "—")
-     .ligne("Loyer au m² retenu", M.affiche(d.m2) + " €" + (d.m2Force ? " (forcé)" : ""))
+    f.ligne("Surface du bureau", M.affiche(d.surface).replace(/,00$/, "") + " m2")
+     .ligne("Loyer au m2 de la commune", d.m2Commune ? M.affiche(d.m2Commune) + " €" + (d.prudence ? " (à lire avec prudence)" : "") : "—")
+     .ligne("Loyer au m2 retenu", M.affiche(d.m2) + " €" + (d.m2Force ? " (forcé)" : ""))
      .ligne("Loyer mensuel", M.affiche(d.loyer) + " €")
      .ligne("Charges mensuelles (" + M.affiche(d.taux).replace(/,00$/, "") + " %)", M.affiche(d.charges) + " €");
     f.total("Loyer et charges sur " + d.nb + " mois", M.affiche(d.loyerPeriode + d.chargesPeriode) + " €");
-    f.texte("Source du loyer au m² : " + (L.titre || "carte des loyers") + ", " + (L.producteur || "") + " (" + (L.source || "") +
+    f.texte("Source du loyer au m2 : " + (L.titre || "carte des loyers") + ", " + (L.producteur || "") + " (" + (L.source || "") +
             "). Loyer d'annonce estimé, charges comprises, pour un bien loué vide.");
     f.section("Déclaration du dirigeant");
     f.ligne("Loyers annuels (charges non comprises)", M.affiche(d.annuel) + " €")

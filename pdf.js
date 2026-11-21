@@ -74,6 +74,9 @@
   function car(c, gras) {
     var table = gras ? GRAS : NORMAL, n = c.charCodeAt(0);
     if (n === 160 || n === 8239 || n === 8201 || n === 9) { c = " "; n = 32; }
+    // Exposants et indices (« m² », « CO₂ ») : un chiffre ordinaire, que les polices du PDF connaissent.
+    var chiffre = "⁰¹²³⁴⁵⁶⁷⁸⁹₀₁₂₃₄₅₆₇₈₉".indexOf(c);
+    if (chiffre !== -1) { c = String(chiffre % 10); n = 48 + chiffre % 10; }
     if (n >= 32 && n <= 126) return [n, table[n - 32]];
     if (SPECIAUX[c]) return [SPECIAUX[c][0], SPECIAUX[c][gras ? 2 : 1]];
     if (n >= 192 && n <= 255) {

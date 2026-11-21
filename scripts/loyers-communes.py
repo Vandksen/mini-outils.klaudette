@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Produit loyers-communes.js à partir de la « Carte des loyers » du ministère de la Transition
-écologique (data.gouv.fr) : loyer d'annonce au m², charges comprises, par commune, pour un
+écologique (data.gouv.fr) : loyer d'annonce au m2, charges comprises, par commune, pour un
 appartement et pour une maison. Repris par loyer-bureau.html.
 
 Usage :
@@ -12,7 +12,7 @@ d'annonce par commune en AAAA ». Le script y prend les fichiers « Indicateurs 
 appartement » et « Indicateurs de loyer maison » (CSV, séparateur « ; », encodage latin-1).
 
 Une commune est marquée « prudence » quand le ministère invite à lire son indicateur avec
-précaution : moins de 30 annonces dans la commune, R² ajusté inférieur à 0,5, ou valeur estimée
+précaution : moins de 30 annonces dans la commune, R2 ajusté inférieur à 0,5, ou valeur estimée
 à partir de communes voisines (TYPPRED différent de « commune »).
 """
 import csv
@@ -80,9 +80,9 @@ def main():
     }
     with open(SORTIE, "w", encoding="utf-8") as f:
         f.write("// Fichier produit par scripts/loyers-communes.py : ne pas le modifier à la main.\n")
-        f.write("// Loyers d'annonce au m², charges comprises, par commune (« Carte des loyers », data.gouv.fr).\n")
+        f.write("// Loyers d'annonce au m2, charges comprises, par commune (« Carte des loyers », data.gouv.fr).\n")
         f.write("// communes : une commune par ligne, « code INSEE|nom|département|loyer appartement en\n")
-        f.write("// centimes par m²|prudence (1 ou 0)|loyer maison en centimes par m²|prudence ».\n")
+        f.write("// centimes par m2|prudence (1 ou 0)|loyer maison en centimes par m2|prudence ».\n")
         f.write("window.LOYERS_COMMUNES = {\n")
         for k, v in entete.items():
             f.write("  %s: %s,\n" % (k, json.dumps(v, ensure_ascii=False)))

@@ -14,7 +14,7 @@ window.MiniOutils = (function () {
   // Mettre le MÊME numéro dans version.json : c'est ce petit fichier que les pages ouvertes
   // consultent pour savoir si une nouvelle version est publiée.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.26.0";
+  var VERSION = "1.26.1";
 
   // Type de chaque outil (champ « type ») : ce sur quoi il travaille, affiché en étiquette sur
   // sa page et sur sa carte de l'accueil (voir etiquettesType).
@@ -661,7 +661,7 @@ window.MiniOutils = (function () {
   // 20,00 Euros », ou mot seul comme « solde ») reliés par x, /, +, - ou =, avec au moins un =,
   // un x ou un / : « compte 445660 - Restaurant » ou « 13/06/2026 » ne sont pas des calculs.
   var CALCUL = (function () {
-    var nb = "\\(*\\d+(?:[. \\u202f\\u00a0]\\d{3})*(?:,\\d+)?(?: ?(?:Euros|€\\/m²|€|m²|%|km|jours?|lavages?|ans))?\\)*";
+    var nb = "\\(*\\d+(?:[. \\u202f\\u00a0]\\d{3})*(?:,\\d+)?(?: ?(?:Euros|€\\/m2|€|m2|%|km|jours?|lavages?|ans))?\\)*";
     var mots = "[a-zà-ÿœ']+(?: [a-zà-ÿœ']+){0,3}";
     // Le premier opérande n'est jamais précédé de mots (« coefficients 6,8 / 9,7 » -> « 6,8 / 9,7 ») ;
     // les suivants peuvent l'être (« - somme des crédits 20,00 Euros », « - abattement de 26 % … »).

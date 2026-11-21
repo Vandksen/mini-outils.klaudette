@@ -52,7 +52,15 @@ td.droite + td:not(.droite), th.droite + th:not(.droite) { padding-left: 18px; }
                     font-family: var(--mono); font-size: 12px; color: var(--muted); text-align: center; }
 /* Explication repliable de la loi de Benford. */
 details.explication { margin: 0 0 14px; padding: 10px 14px; border-radius: 8px; background: var(--cream); font-size: 14px; line-height: 1.55; }
-details.explication summary { cursor: pointer; color: var(--blue); font-weight: 600; }
+/* Flèche de l'accordéon : Arrow Square Down Right (Phosphor, graisse Fill), en bleu ; ouverte, elle se retourne. */
+details.explication summary { display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--blue); font-weight: 600; list-style: none; }
+details.explication summary::-webkit-details-marker { display: none; }
+details.explication summary::before {
+  content: ""; flex: none; width: 20px; height: 20px; background: var(--blue); transition: transform .2s ease;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath d='M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM168,160a8,8,0,0,1-8,8H112a8,8,0,0,1,0-16h28.69L90.34,101.66a8,8,0,0,1,11.32-11.32L152,140.69V112a8,8,0,0,1,16,0Z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath d='M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM168,160a8,8,0,0,1-8,8H112a8,8,0,0,1,0-16h28.69L90.34,101.66a8,8,0,0,1,11.32-11.32L152,140.69V112a8,8,0,0,1,16,0Z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+details.explication[open] summary::before { transform: rotate(180deg); }
 details.explication[open] summary { margin-bottom: 8px; }
 details.explication p { margin: 8px 0 0; }
 details.explication h3 { display: flex; align-items: center; gap: 8px; margin: 18px 0 2px; font-size: 15px; font-weight: 600; color: var(--ink); }

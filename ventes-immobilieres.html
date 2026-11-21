@@ -45,6 +45,10 @@
 #ventes td.droite + td:not(.droite), #ventes th.droite + th:not(.droite) { padding-left: 16px; }
 .plus-dvf { margin: 12px 0 0; }
 .cgu-dvf { font-size: 13px; color: var(--muted); }
+/* Page élargie pour que chaque vente tienne sur une ligne ; les paragraphes gardent la largeur de lecture. */
+.conteneur.prose.page-dvf { max-width: 1240px; }
+.page-dvf > p, .page-dvf > h1 { max-width: 844px; }
+#cadreVentes td { white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -58,7 +62,7 @@
 </div>
 
 <main>
-  <div class="conteneur prose">
+  <div class="conteneur prose page-dvf">
     <p class="eyebrow">Référentiel</p>
     <h1>Ventes <em>immobilières.</em></h1>
     <p class="lead"><strong>But de la page :</strong> retrouver les ventes immobilières récentes d'une commune, avec leur prix, pour situer la valeur d'un bien : maison, appartement, local ou terrain.</p>

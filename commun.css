@@ -568,7 +568,12 @@ body.avec-filtres.filtres-replies { grid-template-columns: 276px minmax(0, 1fr);
 body.filtres-replies #filtres { display: none; }
 .pcg-recherche-haut { margin: 22px 0 8px; }
 .pcg-recherche-haut .ligne { display: flex; align-items: center; gap: 12px; }
-.pcg-recherche-haut .emplacement { flex: 1; max-width: 520px; }
+.pcg-recherche-haut .emplacement { flex: 1; max-width: 640px; }
+/* Recherche du haut : fond blanc et champ plus grand, pour qu'elle se voie sur la page. */
+.pcg-recherche-haut input[type="search"] { height: 52px; padding-left: 22px; font-size: 16px; background: #fff; border-color: rgba(17, 54, 219, .35); }
+.pcg-recherche-haut .recherche-ref input[type="search"] { padding-right: 48px; }
+.pcg-recherche-haut .recherche-ref .effacer-recherche { top: 15px; right: 16px; width: 22px; height: 22px; }
+.pcg-recherche-haut .recherche-ref .effacer-recherche svg { width: 22px; height: 22px; }
 .pcg-recherche-haut .etat { font-family: var(--mono); font-size: 11px; color: var(--muted); white-space: nowrap; }
 .pcg-recherche-haut .btn { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; }
 .pcg-recherche-haut .filtre-actif { margin: 10px 0 0; font-size: 14px; color: var(--muted); }

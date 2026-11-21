@@ -317,10 +317,11 @@ function demarre() {
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") volet(false); });
 
   // Ordinateur : le second menu se replie. La recherche (le même champ, avec sa croix) passe
-  // alors en haut de la page, sous le texte d'introduction. Le choix est gardé d'une visite
-  // à l'autre sur ce navigateur ; sur téléphone, le second menu reste un volet.
-  var cadreRecherche = $("recherche").parentNode, LARGE = window.matchMedia("(min-width: 821px)"), CLE = "mini-outils-pcg-filtres-replies";
-  var memorise = function () { try { return localStorage.getItem(CLE) === "1"; } catch (e) { return false; } };
+  // alors en haut de la page, sous le texte d'introduction. À chaque visite, le second menu
+  // est affiché ; sur téléphone, il reste un volet.
+  var cadreRecherche = $("recherche").parentNode, LARGE = window.matchMedia("(min-width: 821px)"), replieChoisi = false;
+  // Une version précédente gardait le repli d'une visite à l'autre : on efface ce choix.
+  try { localStorage.removeItem("mini-outils-pcg-filtres-replies"); } catch (e) {}
   function replie(etat) {
     etat = etat && LARGE.matches;
     document.body.classList.toggle("filtres-replies", etat);
@@ -331,20 +332,20 @@ function demarre() {
     $("deplier-filtres").setAttribute("aria-expanded", String(!etat));
   }
   var choisitRepli = function (etat) {
-    try { localStorage.setItem(CLE, etat ? "1" : "0"); } catch (e) {}
+    replieChoisi = etat;
     replie(etat);
     (etat ? $("recherche") : $("replier-filtres")).focus();
   };
   $("replier-filtres").addEventListener("click", function () { choisitRepli(true); });
   $("deplier-filtres").addEventListener("click", function () { choisitRepli(false); });
   $("effacer-haut").addEventListener("click", function () { $("effacer").click(); });
-  var suitLargeur = function () { replie(memorise()); };
+  var suitLargeur = function () { replie(replieChoisi); };
   if (LARGE.addEventListener) LARGE.addEventListener("change", suitLargeur); else if (LARGE.addListener) LARGE.addListener(suitLargeur);
 
   boutonsCategories();
   if (!AVEC_REFORME) { $("titre-reforme").hidden = true; $("reforme").hidden = true; }
   affiche();
-  replie(memorise());
+  replie(false);
 }
 </script>
 </body>

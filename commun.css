@@ -185,7 +185,7 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
 .icone-installer { vertical-align: -3px; margin-right: 8px; }
 #menu .pied #installer-info { white-space: normal; line-height: 1.5; margin: -4px 0 12px; color: var(--on-blue); }
 #installer:hover { background: var(--cream); color: var(--blue); border-color: var(--cream); }
-#menu .pied .version { display: block; margin-top: 8px; color: var(--on-blue); letter-spacing: .04em; text-decoration: none; }
+#menu .pied .version { color: var(--on-blue); text-decoration: none; }
 #menu .pied .version:hover { text-decoration: underline; text-underline-offset: 3px; }
 /* Tout le contenu (hors menu) est affiché à 85,5 % de sa taille (90 %, puis 5 % de moins). */
 #contenu { min-width: 0; zoom: 0.855; }

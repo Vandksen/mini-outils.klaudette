@@ -14,7 +14,7 @@ window.MiniOutils = (function () {
   // Mettre le MÊME numéro dans version.json : c'est ce petit fichier que les pages ouvertes
   // consultent pour savoir si une nouvelle version est publiée.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.26.1";
+  var VERSION = "1.26.2";
 
   // Type de chaque outil (champ « type ») : ce sur quoi il travaille, affiché en étiquette sur
   // sa page et sur sa carte de l'accueil (voir etiquettesType).
@@ -244,8 +244,9 @@ window.MiniOutils = (function () {
         '<small>Laissez les écritures répétitives à Mini-outils-compta.fr</small></a></div>') +
       '<div class="pied"><button id="installer" type="button">Installer l’application</button>' +
       '<span id="installer-info" role="status" hidden></span>' +
-      '<span>Calcul dans votre navigateur</span><span>Rien n\'est envoyé</span>' +
-      '<a class="version" href="versions.html" title="Suivi des versions">Version ' + VERSION + ' (bêta)</a></div>';
+      // Deux lignes pour gagner de la place : « bêta » reste sur la pastille du logo.
+      '<span>Calcul dans votre navigateur</span>' +
+      '<span>Rien n\'est envoyé · <a class="version" href="versions.html" title="Version ' + VERSION + ' (bêta) : suivi des versions">v' + VERSION + '</a></span></div>';
     // Le menu n'est plus repliable : on efface le choix qu'une ancienne version a pu mémoriser.
     try { localStorage.removeItem("mini-outils-menu-replie"); } catch (e) {}
     // Les accordéons ne mémorisent plus rien non plus.

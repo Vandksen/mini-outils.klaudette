@@ -390,6 +390,30 @@ div.segments button:focus-visible { outline: 2px solid var(--blue); outline-offs
 .etat { font-family: var(--mono); font-size: 12px; color: var(--muted); }
 
 .cadre-table { overflow-x: auto; }
+
+/* Fenêtre (élément <dialog>) : un cadre bleuté au centre, sur un fond assombri. Le contenu est
+   dans .fenetre-corps, pour qu'un clic sur le fond, hors du cadre, la ferme. */
+dialog.fenetre {
+  width: min(620px, calc(100vw - 32px)); max-height: min(82vh, 760px); padding: 0; overflow: hidden;
+  border: 1px solid var(--blue); border-radius: 10px; background: var(--paper); color: var(--ink);
+  box-shadow: 0 30px 60px -20px rgba(17, 54, 219, .45);
+}
+dialog.fenetre[open] { display: flex; flex-direction: column; }
+dialog.fenetre::backdrop { background: rgba(27, 36, 80, .4); }
+.fenetre-corps { display: flex; flex-direction: column; min-height: 0; padding: 22px 26px 18px; }
+.fenetre-corps .eyebrow { margin: 0; font-weight: 700; }
+.fenetre-corps .segments { margin: 4px 0 10px; }
+.fenetre-corps .cadre-table { overflow-y: auto; min-height: 0; flex: 1; max-height: 52vh; }
+.fenetre-corps thead th { position: sticky; top: 0; background: var(--paper); }
+.fenetre-corps td.trimestre-ref { color: var(--blue); }
+.fenetre-corps td.retenu { font-weight: 700; background: var(--chip); }
+.fenetre-corps .source-indices { margin: 12px 0 0; }
+.fenetre .fermer {
+  display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 1px solid var(--line);
+  border-radius: 9999px; background: transparent; color: var(--blue); font-size: 20px; line-height: 1; cursor: pointer;
+}
+.fenetre .fermer:hover { background: var(--chip); }
+.btn.lien-indices { justify-self: start; }
 table { width: 100%; border-collapse: collapse; }
 thead th {
   font-family: var(--mono); font-size: 11px; font-weight: 400; text-transform: uppercase;

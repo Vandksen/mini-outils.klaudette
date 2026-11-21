@@ -65,6 +65,9 @@
               <option value="4">T4</option>
             </select>
           </div>
+          <div class="champ pleine">
+            <button class="btn ghost lien-indices" id="voirIndices" type="button" aria-haspopup="dialog" aria-controls="fenetreIndices">Voir les indices publiés</button>
+          </div>
           <div class="champ">
             <label for="ancien">Indice de base<span class="aide" id="aideAncien">Vide : indice de l'année précédente</span></label>
             <input id="ancien" class="droite" type="text" inputmode="decimal">
@@ -186,8 +189,33 @@
 </footer>
 </div>
 
+<!-- Fenêtre des indices publiés : la série de l'indice choisi, année par année. Hors de #contenu,
+     pour que « Réinitialiser » ignore son sélecteur. -->
+<dialog id="fenetreIndices" class="fenetre" aria-labelledby="titreIndices">
+<div class="fenetre-corps">
+  <div class="barre">
+    <p class="eyebrow" id="titreIndices">Indices publiés par l'Insee</p>
+    <button class="fermer" id="fermerIndices" type="button" aria-label="Fermer la fenêtre des indices" title="Fermer">&times;</button>
+  </div>
+  <select id="indiceFenetre" class="segments" aria-label="Indice affiché">
+    <option value="ILC">ILC</option>
+    <option value="ILAT">ILAT</option>
+    <option value="ICC">ICC</option>
+  </select>
+  <p class="aide-bloc" id="legendeIndices"></p>
+  <div class="cadre-table">
+    <table>
+      <thead><tr><th>Année</th><th class="droite">T1</th><th class="droite">T2</th><th class="droite">T3</th><th class="droite">T4</th></tr></thead>
+      <tbody id="tableIndices"></tbody>
+    </table>
+  </div>
+  <p class="aide-bloc source-indices" id="sourceIndices"></p>
+</div>
+</dialog>
+
 <script src="commun.js"></script>
 <script src="pdf.js"></script>
+<script src="donnees-mensuelles.js"></script>
 <script>
 (function () {
   "use strict";
@@ -199,23 +227,11 @@
   var coche = null;     // rang de la ligne cochée dans le collage ; null tant que rien n'est coché
   var texteLu = "";     // le collage auquel se rapporte la case cochée
 
-  // Indices trimestriels publiés par l'Insee (service SDMX de la banque de données macro-
-  // économiques, séries 001532540, 001617112 et 000008630), relevés le 20/11/2026.
-  // Chaque année : les valeurs des trimestres T1 à T4. Quand un trimestre paraît : l'ajouter ici.
-  var INDICES = {
-    ILC: { nom: "Indice des loyers commerciaux (ILC)", valeurs: {
-      2018: [111.87, 112.59, 113.45, 114.06], 2019: [114.64, 115.21, 115.60, 116.16], 2020: [116.23, 115.42, 115.70, 115.79],
-      2021: [116.73, 118.41, 119.70, 118.59], 2022: [120.61, 123.65, 126.13, 126.05], 2023: [128.68, 131.81, 133.66, 132.63],
-      2024: [134.58, 136.72, 137.71, 135.30], 2025: [135.87, 136.81, 137.09, 134.62], 2026: [135.26, 137.16] } },
-    ILAT: { nom: "Indice des loyers des activités tertiaires (ILAT)", valeurs: {
-      2018: [111.45, 112.01, 112.74, 113.30], 2019: [113.88, 114.47, 114.85, 115.43], 2020: [115.53, 114.33, 114.23, 114.06],
-      2021: [114.87, 116.46, 117.61, 118.97], 2022: [120.73, 122.65, 124.53, 126.66], 2023: [128.59, 130.64, 132.15, 133.69],
-      2024: [135.13, 136.45, 137.12, 137.29], 2025: [137.29, 137.15, 137.07, 137.21], 2026: [137.42, 138.01] } },
-    ICC: { nom: "Indice du coût de la construction (ICC)", valeurs: {
-      2018: [1671, 1699, 1733, 1703], 2019: [1728, 1746, 1746, 1769], 2020: [1770, 1753, 1765, 1795],
-      2021: [1822, 1821, 1886, 1886], 2022: [1948, 1966, 2037, 2052], 2023: [2077, 2123, 2106, 2162],
-      2024: [2227, 2205, 2143, 2108], 2025: [2146, 2086, 2056, 2058], 2026: [2084, 2103] } }
-  };
+  // Indices trimestriels publiés par l'Insee : donnees-mensuelles.js (bloc indicesLoyers), tenu à
+  // jour par la tâche planifiée mensuelle. Chaque série : nom, identifiant Insee, valeurs T1 à T4.
+  var DONNEES_INDICES = (window.DONNEES_MENSUELLES && window.DONNEES_MENSUELLES.indicesLoyers) || { series: {} };
+  var INDICES = DONNEES_INDICES.series;
+  var indicesRetenus = null;   // années des indices pris dans le tableau, mises en avant dans la fenêtre des indices
 
   // Exemple fictif de départ : douze loyers mensuels au format de la consultation de compte ACD.
   var TITRES_ACD = ["Date >", "Jnl", "Pièce", "Facture", "Libellé", "Débit", "Lettrage", "Crédit", "Solde cumulé", "Code TVA", "Rgl.", "D.", "Tx",
@@ -330,6 +346,7 @@
       base = nouveau ? { annee: nouveau.annee - 1, valeur: serie.valeurs[nouveau.annee - 1] && serie.valeurs[nouveau.annee - 1][t - 1] } : null;
       if (base && !base.valeur) base = null;
     }
+    indicesRetenus = { indice: v.indice, t: t, base: base && base.annee, nouveau: nouveau && nouveau.annee };
     $("aideNouveau").textContent = nouveau ? "Vide : " + v.indice + " T" + t + " " + nouveau.annee + " = " + nombre(nouveau.valeur)
                                            : "Vide : dernier indice publié à la date de révision";
     $("aideAncien").textContent = base ? "Vide : " + v.indice + " T" + t + " " + base.annee + " = " + nombre(base.valeur)
@@ -481,6 +498,49 @@
     $("etatNote").textContent = "Justificatif téléchargé";
   });
   window.justificatifPdf = function () { return dernier ? justificatif(dernier) : null; };   // pour les contrôles
+
+  // Fenêtre des indices publiés : la série choisie, de l'année la plus récente à la plus ancienne.
+  // La colonne du trimestre de référence et les deux indices retenus par le calcul sont en bleu.
+  function tableIndices() {
+    var code = $("indiceFenetre").value, serie = INDICES[code], corps = $("tableIndices");
+    corps.textContent = "";
+    if (!serie) return;
+    var annees = Object.keys(serie.valeurs).map(Number).sort(function (a, b) { return b - a; });
+    var entiers = annees.every(function (a) { return serie.valeurs[a].every(function (x) { return x % 1 === 0; }); });
+    var r = indicesRetenus && indicesRetenus.indice === code ? indicesRetenus : null;
+    annees.forEach(function (a) {
+      var tr = document.createElement("tr");
+      cellule(tr, String(a));
+      for (var k = 0; k < 4; k++) {
+        var x = serie.valeurs[a][k];
+        var td = cellule(tr, x === undefined ? "—" : (entiers ? String(x) : x.toFixed(2).replace(".", ",")), "droite");
+        if (r && k === r.t - 1) td.classList.add("trimestre-ref");
+        if (r && k === r.t - 1 && (a === r.base || a === r.nouveau)) td.classList.add("retenu");
+      }
+      corps.appendChild(tr);
+    });
+    $("legendeIndices").textContent = serie.nom + "." + (r ? " En bleu : le trimestre de référence T" + r.t +
+      (r.base && r.nouveau ? ", et en gras les indices retenus par le calcul, " + r.base + " et " + r.nouveau : "") + "." : "");
+    $("sourceIndices").innerHTML = "";
+    var lien = document.createElement("a");
+    lien.href = "https://www.insee.fr/fr/statistiques/serie/" + serie.idBdm;
+    lien.target = "_blank";
+    lien.rel = "noopener";
+    lien.textContent = "série " + serie.idBdm + " sur insee.fr";
+    $("sourceIndices").append("Source : Insee, ", lien, DONNEES_INDICES.verifieLe ? ", vérifié le " + M.dateFr(M.lireDate(DONNEES_INDICES.verifieLe)) + "." : ".");
+  }
+  $("voirIndices").addEventListener("click", function () {
+    // La fenêtre s'ouvre sur l'indice choisi dans la configuration.
+    $("indiceFenetre").value = $("indice").value;
+    $("indiceFenetre").dispatchEvent(new Event("change"));
+    tableIndices();
+    $("fenetreIndices").showModal();
+  });
+  $("indiceFenetre").addEventListener("change", tableIndices);
+  $("fermerIndices").addEventListener("click", function () { $("fenetreIndices").close(); });
+  // Un clic sur le fond assombri, hors du cadre de la fenêtre, la ferme aussi.
+  $("fenetreIndices").addEventListener("click", function (e) { if (e.target === this) this.close(); });
+
   M.brancher(ids, calcule);
 })();
 </script>

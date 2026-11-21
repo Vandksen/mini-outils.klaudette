@@ -10,13 +10,14 @@
    Les polices sont des fichiers du site comme les autres : rien n'est demandé à un tiers.
 
    Quand un outil est ajouté, ajouter sa page à FICHIERS et augmenter VERSION. */
-const VERSION = "mini-outils-v46";
+const VERSION = "mini-outils-v47";
 const FICHIERS = [
   "./",
   "index.html",
   "manifeste.html",
   "fnp.html",
   "abo-mensuel.html",
+  "loyer-bureau.html",
   "rem-gerance.html",
   "indemnites-km.html",
   "avantage-nature.html",

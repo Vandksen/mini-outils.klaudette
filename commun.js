@@ -14,7 +14,7 @@ window.MiniOutils = (function () {
   // Mettre le MÊME numéro dans version.json : c'est ce petit fichier que les pages ouvertes
   // consultent pour savoir si une nouvelle version est publiée.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.25.3";
+  var VERSION = "1.26.0";
 
   // Type de chaque outil (champ « type ») : ce sur quoi il travaille, affiché en étiquette sur
   // sa page et sur sa carte de l'accueil (voir etiquettesType).
@@ -32,6 +32,7 @@ window.MiniOutils = (function () {
   var PRODUCTION = [
     { fichier: "extournes.html", nom: "Extournes", type: "detail" },
     { fichier: "abo-mensuel.html", nom: "Abonnement mensuel", type: "calcul" },
+    { fichier: "loyer-bureau.html", nom: "Loyer du bureau à domicile", type: "calcul" },
     { fichier: "rem-gerance.html", nom: "Rémunération gérance", type: "calcul" },
     { fichier: "indemnites-km.html", nom: "Indemnités kilométriques", type: "calcul" },
     { fichier: "import-banque.html", nom: "Import banque", type: "detail" }
@@ -660,7 +661,7 @@ window.MiniOutils = (function () {
   // 20,00 Euros », ou mot seul comme « solde ») reliés par x, /, +, - ou =, avec au moins un =,
   // un x ou un / : « compte 445660 - Restaurant » ou « 13/06/2026 » ne sont pas des calculs.
   var CALCUL = (function () {
-    var nb = "\\(*\\d+(?:[. \\u202f\\u00a0]\\d{3})*(?:,\\d+)?(?: ?(?:Euros|€|%|km|jours?|lavages?|ans))?\\)*";
+    var nb = "\\(*\\d+(?:[. \\u202f\\u00a0]\\d{3})*(?:,\\d+)?(?: ?(?:Euros|€\\/m²|€|m²|%|km|jours?|lavages?|ans))?\\)*";
     var mots = "[a-zà-ÿœ']+(?: [a-zà-ÿœ']+){0,3}";
     // Le premier opérande n'est jamais précédé de mots (« coefficients 6,8 / 9,7 » -> « 6,8 / 9,7 ») ;
     // les suivants peuvent l'être (« - somme des crédits 20,00 Euros », « - abattement de 26 % … »).
@@ -680,6 +681,9 @@ window.MiniOutils = (function () {
       if (!/ (?:=|x|×|\/) /.test(t) || !/\d/.test(t)) continue;
       var vide = t.match(MOTS_VIDES);
       if (vide) { i += vide[0].length; t = t.slice(vide[0].length); }
+      // Un mot suivi de « = » en tête est le nom du résultat (« mensuel = 14,50… »), pas un opérande.
+      var nomResultat = t.match(/^[a-zà-ÿœ']+ = (?=\S)/);
+      if (nomResultat && /\d/.test(t.charAt(nomResultat[0].length)) ) { i += nomResultat[0].length; t = t.slice(nomResultat[0].length); }
       morceaux.push({ texte: texte.slice(debut, i) }, { texte: t, calcul: true });
       debut = i + t.length;
     }

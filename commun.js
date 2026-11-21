@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.24.6";
+  var VERSION = "1.24.7";
 
   // Catégorie « Outils de production » du menu : écritures courantes de la tenue.
   // Pour ajouter un outil : une ligne ici, à sa place dans l'ordre d'affichage.
@@ -57,7 +57,8 @@ window.MiniOutils = (function () {
   ];
   // Icône du site : le « M » du logo, agrandi deux fois, avec son ombre dure, sur une
   // grille de 24 × 24 cases. "1" = couleur principale, "3" = ombre, "." = vide.
-  // Le même dessin est recopié dans icones/generer.py pour les icônes de l'application.
+  // Le même dessin est recopié dans icones/generer.py pour les icônes de l'application,
+  // et dans pdf.js (ICONE_M) pour l'en-tête des justificatifs.
   var PIXELS = [
     "........................",
     "........................",

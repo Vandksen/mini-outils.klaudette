@@ -2,7 +2,8 @@
    navigateur, rien n'est envoyé.
 
    Il sait faire ce qu'il faut pour un justificatif d'une page A4 : du texte en Helvetica
-   (normal ou gras), des traits et des rectangles pleins. Les positions sont données en
+   (normal ou gras), des traits, des rectangles pleins, l'icône « M » du site et des zones
+   cliquables qui ouvrent une adresse. Les positions sont données en
    points (1/72 de pouce) depuis le coin haut gauche de la page, qui mesure 595 × 842.
 
    Usage :
@@ -17,8 +18,35 @@
   var LARGEUR = 595, HAUTEUR = 842;
   var COULEURS = {
     bleu: [0.067, 0.212, 0.859], encre: [0.106, 0.141, 0.314], gris: [0.337, 0.365, 0.471],
-    trait: [0.82, 0.80, 0.74], fond: [0.957, 0.937, 0.890], blanc: [1, 1, 1]
+    trait: [0.82, 0.80, 0.74], fond: [0.957, 0.937, 0.890], blanc: [1, 1, 1],
+    ombre: [0.490, 0.576, 0.941]
   };
+  var SITE = "https://mini-outils-compta.fr/";
+
+  // Icône du site : le « M » en pixels avec son ombre dure, recopié de PIXELS dans commun.js
+  // (cadré sur les 20 cases utiles). "1" = bleu, "3" = ombre, "." = vide.
+  var ICONE_M = [
+    "....................",
+    "....................",
+    ".1111........1111...",
+    ".1111........1111...",
+    ".111111....11111133.",
+    ".111111....11111133.",
+    ".111111111111111133.",
+    ".111111111111111133.",
+    ".111133111133111133.",
+    ".111133111133111133.",
+    ".111133..3333111133.",
+    ".111133..3333111133.",
+    ".111133......111133.",
+    ".111133......111133.",
+    ".111133......111133.",
+    ".111133......111133.",
+    "...3333........3333.",
+    "...3333........3333.",
+    "....................",
+    "...................."
+  ];
 
   // Largeurs des caractères d'Helvetica et d'Helvetica gras, en millièmes du corps, pour les
   // codes 32 à 126. Elles servent à aligner à droite et à couper les lignes.
@@ -95,7 +123,8 @@
 
   function creer() {
     // Une liste d'instructions par page ; les dessins vont toujours sur la dernière page.
-    var pages = [[]], contenu = pages[0];
+    // Les zones cliquables de chaque page vont dans « liens », en parallèle de « pages ».
+    var pages = [[]], contenu = pages[0], liens = [[]];
     var doc = {
       largeur: LARGEUR, hauteur: HAUTEUR,
       mesure: largeur,
@@ -103,6 +132,7 @@
       nouvellePage: function () {
         contenu = [];
         pages.push(contenu);
+        liens.push([]);
         return doc;
       },
       nbPages: function () { return pages.length; },
@@ -135,22 +165,50 @@
         contenu.push(couleur(nom || "fond") + " rg " + nombre(x) + " " + nombre(HAUTEUR - y - h) + " " + nombre(l) + " " + nombre(h) + " re f");
         return doc;
       },
+      // Icône « M » du site dans un carré de « cote » points, coin haut gauche en (x, y) :
+      // toute la forme dans la couleur d'ombre, puis les cases bleues par-dessus, chaque
+      // suite de cases d'une ligne en un seul rectangle.
+      iconeM: function (x, y, cote) {
+        var c = cote / ICONE_M.length;
+        [["13", "ombre"], ["1", "bleu"]].forEach(function (passe) {
+          ICONE_M.forEach(function (ligne, j) {
+            var debut = -1;
+            for (var i = 0; i <= ligne.length; i++) {
+              var plein = i < ligne.length && passe[0].indexOf(ligne[i]) !== -1 && ligne[i] !== ".";
+              if (plein && debut < 0) debut = i;
+              if (!plein && debut >= 0) { doc.rectangle(x + debut * c, y + j * c, (i - debut) * c, c, passe[1]); debut = -1; }
+            }
+          });
+        });
+        return doc;
+      },
+      // Zone cliquable de la page en cours, qui ouvre l'adresse donnée.
+      lien: function (x, y, l, h, adresse) {
+        liens[liens.length - 1].push({ rect: [x, HAUTEUR - y - h, x + l, HAUTEUR - y], adresse: adresse });
+        return doc;
+      },
       // Le fichier, sous forme de tableau d'octets.
       octets: function () {
         // Objets : 1 catalogue, 2 arbre des pages, puis pour chaque page son objet et son
-        // contenu (3 et 4 pour la première page), enfin les deux polices.
-        var n = pages.length, f1 = 3 + 2 * n, f2 = f1 + 1, kids = [];
+        // contenu (3 et 4 pour la première page), les deux polices, enfin les liens.
+        var n = pages.length, f1 = 3 + 2 * n, f2 = f1 + 1, kids = [], annotations = [];
         var objets = ["<< /Type /Catalog /Pages 2 0 R >>", ""];
         pages.forEach(function (p, i) {
-          var flux = p.join("\n");
+          var flux = p.join("\n"), refs = liens[i].map(function (l) {
+            annotations.push("<< /Type /Annot /Subtype /Link /Rect [" + l.rect.map(nombre).join(" ") + "] /Border [0 0 0] " +
+                             "/A << /S /URI /URI " + chaine(l.adresse) + " >> >>");
+            return (f2 + annotations.length) + " 0 R";
+          });
           kids.push((3 + 2 * i) + " 0 R");
           objets.push("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 " + LARGEUR + " " + HAUTEUR + "] /Contents " + (4 + 2 * i) + " 0 R " +
-                      "/Resources << /Font << /F1 " + f1 + " 0 R /F2 " + f2 + " 0 R >> >> >>",
+                      "/Resources << /Font << /F1 " + f1 + " 0 R /F2 " + f2 + " 0 R >> >>" +
+                      (refs.length ? " /Annots [" + refs.join(" ") + "]" : "") + " >>",
                       "<< /Length " + flux.length + " >>\nstream\n" + flux + "\nendstream");
         });
         objets[1] = "<< /Type /Pages /Kids [" + kids.join(" ") + "] /Count " + n + " >>";
         objets.push("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
                     "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
+        objets = objets.concat(annotations);
         // Chaque caractère de « pdf » vaut un octet : les textes sont déjà en WinAnsi.
         var pdf = "%PDF-1.4\n%\xE2\xE3\xCF\xD3\n", positions = [];
         objets.forEach(function (o, i) {
@@ -196,7 +254,8 @@
     var doc = creer(), G = 48, D = LARGEUR - 48, y = 86, fini = false, BAS = 774;
     var jour = new Date(), deux = function (n) { return (n < 10 ? "0" : "") + n; };
     doc.rectangle(0, 0, LARGEUR, 5, "bleu");
-    doc.texte(G, 44, "MINI-OUTILS", { taille: 8, gras: true, couleur: "bleu" });
+    // En haut à gauche, l'icône « M » du site, qui ouvre sa page d'accueil.
+    doc.iconeM(G - 2, 26, 22).lien(G - 2, 26, 22, 22, SITE);
     doc.texte(D, 44, "Justificatif de calcul", { taille: 8, couleur: "gris", align: "droite" });
     doc.texte(G, 78, titre, { taille: 22, gras: true });
 
@@ -214,7 +273,7 @@
       pied(true);
       doc.nouvellePage();
       doc.rectangle(0, 0, LARGEUR, 5, "bleu");
-      doc.texte(G, 36, "MINI-OUTILS", { taille: 8, gras: true, couleur: "bleu" });
+      doc.iconeM(G - 2, 22, 16).lien(G - 2, 22, 16, 16, SITE);
       doc.texte(D, 36, titre + " (suite)", { taille: 8, couleur: "gris", align: "droite" });
       y = 48;
     };

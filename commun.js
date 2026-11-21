@@ -14,7 +14,7 @@ window.MiniOutils = (function () {
   // Mettre le MÊME numéro dans version.json : c'est ce petit fichier que les pages ouvertes
   // consultent pour savoir si une nouvelle version est publiée.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.26.2";
+  var VERSION = "1.27.0";
 
   // Type de chaque outil (champ « type ») : ce sur quoi il travaille, affiché en étiquette sur
   // sa page et sur sa carte de l'accueil (voir etiquettesType).
@@ -56,7 +56,7 @@ window.MiniOutils = (function () {
   var ANALYSE = [
     { fichier: "controle-coherence.html", nom: "Contrôle de cohérence", type: "balance" },
     { fichier: "dates-week-end.html", nom: "Dates de week-end", type: "detail" },
-    { fichier: "analyse-achats.html", nom: "Analyse des achats", type: "detail" }
+    { fichier: "analyse-achats.html", nom: "Analyse des achats et ventes", type: "detail" }
   ];
   // Catégorie « Dashboard » du menu : outils qui s'appuient sur les comptes 4886 et 4887
   // tenus par cycle. Pour y ajouter une page :

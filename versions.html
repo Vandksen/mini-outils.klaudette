@@ -44,6 +44,15 @@
 
     <!-- À chaque publication : ajouter un bloc en tête, avec le même numéro que VERSION dans commun.js. -->
     <section class="version-bloc">
+      <h2><span class="numero">1.27.0</span> 21 novembre 2026</h2>
+      <ul>
+        <li>« Analyse des achats » devient « Analyse des achats et ventes » : un choix Achats / Ventes en tête de la configuration. Pour un compte de ventes, les montants se lisent au crédit et la page parle de clients et de ventes ponctuelles ; un exemple de compte d'honoraires remplace celui des achats.</li>
+        <li>Pour les ventes, nouveau contrôle de la numérotation des factures : numéros manquants, numéros en double et factures datées avant le numéro précédent, série par série (colonne Facture, ou à défaut Pièce). Le résultat figure dans la synthèse, la note et le justificatif PDF.</li>
+        <li>Le nom du fournisseur ou du client se lit aussi quand le libellé commence par un numéro de facture (« FA2026-012 Restaurant MIRABELLE »).</li>
+      </ul>
+    </section>
+
+    <section class="version-bloc">
       <h2><span class="numero">1.26.2</span> 21 novembre 2026</h2>
       <ul>
         <li>Bas du menu sur deux lignes au lieu de trois : « Calcul dans votre navigateur », puis « Rien n'est envoyé · v1.26.2 ». La mention bêta reste sur la pastille du logo.</li>

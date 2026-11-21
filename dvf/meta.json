@@ -1,0 +1,11 @@
+{
+  "source": "https://www.data.gouv.fr/datasets/demandes-de-valeurs-foncieres/",
+  "producteur": "Direction générale des finances publiques (DGFiP)",
+  "fichier": "Valeurs foncières 2026 - Premier semestre",
+  "url": "https://static.data.gouv.fr/resources/demandes-de-valeurs-foncieres/20261012-171648/valeursfoncieres-2026-s1.txt.zip",
+  "publieLe": "2026-10-12",
+  "du": "2026-01-01",
+  "au": "2026-06-30",
+  "ventes": 591214,
+  "verifieLe": "2026-11-21"
+}

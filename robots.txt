@@ -1,5 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /anciens-outils/
+# Ventes immobilières (DVF) : leur indexation par les moteurs de recherche est interdite (LPF, art. R*112 A-3).
+Disallow: /dvf/
 
 Sitemap: https://mini-outils-compta.fr/sitemap.xml

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1136DB">
+<meta name="description" content="Ventes immobilières récentes d'une commune, d'après les Demandes de valeurs foncières (DGFiP) : prix, nature du bien, surface bâtie, nombre de pièces et adresse, avec des filtres. Consultation dans le navigateur.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/icone-m-180.png">
+<title>Ventes immobilières — Mini-outils</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mini-outils">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Ventes immobilières — Mini-outils">
+<meta property="og:description" content="Ventes immobilières récentes d'une commune, d'après les Demandes de valeurs foncières (DGFiP), avec des filtres par nature, surface, pièces et adresse.">
+<meta property="og:url" content="https://mini-outils-compta.fr/ventes-immobilieres.html">
+<link rel="canonical" href="https://mini-outils-compta.fr/ventes-immobilieres.html">
+<meta property="og:image" content="https://mini-outils-compta.fr/images/og-tempete.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Un navire dans la tempête, avec le slogan « Quand la période fiscale se déchaîne, gardez le cap. »">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="commun.css">
+<!-- Polices de tout écran, demandées dès l'en-tête plutôt qu'après la lecture du style. -->
+<link rel="preload" href="polices/inter-tight-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="polices/jetbrains-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="polices/instrument-serif-italique-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+.filtres-dvf { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px 16px; margin: 20px 0 10px; }
+.filtres-dvf .large { grid-column: 1 / -1; }
+.filtres-dvf label { display: block; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink); margin-bottom: 6px; }
+.filtres-dvf input { width: 100%; height: 40px; padding: 0 12px; font-family: var(--mono); font-size: 13px; color: var(--ink);
+                     background: var(--cream); border: 1px solid var(--line); border-radius: 8px; }
+.filtres-dvf input:focus { outline: 2px solid var(--blue); outline-offset: 1px; border-color: var(--blue); }
+.recherche-commune { position: relative; }
+.choix-communes { position: absolute; z-index: 5; left: 0; right: 0; top: calc(100% + 4px); margin: 0; padding: 4px; list-style: none;
+                  background: var(--paper); border: 1px solid var(--blue); border-radius: 8px; box-shadow: 0 12px 30px -12px rgba(17, 54, 219, .35); }
+.choix-communes li { padding: 7px 10px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+.choix-communes li[aria-selected="true"], .choix-communes li:hover { background: var(--chip); }
+.choix-communes li small { color: var(--muted); font-family: var(--mono); font-size: 11px; margin-left: 6px; }
+.synthese-dvf { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin: 14px 0; }
+.synthese-dvf div { padding: 12px 14px; border-radius: 8px; background: var(--paper); border: 1px solid var(--line); }
+.synthese-dvf span { display: block; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.synthese-dvf strong { display: block; margin-top: 4px; font-size: 20px; font-weight: 500; color: var(--blue); }
+#ventes td.droite + td:not(.droite), #ventes th.droite + th:not(.droite) { padding-left: 16px; }
+.plus-dvf { margin: 12px 0 0; }
+.cgu-dvf { font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur prose">
+    <p class="eyebrow">Référentiel</p>
+    <h1>Ventes <em>immobilières.</em></h1>
+    <p class="lead"><strong>But de la page :</strong> retrouver les ventes immobilières récentes d'une commune, avec leur prix, pour situer la valeur d'un bien : maison, appartement, local ou terrain.</p>
+    <p>Les ventes viennent des <strong>Demandes de valeurs foncières</strong> (DVF) publiées par la DGFiP : toutes les ventes enregistrées par les services de publicité foncière. La page reprend le fichier le plus récent. L'Alsace, la Moselle et Mayotte n'y figurent pas, leur publicité foncière relevant d'un autre régime.</p>
+
+    <div class="filtres-dvf">
+      <div class="large">
+        <label for="commune">Commune</label>
+        <div class="recherche-commune">
+          <input id="commune" type="text" autocomplete="off" spellcheck="false" placeholder="Tapez le nom de la commune, ou le numéro du département" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="choixCommunes">
+          <ul class="choix-communes" id="choixCommunes" role="listbox" hidden></ul>
+        </div>
+      </div>
+      <div class="large">
+        <label for="nature">Nature du bien</label>
+        <select id="nature" class="segments">
+          <option value="">Tous</option>
+          <option value="M">Maison</option>
+          <option value="A">Appartement</option>
+          <option value="L">Local</option>
+          <option value="T">Terrain</option>
+        </select>
+      </div>
+      <div><label for="surfaceMin">Surface bâtie min. (m2)</label><input id="surfaceMin" type="text" inputmode="numeric"></div>
+      <div><label for="surfaceMax">Surface bâtie max. (m2)</label><input id="surfaceMax" type="text" inputmode="numeric"></div>
+      <div><label for="piecesMin">Pièces min.</label><input id="piecesMin" type="text" inputmode="numeric"></div>
+      <div><label for="piecesMax">Pièces max.</label><input id="piecesMax" type="text" inputmode="numeric"></div>
+      <div class="large"><label for="adresse">Adresse contient</label><input id="adresse" type="text" autocomplete="off" spellcheck="false" placeholder="rue, avenue, code postal…"></div>
+    </div>
+
+    <p class="aide-bloc" id="etatDvf" role="status">Choisissez une commune pour afficher ses ventes.</p>
+    <div class="synthese-dvf" id="synthese" hidden>
+      <div><span>Ventes</span><strong id="nbVentes"></strong></div>
+      <div><span>Prix médian</span><strong id="prixMedian"></strong></div>
+      <div><span>Prix médian au m2</span><strong id="m2Median"></strong></div>
+      <div><span>Surface médiane</span><strong id="surfaceMediane"></strong></div>
+    </div>
+    <div class="cadre-table" id="cadreVentes" hidden>
+      <table>
+        <thead>
+          <tr><th>Date</th><th>Adresse</th><th>Bien</th><th class="droite">Surface</th><th class="droite">Pièces</th><th class="droite">Terrain</th><th class="droite">Prix</th><th class="droite">Prix au m2</th></tr>
+        </thead>
+        <tbody id="ventes"></tbody>
+      </table>
+    </div>
+    <p class="plus-dvf"><button class="btn ghost" id="plus" type="button" hidden>Afficher les ventes suivantes</button></p>
+
+    <p class="aide-bloc" id="source"></p>
+    <p class="cgu-dvf">Conditions d'utilisation des DVF : ces données ne doivent servir ni à réidentifier les personnes concernées par les ventes, ni à être indexées par les moteurs de recherche (livre des procédures fiscales, art. R*112 A-3). La page ne les affiche qu'à la demande et les fichiers de données sont exclus des moteurs de recherche.</p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Source : Demandes de valeurs foncières, DGFiP, data.gouv.fr</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var PAGE = 200;                 // ventes affichées à la fois
+  var TYPES = { M: "Maison", A: "Appartement", L: "Local", D: "Dépendance", T: "Terrain" };
+  var NATURES = { V: "", F: "VEFA", B: "terrain à bâtir", A: "adjudication", E: "échange", X: "expropriation" };
+  var META = null, COMMUNES = null, ventesCommune = [], filtrees = [], affichees = 0, communeActive = null;
+
+  function simple(s) { return String(s).toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Z0-9]+/g, " ").trim(); }
+  function sansZero(s) { return s.replace(/(^| )0+(?=\d)/g, "$1"); }   // « Paris 09 » se trouve aussi par « paris 9 »
+  function euros(n) { return M.affiche(Math.round(n) * 100).replace(/,00$/, "") + " €"; }
+  function mediane(t) {
+    if (!t.length) return null;
+    var s = t.slice().sort(function (a, b) { return a - b; }), k = Math.floor(s.length / 2);
+    return s.length % 2 ? s[k] : (s[k - 1] + s[k]) / 2;
+  }
+  // Nom de commune en minuscules accentuées, petits mots en minuscule : « SAINT-MARTIN-DE-LA-MER » -> « Saint-Martin-de-la-Mer ».
+  var PETITS = /^(?:de|du|des|la|le|les|en|sur|sous|et|aux|au|lès|lez)$/;
+  function nomCommune(c) {
+    return c.nom.toLowerCase().replace(/(^|[\s\-'’])([a-zà-ÿ]+)/g, function (m, sep, mot, pos) {
+      return sep + (pos > 0 && PETITS.test(mot) ? mot : mot.charAt(0).toUpperCase() + mot.slice(1));
+    }).replace(/([\s\-])D'([A-ZÀ-Ý])/g, "$1d'$2");
+  }
+
+  // Métadonnées et liste des communes : chargées dès l'ouverture, petites.
+  fetch("dvf/meta.json").then(function (r) { return r.json(); }).then(function (m) { META = m; source(); }).catch(function () {});
+  fetch("dvf/communes.txt").then(function (r) { return r.text(); }).then(function (t) {
+    COMMUNES = t.trim().split("\n").map(function (l) {
+      var p = l.split("|");
+      return { code: p[0], nom: p[1], dep: p[2], nb: Number(p[3]), cle: sansZero(simple(p[1])) };
+    });
+    if ($("commune").value) $("commune").dispatchEvent(new Event("input"));
+  }).catch(function () { $("etatDvf").textContent = "La liste des communes n'a pas pu être chargée."; });
+
+  function source() {
+    var s = $("source");
+    s.textContent = "";
+    if (!META) return;
+    var a = document.createElement("a");
+    a.href = META.source; a.target = "_blank"; a.rel = "noopener";
+    a.textContent = "Demandes de valeurs foncières";
+    s.append("Source : ", a, ", " + META.producteur + ", fichier « " + META.fichier + " » publié le " + M.dateFr(M.lireDate(META.publieLe)) +
+             " : " + M.affiche(META.ventes * 100).replace(/,00$/, "") + " ventes du " + M.dateFr(M.lireDate(META.du)) + " au " + M.dateFr(M.lireDate(META.au)) +
+             ". Licence Ouverte. Les ventes réunissant plusieurs biens sont présentées sous leur bien principal ; la surface et les pièces sont celles de ce type de bien.");
+  }
+
+  // ---------- Recherche de la commune ----------
+  function cherche(texte) {
+    var t = simple(texte.replace(/\(\s*\d+[AB]?\s*\)$/i, ""));
+    if (!COMMUNES || t.length < 2) return [];
+    if (/^\d[\dAB]\d?$/.test(t)) return COMMUNES.filter(function (c) { return c.dep === t; }).sort(function (a, b) { return b.nb - a.nb; }).slice(0, 8);
+    var debut = [], milieu = [];
+    t = sansZero(t);
+    COMMUNES.forEach(function (c) {
+      if (c.cle.indexOf(t) === 0) debut.push(c);
+      else if (c.cle.indexOf(" " + t) !== -1) milieu.push(c);
+    });
+    var ordre = function (a, b) { return (b.cle === t) - (a.cle === t) || b.nb - a.nb; };
+    return debut.sort(ordre).concat(milieu.sort(ordre)).slice(0, 8);
+  }
+  var proposees = [], active = -1;
+  function afficheChoix() {
+    var ul = $("choixCommunes");
+    ul.textContent = "";
+    proposees.forEach(function (c, k) {
+      var li = document.createElement("li");
+      li.setAttribute("role", "option");
+      li.setAttribute("aria-selected", String(k === active));
+      li.textContent = nomCommune(c);
+      var s = document.createElement("small");
+      s.textContent = c.dep + " · " + c.nb + " vente" + (c.nb > 1 ? "s" : "");
+      li.appendChild(s);
+      li.addEventListener("mousedown", function (e) { e.preventDefault(); choisit(c); });
+      ul.appendChild(li);
+    });
+    ul.hidden = !proposees.length;
+    $("commune").setAttribute("aria-expanded", String(!!proposees.length));
+  }
+  $("commune").addEventListener("input", function () {
+    proposees = cherche($("commune").value);
+    active = proposees.length ? 0 : -1;
+    afficheChoix();
+  });
+  $("commune").addEventListener("keydown", function (e) {
+    if ($("choixCommunes").hidden) return;
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      active = (active + (e.key === "ArrowDown" ? 1 : -1) + proposees.length) % proposees.length;
+      afficheChoix();
+    } else if (e.key === "Enter" && active >= 0) { e.preventDefault(); choisit(proposees[active]); }
+    else if (e.key === "Escape") { proposees = []; afficheChoix(); e.stopPropagation(); }
+  });
+  $("commune").addEventListener("blur", function () { proposees = []; afficheChoix(); });
+
+  // Le fichier du département de la commune choisie, gardé tant qu'on reste dans le département.
+  var fichiers = {};
+  function choisit(c) {
+    $("commune").value = nomCommune(c) + " (" + c.dep + ")";
+    proposees = []; afficheChoix();
+    communeActive = c;
+    $("etatDvf").textContent = "Chargement des ventes de " + nomCommune(c) + "…";
+    var p = fichiers[c.dep] || (fichiers[c.dep] = fetch("dvf/" + c.dep + ".txt").then(function (r) {
+      if (!r.ok) throw new Error();
+      return r.text();
+    }));
+    p.then(function (texte) {
+      if (communeActive !== c) return;
+      ventesCommune = [];
+      texte.split("\n").forEach(function (l) {
+        if (l.slice(0, 5) !== c.code) return;
+        var x = l.split("|");
+        ventesCommune.push({ date: x[1], nature: x[2], prix: Number(x[3]), type: x[4], surface: Number(x[5]), pieces: Number(x[6]), nb: Number(x[7]),
+                             terrain: Number(x[8]), adresse: x[9], cp: x[10], cle: simple(x[9] + " " + x[10]) });
+      });
+      ventesCommune.sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+      filtre();
+    }).catch(function () {
+      delete fichiers[c.dep];
+      $("etatDvf").textContent = "Les ventes du département " + c.dep + " n'ont pas pu être chargées. Vérifiez la connexion, puis réessayez.";
+    });
+  }
+
+  // ---------- Filtres ----------
+  function entier(id) { var v = $(id).value.trim(); return /^\d+$/.test(v) ? Number(v) : null; }
+  function filtre() {
+    if (!communeActive) return;
+    var nature = $("nature").value, sMin = entier("surfaceMin"), sMax = entier("surfaceMax"), pMin = entier("piecesMin"), pMax = entier("piecesMax");
+    var mots = simple($("adresse").value).split(" ").filter(Boolean);
+    ["surfaceMin", "surfaceMax", "piecesMin", "piecesMax"].forEach(function (id) { $(id).classList.toggle("erreur", !!$(id).value.trim() && entier(id) === null); });
+    filtrees = ventesCommune.filter(function (v) {
+      if (nature && v.type !== nature) return false;
+      if (sMin !== null && v.surface < sMin) return false;
+      if (sMax !== null && v.surface > sMax) return false;
+      if (pMin !== null && v.pieces < pMin) return false;
+      if (pMax !== null && v.pieces > pMax) return false;
+      for (var k = 0; k < mots.length; k++) if (v.cle.indexOf(mots[k]) === -1) return false;
+      return true;
+    });
+    // Prix au m2 : ventes d'une seule maison, d'un seul appartement ou d'un seul local avec une surface connue.
+    filtrees.forEach(function (v) { v.m2 = v.nb === 1 && v.surface > 0 && v.type !== "T" && v.type !== "D" ? v.prix / v.surface : null; });
+    var m2 = filtrees.map(function (v) { return v.m2; }).filter(function (x) { return x; });
+    var surfaces = filtrees.map(function (v) { return v.surface; }).filter(function (x) { return x > 0; });
+    $("synthese").hidden = false;
+    $("cadreVentes").hidden = !filtrees.length;
+    $("nbVentes").textContent = String(filtrees.length);
+    $("prixMedian").textContent = filtrees.length ? euros(mediane(filtrees.map(function (v) { return v.prix; }))) : "—";
+    $("m2Median").textContent = m2.length ? euros(mediane(m2)) : "—";
+    $("surfaceMediane").textContent = surfaces.length ? Math.round(mediane(surfaces)) + " m2" : "—";
+    $("etatDvf").textContent = filtrees.length
+      ? filtrees.length + " vente" + (filtrees.length > 1 ? "s" : "") + " à " + nomCommune(communeActive) + (filtrees.length < ventesCommune.length ? " sur " + ventesCommune.length : "") + ", de la plus récente à la plus ancienne."
+      : (ventesCommune.length ? "Aucune vente ne correspond à ces filtres, sur " + ventesCommune.length + " à " + nomCommune(communeActive) + "." : "Aucune vente enregistrée à " + nomCommune(communeActive) + " sur la période.");
+    $("ventes").textContent = "";
+    affichees = 0;
+    plus();
+  }
+  function cellule(tr, texte, classe) {
+    var td = document.createElement("td");
+    td.textContent = texte;
+    if (classe) td.className = classe;
+    tr.appendChild(td);
+  }
+  function plus() {
+    var corps = $("ventes"), fin = Math.min(filtrees.length, affichees + PAGE);
+    for (var k = affichees; k < fin; k++) {
+      var v = filtrees[k], tr = document.createElement("tr"), d = v.date;
+      cellule(tr, d.slice(6) + "/" + d.slice(4, 6) + "/" + d.slice(0, 4));
+      cellule(tr, (v.adresse || "—") + (v.cp ? " · " + v.cp : ""), "lib");
+      cellule(tr, TYPES[v.type] + (v.nb > 1 ? " ×" + v.nb : "") + (NATURES[v.nature] ? " (" + NATURES[v.nature] + ")" : ""));
+      cellule(tr, v.surface ? v.surface + " m2" : "", "droite");
+      cellule(tr, v.pieces ? String(v.pieces) : "", "droite");
+      cellule(tr, v.terrain ? v.terrain + " m2" : "", "droite");
+      cellule(tr, euros(v.prix), "droite");
+      cellule(tr, v.m2 ? euros(v.m2) : "", "droite");
+      corps.appendChild(tr);
+    }
+    affichees = fin;
+    $("plus").hidden = affichees >= filtrees.length;
+    $("plus").textContent = "Afficher les " + Math.min(PAGE, filtrees.length - affichees) + " ventes suivantes";
+  }
+  $("plus").addEventListener("click", plus);
+  ["nature", "surfaceMin", "surfaceMax", "piecesMin", "piecesMax", "adresse"].forEach(function (id) {
+    $(id).addEventListener("input", filtre);
+    $(id).addEventListener("change", filtre);
+  });
+})();
+</script>
+</body>
+</html>

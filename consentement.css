@@ -1,0 +1,63 @@
+/* Bandeau de consentement à la mesure d'audience (voir consentement.js), repris de capedinvisibilite.fr.
+   Petit écran : bande en haut de la zone de contenu, dans le flux, qui pousse le contenu au lieu de le recouvrir.
+   Classe « flottant », posée par consentement.js seulement s'il ne recouvre aucun contenu visible :
+   bandeau compact d'une ligne, en bas de l'écran, aligné sur la zone de contenu. */
+.consentement {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+  padding: 12px 16px;
+  border-bottom: 2px solid var(--blue);
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 14px/1.45 var(--sans);
+}
+.consentement[hidden] { display: none; }
+.consentement p { flex: 1 1 320px; margin: 0; }
+.consentement a { color: var(--blue); }
+.consentement-choix { display: flex; flex: none; gap: 8px; }
+.consentement-choix button {
+  min-width: 100px;
+  min-height: 38px;
+  padding: 0 18px;
+  border: 1px solid var(--blue);
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--blue);
+  font: 500 14px/1 var(--sans);
+  cursor: pointer;
+}
+.consentement-choix button[data-choix="accord"] { background: var(--blue); color: var(--on-blue); }
+.consentement-choix button:hover { border-color: #0D2BB5; }
+.consentement-choix button[data-choix="accord"]:hover { background: #0D2BB5; }
+@media (max-width: 560px) {
+  .consentement-choix { width: 100%; }
+  .consentement-choix button { flex: 1; }
+}
+.consentement.flottant {
+  position: fixed;
+  z-index: 100;
+  right: 16px;
+  bottom: 12px;
+  left: 16px;
+  flex-wrap: nowrap;
+  max-width: 1168px;
+  margin: 0 auto;
+  padding: 9px 10px 9px 20px;
+  border: 2px solid var(--blue);
+  border-radius: 9999px;
+  box-shadow: 0 20px 40px -24px rgba(17, 54, 219, .45), 0 2px 10px rgba(27, 36, 80, .1);
+}
+.consentement.flottant p { flex: 1 1 auto; }
+.lien-cookies {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.lien-cookies:hover { color: var(--blue); text-decoration: underline; text-underline-offset: 3px; }
+p .lien-cookies { color: var(--blue); text-decoration: underline; text-underline-offset: 3px; }

@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.24.20";
+  var VERSION = "1.24.21";
 
   // Catégorie « Outils de production » du menu : écritures courantes de la tenue.
   // Pour ajouter un outil : une ligne ici, à sa place dans l'ordre d'affichage.
@@ -992,11 +992,27 @@ window.MiniOutils = (function () {
       '<nav class="legal" aria-label="Liens légaux">' +
       '<a href="mentions-legales.html">Mentions légales</a>' +
       '<a href="mentions-legales.html#donnees">Données personnelles</a>' +
+      '<button type="button" class="lien-cookies" data-gerer-cookies>Gérer les cookies</button>' +
       '<a href="logiciels-compatibles.html">Logiciels compatibles</a>' +
       '<a href="versions.html">Suivi des versions</a></nav>' +
       '<span class="projet">Un projet <a href="https://structurre.fr" target="_blank" rel="noopener">' +
       '<img src="icones/structurre.svg" alt="" width="20" height="20">STRUCTURRE</a></span>';
     c.appendChild(bloc);
+  }
+
+  // Bandeau de consentement à la mesure d'audience : consentement.css et consentement.js,
+  // chargés ici pour toutes les pages. Rien n'est envoyé à Google sans l'accord du visiteur.
+  function consentement() {
+    var css = document.createElement("link");
+    css.rel = "stylesheet";
+    css.href = "consentement.css";
+    // Le script attend la feuille de style : le bandeau est placé d'après sa taille réelle.
+    css.onload = css.onerror = function () {
+      var js = document.createElement("script");
+      js.src = "consentement.js";
+      document.body.appendChild(js);
+    };
+    document.head.appendChild(css);
   }
 
   // Sur téléphone, seules les pages d'information sont affichées : les tableaux
@@ -1083,6 +1099,7 @@ window.MiniOutils = (function () {
   menu();
   mobile();
   pied();
+  consentement();
   installation();
   icone();
   reinitialisation();

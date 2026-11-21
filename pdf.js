@@ -253,8 +253,8 @@
     doc.trait(G, 792, D, 792);
     // Date et heure du poste, au moment où le justificatif est produit.
     doc.texte(G, 806, "Document établi le " + deux(jour.getDate()) + "/" + deux(jour.getMonth() + 1) + "/" + jour.getFullYear() +
-              " à " + deux(jour.getHours()) + "h" + deux(jour.getMinutes()) + " avec mini-outils-compta.fr", { taille: 8, couleur: "gris" });
-    doc.texte(D, 806, droite || "Calcul à contrôler avant utilisation", { taille: 8, couleur: "gris", align: "droite" });
+              " à " + deux(jour.getHours()) + "h" + deux(jour.getMinutes()), { taille: 8, couleur: "gris" });
+    doc.texte(D, 806, droite || "Calcul à contrôler", { taille: 8, couleur: "gris", align: "droite" });
     return doc;
   }
 
@@ -279,7 +279,7 @@
 
     // Pied de la page en cours ; le numéro n'est écrit que pour un document de plusieurs pages.
     var piedPage = function (numero) {
-      pied(doc, jour, (numero ? "Page " + doc.nbPages() + " · " : "") + "Calcul à contrôler avant utilisation");
+      pied(doc, jour, (numero ? "Page " + doc.nbPages() + " · " : "") + "Calcul à contrôler");
     };
     var saut = function () {
       piedPage(true);

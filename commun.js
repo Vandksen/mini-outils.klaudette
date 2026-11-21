@@ -14,7 +14,7 @@ window.MiniOutils = (function () {
   // Mettre le MÊME numéro dans version.json : c'est ce petit fichier que les pages ouvertes
   // consultent pour savoir si une nouvelle version est publiée.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.27.0";
+  var VERSION = "1.27.1";
 
   // Type de chaque outil (champ « type ») : ce sur quoi il travaille, affiché en étiquette sur
   // sa page et sur sa carte de l'accueil (voir etiquettesType).
@@ -68,7 +68,8 @@ window.MiniOutils = (function () {
   // Pour y ajouter une page : une ligne ici, de la même forme que dans OUTILS.
   var REFERENTIEL = [
     { fichier: "pcg.html", nom: "Plan de comptes" },
-    { fichier: "questions-clients.html", nom: "Questions aux clients" }
+    { fichier: "questions-clients.html", nom: "Questions aux clients" },
+    { fichier: "taux-interets.html", nom: "Taux d'intérêts déductibles" }
   ];
   // Icône du site : le « M » du logo, agrandi deux fois, avec son ombre dure, sur une
   // grille de 24 × 24 cases. "1" = couleur principale, "3" = ombre, "." = vide.
@@ -801,6 +802,7 @@ window.MiniOutils = (function () {
     var champs = document.querySelectorAll("#contenu input, #contenu select, #contenu textarea");
     if (!champs.length) return;
     var panneau = champs[0].closest(".panel");
+    if (!panneau) return;   // page sans cadre de saisie (référentiel) : pas de bouton
     var titre = panneau.querySelector(".eyebrow");
     var barre = document.createElement("div");
     barre.className = "barre";

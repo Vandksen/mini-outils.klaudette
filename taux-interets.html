@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1136DB">
+<meta name="description" content="Taux maximal des intérêts déductibles sur comptes courants d'associés (CGI, art. 39-1-3°), selon la date de clôture d'un exercice de 12 mois, avec un justificatif PDF pour chaque période. Données de service-public.fr vérifiées chaque mois.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/icone-m-180.png">
+<title>Taux maximal des intérêts déductibles — Mini-outils</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mini-outils">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Taux maximal des intérêts déductibles — Mini-outils">
+<meta property="og:description" content="Taux maximal des intérêts déductibles sur comptes courants d'associés, par date de clôture, avec un justificatif PDF pour chaque période.">
+<meta property="og:url" content="https://mini-outils-compta.fr/taux-interets.html">
+<link rel="canonical" href="https://mini-outils-compta.fr/taux-interets.html">
+<meta property="og:image" content="https://mini-outils-compta.fr/images/og-tempete.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Un navire dans la tempête, avec le slogan « Quand la période fiscale se déchaîne, gardez le cap. »">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="commun.css">
+<!-- Polices de tout écran, demandées dès l'en-tête plutôt qu'après la lecture du style. -->
+<link rel="preload" href="polices/inter-tight-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="polices/jetbrains-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="polices/instrument-serif-italique-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+.recherche-taux { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px 18px; margin: 22px 0 8px; }
+.recherche-taux label { display: block; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink); margin-bottom: 6px; }
+.recherche-taux input { width: 100%; height: 40px; padding: 0 12px; font-family: var(--mono); font-size: 13px; color: var(--ink);
+                        background: var(--cream); border: 1px solid var(--line); border-radius: 8px; }
+.recherche-taux input:focus { outline: 2px solid var(--blue); outline-offset: 1px; border-color: var(--blue); }
+.resultat-taux { margin: 6px 0 0; font-size: 15px; }
+.resultat-taux strong { color: var(--blue); }
+#taux td.taux { font-family: var(--mono); font-weight: 700; color: var(--blue); text-align: right; white-space: nowrap; }
+#taux tr.retenu td { background: rgba(17, 54, 219, .07); }
+#taux td.action { text-align: right; width: 1%; white-space: nowrap; }
+#taux .btn.ghost { height: 30px; padding: 0 12px; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur prose">
+    <p class="eyebrow">Référentiel</p>
+    <h1>Taux maximal <em>des intérêts déductibles.</em></h1>
+    <p class="lead"><strong>But de la page :</strong> retrouver le taux maximal auquel une société peut déduire les intérêts versés sur les comptes courants de ses associés, selon la date de clôture de son exercice, et en garder un justificatif PDF.</p>
+    <p>Les intérêts versés aux associés sur les sommes qu'ils laissent ou mettent à la disposition de la société ne sont déductibles que dans la limite d'un taux maximal (CGI, art. 39-1-3°). Ce taux est égal à la moyenne annuelle des taux effectifs moyens pratiqués par les établissements de crédit pour des prêts à taux variable aux entreprises, d'une durée initiale supérieure à deux ans. La fraction des intérêts versés au-delà n'est pas déductible : elle se réintègre au résultat fiscal (case 247 du 2033-B ou case SU du 2058-A). La déduction suppose aussi que le capital de la société soit entièrement libéré.</p>
+    <p>Les taux ci-dessous valent pour un <strong>exercice de 12 mois</strong>. Ils sont repris de service-public.fr et vérifiés chaque mois ; une nouvelle période s'ajoute dès sa publication, les anciennes restent.</p>
+
+    <div class="recherche-taux">
+      <div>
+        <label for="cloture">Date de clôture de l'exercice</label>
+        <input id="cloture" type="date" value="2025-12-31">
+      </div>
+      <div>
+        <label for="dossier">Dossier (facultatif, pour le PDF)</label>
+        <input id="dossier" type="text" value="Restaurant MIRABELLE">
+      </div>
+    </div>
+    <p class="resultat-taux" id="resultatTaux" role="status"></p>
+
+    <div class="cadre-table">
+      <table>
+        <thead>
+          <tr><th>Clôture de l'exercice</th><th class="droite">Taux maximal</th><th class="droite">Justificatif</th></tr>
+        </thead>
+        <tbody id="taux"></tbody>
+      </table>
+    </div>
+    <p class="aide-bloc" id="source"></p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Taux maximal des intérêts déductibles sur comptes courants d'associés, CGI art. 39-1-3°</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script src="pdf.js"></script>
+<script src="donnees-mensuelles.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var TAUX = (window.DONNEES_MENSUELLES && window.DONNEES_MENSUELLES.tauxMaxDeductible) || { lignes: [] };
+  var MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+  function lit(iso) { return M.lireDate(iso); }
+  function longue(d) { return (d.j === 1 ? "1er" : d.j) + " " + MOIS[d.m - 1] + " " + d.a; }
+  function periode(l) { return "Du " + M.dateFr(lit(l[0])) + " au " + M.dateFr(lit(l[1])); }
+  function pct(x) { return x.toFixed(2).replace(".", ",") + " %"; }
+  function verifie() { return TAUX.verifieLe ? M.dateFr(lit(TAUX.verifieLe)) : ""; }
+
+  // Justificatif PDF d'une période : le taux, son champ, sa base légale et sa source.
+  function justificatif(l) {
+    var dossier = $("dossier").value.trim(), cloture = lit($("cloture").value);
+    var dedans = cloture && l[0] <= iso(cloture) && iso(cloture) <= l[1];
+    var f = window.MiniPdf.fiche("Taux maximal des intérêts déductibles");
+    f.section("Période");
+    if (dossier) f.ligne("Dossier", dossier);
+    if (dedans) f.ligne("Clôture de l'exercice du dossier", M.dateFr(cloture));
+    f.ligne("Clôtures concernées", "du " + longue(lit(l[0])) + " au " + longue(lit(l[1])))
+     .ligne("Durée de l'exercice", "12 mois");
+    f.total("Taux maximal des intérêts déductibles", pct(l[2]));
+    f.section("Base légale");
+    f.texte("Article 39-1-3° du code général des impôts : les intérêts servis aux associés à raison des sommes qu'ils laissent ou mettent à la disposition " +
+            "de la société ne sont déductibles que dans la limite d'un taux égal à la moyenne annuelle des taux effectifs moyens pratiqués par les " +
+            "établissements de crédit pour des prêts à taux variable aux entreprises, d'une durée initiale supérieure à deux ans. La déduction suppose " +
+            "que le capital de la société soit entièrement libéré. La fraction des intérêts excédant ce taux se réintègre au résultat fiscal : " +
+            "case 247 du 2033-B (comprise dans la ligne 330) ou case SU du 2058-A (comprise dans la ligne WQ).");
+    f.section("Source");
+    f.ligne("Publication", "service-public.fr, fiche F32966")
+     .ligne("Adresse", TAUX.source || "")
+     .ligne("Vérifié par Mini-outils le", verifie());
+    f.texte("Taux publié pour un exercice de 12 mois clos entre le " + M.dateFr(lit(l[0])) + " et le " + M.dateFr(lit(l[1])) + " inclus.");
+    return f;
+  }
+  function iso(d) { return d.a + "-" + M.deux(d.m) + "-" + M.deux(d.j); }
+
+  // Tableau : de la période la plus récente à la plus ancienne ; celle qui contient la date de
+  // clôture saisie est mise en avant.
+  function affiche() {
+    var cloture = lit($("cloture").value), c = cloture ? iso(cloture) : "", corps = $("taux"), retenue = null;
+    corps.textContent = "";
+    TAUX.lignes.slice().reverse().forEach(function (l) {
+      var tr = document.createElement("tr"), dedans = c && l[0] <= c && c <= l[1];
+      if (dedans) { tr.className = "retenu"; retenue = l; }
+      var td = document.createElement("td");
+      td.textContent = periode(l);
+      tr.appendChild(td);
+      td = document.createElement("td");
+      td.className = "taux";
+      td.textContent = pct(l[2]);
+      tr.appendChild(td);
+      td = document.createElement("td");
+      td.className = "action";
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "btn ghost";
+      b.textContent = "PDF";
+      b.title = "Télécharger le justificatif de cette période";
+      b.setAttribute("aria-label", "Télécharger le justificatif PDF, clôtures " + periode(l).toLowerCase() + ", " + pct(l[2]));
+      b.addEventListener("click", function () {
+        var nom = window.MiniPdf.nomFichier(["Taux max interets", l[0], l[1], $("dossier").value.trim()].filter(Boolean).join(" "));
+        justificatif(l).telecharger(nom + ".pdf");
+      });
+      td.appendChild(b);
+      tr.appendChild(td);
+      corps.appendChild(tr);
+    });
+    var dernier = TAUX.lignes[TAUX.lignes.length - 1], premier = TAUX.lignes[0];
+    var r = $("resultatTaux");
+    r.innerHTML = "";
+    var fort = document.createElement("strong");
+    if (!cloture) r.textContent = "Saisissez une date de clôture pour retrouver son taux.";
+    else if (retenue) { fort.textContent = pct(retenue[2]); r.append("Clôture au " + M.dateFr(cloture) + " : taux maximal de ", fort, " (exercice de 12 mois)."); }
+    else if (dernier && c > dernier[1]) { fort.textContent = pct(dernier[2]); r.append("Le taux des clôtures au " + M.dateFr(cloture) + " n'est pas encore publié ; le dernier connu est ", fort, "."); }
+    else if (premier && c < premier[0]) r.textContent = "Les clôtures antérieures au " + M.dateFr(lit(premier[0])) + " ne figurent pas dans la liste.";
+    else r.textContent = "Aucune période ne contient cette date.";
+    var s = $("source");
+    s.textContent = "";
+    var a = document.createElement("a");
+    a.href = TAUX.source; a.target = "_blank"; a.rel = "noopener";
+    a.textContent = "service-public.fr, fiche F32966";
+    s.append("Source : ", a, verifie() ? ", vérifiée le " + verifie() + "." : ".");
+  }
+  window.justificatifPdf = function () { var l = TAUX.lignes[TAUX.lignes.length - 1]; return l ? justificatif(l) : null; };   // pour les contrôles
+  ["cloture", "dossier"].forEach(function (id) { $(id).addEventListener("input", affiche); $(id).addEventListener("change", affiche); });
+  affiche();
+})();
+</script>
+</body>
+</html>

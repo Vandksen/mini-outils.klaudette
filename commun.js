@@ -14,7 +14,7 @@ window.MiniOutils = (function () {
   // Mettre le MÊME numéro dans version.json : c'est ce petit fichier que les pages ouvertes
   // consultent pour savoir si une nouvelle version est publiée.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.24.35";
+  var VERSION = "1.25.0";
 
   // Catégorie « Outils de production » du menu : écritures courantes de la tenue.
   // Pour ajouter un outil : une ligne ici, à sa place dans l'ordre d'affichage.
@@ -43,7 +43,8 @@ window.MiniOutils = (function () {
   // Pour y ajouter une page : une ligne ici, de la même forme que dans OUTILS.
   var ANALYSE = [
     { fichier: "controle-coherence.html", nom: "Contrôle de cohérence" },
-    { fichier: "dates-week-end.html", nom: "Dates de week-end" }
+    { fichier: "dates-week-end.html", nom: "Dates de week-end" },
+    { fichier: "analyse-fournisseurs.html", nom: "Analyse des fournisseurs" }
   ];
   // Catégorie « Dashboard » du menu : outils qui s'appuient sur les comptes 4886 et 4887
   // tenus par cycle. Pour y ajouter une page :

@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1136DB">
+<meta name="description" content="Calcul des intérêts courus d'un compte courant d'associé ou d'un compte à terme à partir du contenu collé du compte : soldes successifs, taux, date de clôture, taux maximal déductible. Gratuit, sans envoi de données.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/icone-m-180.png">
+<title>Intérêts courus — Mini-outils</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mini-outils">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Intérêts courus — Mini-outils">
+<meta property="og:description" content="Calcul des intérêts courus d'un compte courant d'associé ou d'un compte à terme à partir du contenu collé du compte : soldes successifs, taux, date de clôture, taux maximal déductible. Gratuit, sans envoi de données.">
+<meta property="og:url" content="https://mini-outils-compta.fr/interets-courus.html">
+<link rel="canonical" href="https://mini-outils-compta.fr/interets-courus.html">
+<meta property="og:image" content="https://mini-outils-compta.fr/images/og-tempete.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Un navire dans la tempête, avec le slogan « Quand la période fiscale se déchaîne, gardez le cap. »">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="commun.css">
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">Contenu d'un compte — intérêts au prorata des jours</p>
+    <h1>Intérêts <em>courus.</em></h1>
+    <p class="lead"><strong>But de la page :</strong> chiffrer les intérêts courus à la clôture sur un compte courant d'associé ou un compte à terme. La page reconstitue le solde du compte jour après jour à partir des lignes collées, applique le taux au prorata des jours et propose l'écriture de clôture.</p>
+    <p class="lead">Choisissez la nature du compte, indiquez la date de clôture et le taux, puis collez le contenu du compte. Le résultat est calculé aussitôt.</p>
+
+    <div class="grille">
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">01 — Configuration</p>
+          <div class="champ pleine">
+            <label for="nature">Nature du compte</label>
+            <select id="nature" class="segments">
+              <option value="cca">Compte courant d'associé</option>
+              <option value="cat">Compte à terme</option>
+            </select>
+          </div>
+          <div class="champ">
+            <label for="dossier">Dossier<span class="aide">Facultatif</span></label>
+            <input id="dossier" type="text" value="EXEMPLE SARL">
+          </div>
+          <div class="champ">
+            <label for="cloture">Date de clôture</label>
+            <input id="cloture" type="date" value="2026-12-31">
+          </div>
+          <div class="champ">
+            <label for="debut">Début du calcul<span class="aide">Vide : lendemain de la clôture précédente</span></label>
+            <input id="debut" type="date">
+          </div>
+          <div class="champ">
+            <label for="taux">Taux annuel (%)<span class="aide" id="aideTaux">Taux prévu par la convention</span></label>
+            <input id="taux" class="droite" type="text" inputmode="decimal" value="4,00">
+          </div>
+          <div class="champ pleine">
+            <label for="base">Base de calcul</label>
+            <select id="base" class="segments">
+              <option value="365">365 jours</option>
+              <option value="360">360 jours</option>
+            </select>
+          </div>
+          <div class="champ">
+            <label for="cptResultat"><span id="libResultat">Compte de charge</span><span class="aide" id="aideResultat">Vide : 661500</span></label>
+            <input id="cptResultat" type="text" inputmode="numeric">
+          </div>
+          <div class="champ">
+            <label for="cptCourus">Compte d'intérêts courus<span class="aide" id="aideCourus">Vide : 455860</span></label>
+            <input id="cptCourus" type="text" inputmode="numeric">
+          </div>
+          <div class="champ">
+            <label for="piece">Pièce<span class="aide">Vide : code automatique de 6 caractères</span></label>
+            <input id="piece" type="text">
+          </div>
+          <ul class="alertes" id="alertes"></ul>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">02 — Contenu du compte</p>
+          <p class="aide-bloc">Dans ACD, ouvrez le détail du compte en mode grand livre, copiez son contenu avec Ctrl+C puis collez-le dans cette zone avec Ctrl+V (la ligne de titres peut être copiée ou non). Les lignes antérieures au début du calcul forment le solde d'ouverture.</p>
+          <textarea id="source" class="saisie" spellcheck="false" wrap="off" aria-label="Contenu du compte à coller"></textarea>
+        </section>
+
+        <section class="panel" id="panneauTauxMax">
+          <p class="eyebrow">Taux maximal d'intérêts déductibles</p>
+          <p class="aide-bloc">Exercice de 12 mois, selon la date de clôture (CGI, art. 39-1-3°). Les intérêts versés au-delà de ce taux ne sont pas déductibles et se réintègrent. La ligne de la clôture saisie est mise en avant. <span id="tauxMaxSource"></span></p>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr><th>Clôture de l'exercice</th><th class="droite">Taux maximal</th></tr>
+              </thead>
+              <tbody id="tauxMax"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow" id="titreResultat">03 — Intérêts courus</p>
+          <p class="resultat" id="resultat"></p>
+          <div class="champ"><span class="etiquette">Période de calcul</span><span class="valeur droite" id="periode"></span></div>
+          <div class="champ"><span class="etiquette">Solde d'ouverture</span><span class="valeur droite" id="ouverture"></span></div>
+          <div class="champ"><span class="etiquette">Solde à la clôture</span><span class="valeur droite" id="soldeFin"></span></div>
+          <div class="champ"><span class="etiquette">Solde moyen</span><span class="valeur droite" id="moyen"></span></div>
+          <div class="champ"><span class="etiquette">Lignes retenues</span><span class="valeur droite" id="nbRetenues"></span></div>
+          <div class="champ avecMax"><span class="etiquette">Taux maximal déductible</span><span class="valeur droite" id="tauxMaxRetenu"></span></div>
+          <div class="champ avecMax"><span class="etiquette">Intérêts non déductibles</span><span class="valeur droite" id="nonDeductible"></span></div>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">04 — Calcul par période</p>
+          <p class="aide-bloc">Le solde change à la date de chaque ligne : chaque période porte intérêts au taux annuel, sur le nombre de jours de la période rapporté à la base.</p>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr><th>Du</th><th>Au</th><th class="droite">Jours</th><th class="droite">Solde</th><th class="droite">Intérêts</th></tr>
+              </thead>
+              <tbody id="periodes"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">05 — Note de calcul</p>
+            <div class="actions">
+              <span class="etat" id="etatNote" role="status"></span>
+              <button class="btn ghost" id="copierNote" type="button">Copier la note</button>
+              <button class="btn ghost" id="pdf" type="button">Télécharger le justificatif PDF</button>
+            </div>
+          </div>
+          <p class="note" id="note"></p>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">06 — Écriture de clôture</p>
+            <div class="actions">
+              <span class="etat" id="etat" role="status"></span>
+              <button class="btn" id="copier" type="button">Copier pour ACDCompta</button>
+            </div>
+          </div>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>N°</th><th>Date</th><th>Pièce</th><th>Compte</th><th>Libellé</th>
+                  <th class="droite">Débit</th><th class="droite">Crédit</th>
+                </tr>
+              </thead>
+              <tbody id="lignes"></tbody>
+            </table>
+          </div>
+          <div class="vide" id="vide" hidden></div>
+          <div class="champ"><span class="etiquette">Total débit</span><span class="valeur droite" id="totDebit"></span></div>
+          <div class="champ"><span class="etiquette">Total crédit</span><span class="valeur droite" id="totCredit"></span></div>
+          <div class="champ"><span class="etiquette">Équilibre</span><span class="valeur droite"><span id="equilibre"></span></span></div>
+          <div class="champ"><span class="etiquette">Lignes générées</span><span class="valeur droite" id="nbLignes"></span></div>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Intérêts = solde × taux × jours / base, période par période</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script src="pdf.js"></script>
+<script src="donnees-mensuelles.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var TAB = String.fromCharCode(9), SAUT = String.fromCharCode(10);
+  var ids = ["nature", "dossier", "cloture", "debut", "taux", "base", "cptResultat", "cptCourus", "piece", "source"];
+  var TAUX_MAX = (window.DONNEES_MENSUELLES && window.DONNEES_MENSUELLES.tauxMaxDeductible) || { lignes: [] };
+  // Comptes proposés : compte courant d'associé créditeur (charge), compte à terme débiteur (produit).
+  var NATURES = {
+    cca: { nom: "compte courant d'associé", court: "CCA", resultat: "661500", courus: "455860", libResultat: "Compte de charge" },
+    cat: { nom: "compte à terme", court: "compte à terme", resultat: "768000", courus: "518700", libResultat: "Compte de produit" }
+  };
+  var note = "";
+  var dernier = null;   // dernier calcul valide, repris par le justificatif PDF
+
+  // Exemple fictif de départ : un compte courant d'associé sur l'année, au format collé.
+  $("source").value = [
+    ["01/01/2026", "AN", "455100", "AN", "Report à nouveau", "", "50000,00"],
+    ["15/03/2026", "BQ", "455100", "VIR01", "Apport en compte courant", "", "20000,00"],
+    ["30/06/2026", "BQ", "455100", "VIR02", "Remboursement partiel", "10000,00", ""],
+    ["15/10/2026", "BQ", "455100", "VIR03", "Apport en compte courant", "", "5000,00"]
+  ].map(function (l) { return l.join(TAB); }).join(SAUT);
+
+  // Place des colonnes (à partir de 0) ; -1 : colonne absente.
+  // Format de l'outil : date, journal, compte, pièce, libellé, débit, crédit.
+  var SEPT_COLONNES = { date: 0, compte: 2, debit: 5, credit: 6 };
+  // Consultation de compte ACD : Date>, Jnl, Pièce, Facture, Libellé, Débit, Lettrage, Crédit, Solde cumulé…
+  var CONSULTATION_ACD = { date: 0, compte: -1, debit: 5, credit: 7 };
+
+  // Lit une ligne de titres et repère chaque colonne par son nom, quel que soit l'ordre.
+  function lireTitres(c) {
+    var p = { date: -1, compte: -1, debit: -1, credit: -1, manque: "" };
+    c.forEach(function (t, k) {
+      var n = t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z ]/g, "").trim();
+      if (p.date === -1 && /^date/.test(n)) p.date = k;
+      else if (p.compte === -1 && /^(compte|comptes|n compte|numero de compte)$/.test(n)) p.compte = k;
+      else if (p.debit === -1 && n === "debit") p.debit = k;
+      else if (p.credit === -1 && n === "credit") p.credit = k;
+    });
+    p.manque = p.debit === -1 ? "Débit" : (p.credit === -1 ? "Crédit" : "");
+    return p;
+  }
+
+  // Date {a, m, j} -> numéro de jour, pour compter les jours entre deux dates.
+  function jour(d) { return Math.round(Date.UTC(d.a, d.m - 1, d.j) / 86400000); }
+  function deJour(n) { var x = new Date(n * 86400000); return { a: x.getUTCFullYear(), m: x.getUTCMonth() + 1, j: x.getUTCDate() }; }
+  function iso(d) { return d.a + "-" + M.deux(d.m) + "-" + M.deux(d.j); }
+  function taux(txt) {
+    var s = String(txt).replace(/[\s  %]/g, "").replace(",", ".");
+    return /^\d+(\.\d+)?$/.test(s) ? parseFloat(s) : NaN;
+  }
+  function pct(x) { return x.toFixed(2).replace(".", ",") + " %"; }
+  function solde(c) { return (c < 0 ? "-" : "") + M.affiche(Math.abs(c)); }
+  function cellule(tr, texte, classe) {
+    var td = document.createElement("td");
+    td.textContent = texte;
+    if (classe) td.className = classe;
+    tr.appendChild(td);
+    return td;
+  }
+  function libClotures(l) { return "Du " + M.dateFr(M.lireDate(l[0])) + " au " + M.dateFr(M.lireDate(l[1])); }
+
+  // Taux maximal pour une date de clôture : la ligne qui la contient ; après la dernière ligne
+  // publiée, le dernier taux connu, signalé comme provisoire.
+  function tauxMaxPour(cloture) {
+    var c = iso(cloture), l = TAUX_MAX.lignes;
+    for (var i = 0; i < l.length; i++) if (l[i][0] <= c && c <= l[i][1]) return { taux: l[i][2], ligne: i, provisoire: false };
+    if (l.length && c > l[l.length - 1][1]) return { taux: l[l.length - 1][2], ligne: l.length - 1, provisoire: true };
+    return null;
+  }
+
+  function tableauTauxMax(retenu) {
+    var corps = $("tauxMax");
+    corps.textContent = "";
+    TAUX_MAX.lignes.slice().reverse().forEach(function (l, k) {
+      var tr = document.createElement("tr");
+      if (retenu && retenu.ligne === TAUX_MAX.lignes.length - 1 - k) tr.className = "retenu";
+      cellule(tr, libClotures(l));
+      cellule(tr, pct(l[2]), "droite");
+      corps.appendChild(tr);
+    });
+    $("tauxMaxSource").textContent = TAUX_MAX.verifieLe ? "Source : service-public.fr, vérifié le " + M.dateFr(M.lireDate(TAUX_MAX.verifieLe)) + "." : "";
+  }
+
+  function calcule() {
+    var v = {};
+    ids.forEach(function (id) { v[id] = $(id).value.trim(); });
+    var n = NATURES[v.nature] || NATURES.cca, cca = n === NATURES.cca;
+    // Compte courant d'associé : dette de la société, solde = crédits - débits.
+    // Compte à terme : placement de la société, solde = débits - crédits.
+    var sens = function (debit, credit) { return cca ? credit - debit : debit - credit; };
+    var cptResultat = v.cptResultat || n.resultat, cptCourus = v.cptCourus || n.courus;
+    $("libResultat").textContent = n.libResultat;
+    $("aideResultat").textContent = "Vide : " + n.resultat;
+    $("aideCourus").textContent = "Vide : " + n.courus;
+    $("panneauTauxMax").hidden = !cca;
+    Array.prototype.forEach.call(document.querySelectorAll(".avecMax"), function (e) { e.hidden = !cca; });
+
+    var alertes = [], blocage = "", ecritures = [];
+    var cloture = M.lireDate(v.cloture), t = taux(v.taux), base = v.base === "360" ? 360 : 365;
+    var debut = v.debut ? M.lireDate(v.debut) : (cloture ? deJour(jour(M.decale(cloture, -12)) + 1) : null);
+    if (!cloture) blocage = "Indiquez la date de clôture.";
+    else if (!debut) blocage = "La date de début du calcul est illisible.";
+    else if (jour(debut) > jour(cloture)) blocage = "Le début du calcul doit précéder la date de clôture.";
+    else if (isNaN(t)) blocage = "Indiquez le taux annuel, par exemple 4,00.";
+
+    // Lecture du collage.
+    var lues = 0, ignorees = 0, apres = 0, lignes = [], comptes = {}, titres = null;
+    v.source.split(/\r?\n/).forEach(function (ligne, i) {
+      if (!ligne.trim()) return;
+      var c = ligne.split(TAB).map(function (x) { return x.trim(); });
+      if (/^date\b/i.test(c[0])) { titres = lireTitres(c); return; }
+      lues++;
+      var p = titres || (c.length >= 8 ? CONSULTATION_ACD : SEPT_COLONNES);
+      var d = M.lireDate(c[p.date] || ""), refus = "";
+      if (titres && titres.manque) refus = "colonne « " + titres.manque + " » absente de la ligne de titres";
+      else if (!titres && c.length < 6) refus = c.length + " colonne" + (c.length > 1 ? "s" : "") + " au lieu de 7";
+      else if (!d) refus = "date illisible";
+      else if (isNaN(M.centimes(c[p.debit] || "")) || isNaN(M.centimes(c[p.credit] || ""))) refus = "le débit ou le crédit n'est pas un nombre";
+      if (refus) {
+        ignorees++;
+        if (ignorees <= 5) alertes.push("Ligne " + (i + 1) + " ignorée : " + refus + ".");
+        return;
+      }
+      if (cloture && jour(d) > jour(cloture)) { apres++; return; }
+      if (p.compte !== -1 && c[p.compte]) comptes[c[p.compte]] = true;
+      lignes.push({ date: d, n: jour(d), mouvement: sens(M.centimes(c[p.debit] || ""), M.centimes(c[p.credit] || "")) });
+    });
+    if (ignorees > 5) alertes.push((ignorees - 5) + " autres lignes ignorées.");
+    if (apres) alertes.push(apres + " ligne" + (apres > 1 ? "s postérieures" : " postérieure") + " à la clôture " + (apres > 1 ? "sont laissées" : "est laissée") + " de côté.");
+    var listeComptes = Object.keys(comptes).sort();
+    if (listeComptes.length > 1) alertes.push("Le collage mélange plusieurs comptes (" + listeComptes.join(", ") + ") : leurs soldes sont additionnés.");
+    if (!blocage && !lues) blocage = "Collez le contenu du compte dans le cadre « Contenu du compte ».";
+    else if (!blocage && !lignes.length) blocage = "Aucune ligne exploitable avant la clôture : vérifiez le format collé et la date de clôture.";
+
+    // Soldes successifs : le mouvement d'une ligne compte à partir de sa date.
+    var periodes = [], total = 0, ouverture = 0, soldeCourant = 0, negatif = false, cumulJours = 0;
+    if (!blocage) {
+      var d0 = jour(debut), fin = jour(cloture) + 1;   // le jour de clôture porte intérêts
+      lignes.sort(function (a, b) { return a.n - b.n; });
+      lignes.forEach(function (l) { if (l.n < d0) ouverture += l.mouvement; });
+      soldeCourant = ouverture;
+      var dates = [];
+      lignes.forEach(function (l) { if (l.n >= d0 && dates.indexOf(l.n) === -1) dates.push(l.n); });
+      var curseur = d0;
+      dates.concat([fin]).forEach(function (n) {
+        if (n > curseur) {
+          var jours = n - curseur, interets = soldeCourant > 0 ? soldeCourant * t / 100 * jours / base : 0;
+          if (soldeCourant < 0) negatif = true;
+          periodes.push({ du: deJour(curseur), au: deJour(n - 1), jours: jours, solde: soldeCourant, interets: interets });
+          total += interets; cumulJours += jours * soldeCourant;
+          curseur = n;
+        }
+        lignes.forEach(function (l) { if (l.n === n) soldeCourant += l.mouvement; });
+      });
+      total = Math.round(total);
+      if (negatif) alertes.push("Le solde passe " + (cca ? "débiteur" : "créditeur") + " sur une partie de la période : ces jours-là ne portent pas d'intérêts. Vérifiez la nature du compte choisie.");
+    }
+
+    // Taux maximal déductible, compte courant d'associé seulement.
+    var max = cca && cloture ? tauxMaxPour(cloture) : null, nonDeductible = 0;
+    tableauTauxMax(max);
+    if (cca && !blocage) {
+      var mois = (jour(cloture) - jour(debut) + 1);
+      var douze = iso(debut) === iso(deJour(jour(M.decale(cloture, -12)) + 1));
+      if (!douze) alertes.push("La période de calcul ne couvre pas 12 mois (" + mois + " jours) : le taux maximal publié vaut pour un exercice de 12 mois.");
+      if (!max) alertes.push("Aucun taux maximal déductible publié dans la liste pour une clôture au " + M.dateFr(cloture) + ".");
+      else {
+        if (max.provisoire) alertes.push("Le taux maximal des clôtures au " + M.dateFr(cloture) + " n'est pas encore publié : la page retient le dernier connu, " + pct(max.taux) + ", à titre provisoire.");
+        if (t > max.taux) {
+          nonDeductible = Math.round(total * (t - max.taux) / t);
+          alertes.push("Le taux de " + pct(t) + " dépasse le taux maximal déductible de " + pct(max.taux) + " : " + M.affiche(nonDeductible) + " € d'intérêts sont à réintégrer.");
+        }
+      }
+    }
+
+    // Tableau des périodes.
+    var corps = $("periodes");
+    corps.textContent = "";
+    periodes.forEach(function (p) {
+      var tr = document.createElement("tr");
+      cellule(tr, M.dateFr(p.du));
+      cellule(tr, M.dateFr(p.au));
+      cellule(tr, String(p.jours), "droite");
+      cellule(tr, solde(p.solde), "droite");
+      cellule(tr, M.affiche(Math.round(p.interets)), "droite");
+      corps.appendChild(tr);
+    });
+
+    note = ""; dernier = null;
+    var periode = blocage ? "" : "du " + M.dateFr(debut) + " au " + M.dateFr(cloture);
+    var joursTotal = blocage ? 0 : jour(cloture) - jour(debut) + 1;
+    var moyen = joursTotal ? Math.round(cumulJours / joursTotal) : 0;
+    if (!blocage) {
+      var compte = listeComptes.length === 1 ? listeComptes[0] : "";
+      note = "Intérêts courus sur " + n.nom + (compte ? " " + compte : "") + (v.dossier ? " - " + v.dossier : "") + ", " + periode +
+             " : solde d'ouverture " + solde(ouverture) + " Euros, solde à la clôture " + solde(soldeCourant) + " Euros, " + periodes.length +
+             " période" + (periodes.length > 1 ? "s" : "") + " de solde constant. Intérêts = solde x " + pct(t) + " x jours / " + base +
+             " = " + M.affiche(total) + " Euros, comptabilisés au " + M.dateFr(cloture) + " au compte " + cptCourus + "." +
+             (max ? " Taux maximal déductible pour une clôture au " + M.dateFr(cloture) + " : " + pct(max.taux) + (max.provisoire ? " (dernier publié, provisoire)" : "") +
+                    (nonDeductible ? ", soit " + M.affiche(nonDeductible) + " Euros d'intérêts non déductibles à réintégrer." : ", taux appliqué inférieur ou égal : intérêts déductibles.") : "");
+
+      if (total > 0) {
+        var piece = v.piece || M.code6(["courus", v.nature, iso(debut), iso(cloture), t, base, total, cptResultat, cptCourus].join("|"));
+        var date = M.dateFr(cloture), libelle = "Intérêts courus " + n.court + " au " + date;
+        if (cca) ecritures.push({ date: date, piece: piece, compte: cptResultat, libelle: libelle, debit: total, credit: null, debut: true },
+                                { date: date, piece: piece, compte: cptCourus, libelle: libelle, debit: null, credit: total });
+        else ecritures.push({ date: date, piece: piece, compte: cptCourus, libelle: libelle, debit: total, credit: null, debut: true },
+                            { date: date, piece: piece, compte: cptResultat, libelle: libelle, debit: null, credit: total });
+      } else blocage = "Pas d'écriture : aucun intérêt couru sur la période.";
+      dernier = { dossier: v.dossier, nature: n, cca: cca, compte: compte, periode: periode, ouverture: ouverture, soldeFin: soldeCourant, moyen: moyen,
+                  taux: t, base: base, periodes: periodes, total: total, max: max, nonDeductible: nonDeductible, cloture: M.dateFr(cloture), ecritures: ecritures };
+    }
+
+    $("titreResultat").textContent = "03 — Intérêts courus au " + (cloture ? M.dateFr(cloture) : "…");
+    $("resultat").textContent = dernier ? M.affiche(total) + " €" : "—";
+    $("periode").textContent = dernier ? periode : "—";
+    $("ouverture").textContent = dernier ? solde(ouverture) : "—";
+    $("soldeFin").textContent = dernier ? solde(soldeCourant) : "—";
+    $("moyen").textContent = dernier ? solde(moyen) : "—";
+    $("nbRetenues").textContent = String(lignes.length) + " sur " + lues;
+    $("tauxMaxRetenu").textContent = max ? pct(max.taux) + (max.provisoire ? " (provisoire)" : "") : "—";
+    $("nonDeductible").textContent = dernier && max ? M.affiche(nonDeductible) + " €" : "—";
+    $("aideTaux").textContent = cca && max ? "Taux maximal déductible : " + pct(max.taux) : "Taux prévu par la convention";
+    $("note").textContent = note || "La note s'affichera une fois le contenu du compte collé.";
+    $("copierNote").disabled = !note;
+    $("pdf").disabled = !dernier;
+    $("etatNote").textContent = "";
+    M.rendre(ecritures, blocage, alertes);
+  }
+
+  // Justificatif PDF : identification, calcul par période, résultat, écriture.
+  function justificatif(d) {
+    var f = window.MiniPdf.fiche("Intérêts courus au " + d.cloture);
+    f.section("Identification");
+    f.ligne("Dossier", d.dossier).ligne("Nature du compte", d.nature.nom.charAt(0).toUpperCase() + d.nature.nom.slice(1)).ligne("Compte", d.compte)
+     .ligne("Période de calcul", d.periode).ligne("Taux annuel", pct(d.taux)).ligne("Base de calcul", d.base + " jours");
+    f.section("Calcul par période");
+    var corps = d.periodes.map(function (p) {
+      return [M.dateFr(p.du), M.dateFr(p.au), String(p.jours), solde(p.solde), M.affiche(Math.round(p.interets))];
+    });
+    var total = ["Total", "", "", "", M.affiche(d.total)];
+    total.gras = true;
+    f.tableau([{ nom: "Du", largeur: 90 }, { nom: "Au", largeur: 90 }, { nom: "Jours", largeur: 60, droite: true },
+               { nom: "Solde", largeur: 129, droite: true }, { nom: "Intérêts", largeur: 130, droite: true }], corps.concat([total]));
+    f.ligne("Solde d'ouverture", solde(d.ouverture) + " €").ligne("Solde à la clôture", solde(d.soldeFin) + " €").ligne("Solde moyen", solde(d.moyen) + " €");
+    f.total("Intérêts courus au " + d.cloture, M.affiche(d.total) + " €");
+    if (d.max) {
+      f.section("Taux maximal déductible");
+      f.ligne("Taux pour une clôture au " + d.cloture, pct(d.max.taux) + (d.max.provisoire ? " (dernier publié, provisoire)" : ""))
+       .ligne("Intérêts non déductibles", M.affiche(d.nonDeductible) + " €", { gras: true });
+    }
+    f.texte("Intérêts = solde x taux annuel x nombre de jours / " + d.base + ", pour chaque période de solde constant ; le mouvement d'une ligne compte " +
+            "à partir de sa date et le jour de clôture porte intérêts." + (d.max ? " Part non déductible = intérêts x (taux appliqué - taux maximal) / taux appliqué." : ""));
+    f.ecritures(d.ecritures, M.affiche);
+    return f;
+  }
+
+  $("copierNote").addEventListener("click", function () {
+    var fait = function () { $("etatNote").textContent = "Note copiée"; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(note).then(fait, function () { $("etatNote").textContent = "Copie impossible dans ce navigateur"; });
+    } else $("etatNote").textContent = "Copie impossible dans ce navigateur";
+  });
+  $("pdf").addEventListener("click", function () {
+    if (!dernier) return;
+    var nom = window.MiniPdf.nomFichier(["Interets courus", dernier.cloture.replace(/\//g, "-"), dernier.dossier].filter(Boolean).join(" "));
+    justificatif(dernier).telecharger(nom + ".pdf");
+    $("etatNote").textContent = "Justificatif téléchargé";
+  });
+  window.justificatifPdf = function () { return dernier ? justificatif(dernier) : null; };   // pour les contrôles
+  M.brancher(ids, calcule);
+})();
+</script>
+</body>
+</html>

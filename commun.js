@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.24.0";
+  var VERSION = "1.24.1";
 
   // Catégorie « Outils de production » du menu : écritures courantes de la tenue.
   // Pour ajouter un outil : une ligne ici, à sa place dans l'ordre d'affichage.
@@ -170,9 +170,9 @@ window.MiniOutils = (function () {
              '<div class="groupe' + (classe ? ' ' + classe : '') + '" id="rubrique-' + cle + '"' + (ouverte ? '' : ' hidden') + '>' + contenu + '</div>';
     };
     nav.innerHTML =
-      '<a class="logo" href="index.html" title="Accueil" aria-label="Mini-outils, version bêta, accueil">' + MOT_LOGO + BETA + '</a>' +
+      '<a class="logo" href="index.html" title="Accueil" aria-label="Mini-outils, version bêta, accueil"><span class="logo-mot">' + MOT_LOGO + BETA + '</span></a>' +
       '<div class="recherche-menu"><input id="recherche-menu" type="search" autocomplete="off" spellcheck="false" ' +
-      'placeholder="Rechercher un outil…" aria-label="Rechercher un outil dans le menu"></div>' +
+      'placeholder="Rechercher un outil…" aria-label="Rechercher un outil dans le menu" aria-keyshortcuts="Control+K Meta+K" title="Ctrl+K ou ⌘K"></div>' +
       '<div class="defile">' +
       '<a class="entree" href="index.html"' + (page === "index.html" ? ' aria-current="page"' : '') +
       ' title="Accueil"><span class="num">' + ICONE_ACCUEIL + '</span><span class="lib">Accueil</span></a>' +
@@ -217,7 +217,6 @@ window.MiniOutils = (function () {
         '<small>Laissez les écritures répétitives à Mini-outils-compta.fr</small></a></div>') +
       '<div class="pied"><button id="installer" type="button">Installer l’application</button>' +
       '<span id="installer-info" role="status" hidden></span>' +
-      '<a class="domaine" href="https://mini-outils-compta.fr/">mini-outils-compta.fr</a>' +
       '<span>Calcul dans votre navigateur</span><span>Rien n\'est envoyé</span>' +
       '<a class="version" href="versions.html" title="Suivi des versions">Version ' + VERSION + ' (bêta)</a></div>';
     // Le menu n'est plus repliable : on efface le choix qu'une ancienne version a pu mémoriser.
@@ -295,6 +294,16 @@ window.MiniOutils = (function () {
     if (ouvrir) ouvrir.addEventListener("click", function () { bascule(!document.body.classList.contains("menu-ouvert")); });
     if (fond) fond.addEventListener("click", function () { bascule(false); });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") bascule(false); });
+    // Ctrl+K (Cmd+K sur Mac) place le curseur dans la recherche du menu, en ouvrant le
+    // menu sur petit écran ; le texte déjà tapé est sélectionné pour être remplacé.
+    document.addEventListener("keydown", function (e) {
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        bascule(true);
+        champ.focus();
+        champ.select();
+      }
+    });
   }
 
   // Montant saisi "1 234,56" -> centimes (entier). Vide -> 0. Invalide -> NaN.

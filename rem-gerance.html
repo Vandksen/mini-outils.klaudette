@@ -171,6 +171,7 @@
     // Charges = arrondi au centime de montant × taux, comme ROUND(montant*taux;2).
     var charges = (!isNaN(montant) && !isNaN(taux)) ? Math.round(montant * taux / 10000) : NaN;
     $("charges").textContent = !provision ? "Non provisionnées" : (isNaN(charges) ? "—" : M.affiche(charges) + " €");
+    $("charges").classList.toggle("sans-montant", !provision);   // un texte, pas un montant : plus petit
 
     var d = M.lireDate(v.date);
     var nb = parseInt(v.mois, 10);

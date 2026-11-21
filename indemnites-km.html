@@ -184,7 +184,7 @@
     ]
   };
 
-  function entier(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
+  function entier(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "\u202f"); }   // espace fine insécable, comme M.affiche
   function coef(c) { return "0," + ("00" + c).slice(-3); }
 
   function calcule() {
@@ -257,7 +257,7 @@
     }
 
     note = M.aLaLigne(note);   // une phrase par ligne, à l'écran comme dans la copie
-    $("note").textContent = note || "La note s'affichera une fois la configuration complète.";
+    M.afficheNote($("note"), note || "La note s'affichera une fois la configuration complète.");
     $("copierNote").disabled = !note;
     $("pdf").disabled = !dernier;
     $("etatNote").textContent = "";

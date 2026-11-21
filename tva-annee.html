@@ -193,7 +193,7 @@
   // Montant arrondi à l'euro le plus proche, sans décimales (0,50 arrondi à l'euro supérieur).
   function euros(centimes) {
     var e = Math.round(Math.abs(centimes) / 100);
-    return (centimes < 0 && e ? "-" : "") + String(e).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    return (centimes < 0 && e ? "-" : "") + String(e).replace(/\B(?=(\d{3})+(?!\d))/g, "\u202f");   // espace fine insécable, comme M.affiche
   }
 
   function calcule() {
@@ -335,7 +335,7 @@
     $("vide").hidden = !blocage;
     $("vide").textContent = blocage;
     note = M.aLaLigne(note);   // une phrase par ligne, à l'écran comme dans la copie
-    $("note").textContent = note || "La note s'affichera une fois le contenu du compte collé.";
+    M.afficheNote($("note"), note || "La note s'affichera une fois le contenu du compte collé.");
     $("copier").disabled = !note;
     $("pdf").disabled = !dernier;
     $("etat").textContent = "";

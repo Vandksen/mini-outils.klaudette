@@ -145,7 +145,7 @@
       $("parJour").textContent = "—";
     }
     note = M.aLaLigne(note);   // une phrase par ligne, à l'écran comme dans la copie
-    $("note").textContent = note || "La note s'affichera une fois la configuration complète.";
+    M.afficheNote($("note"), note || "La note s'affichera une fois la configuration complète.");
     $("copier").disabled = !note;
     $("etat").textContent = "";
 

@@ -244,7 +244,7 @@
     radio: { nom: "Électroradiologiste qualifié", seuils: [15200, 24350, 33500, 41150, 48750, 51800, 57900, 64000] }
   };
 
-  function entier(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
+  function entier(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "\u202f"); }   // espace fine insécable, comme M.affiche
   function euros(c) { return entier(Math.round(c / 100)) + " €"; }
   function tranche(seuils, k) {
     return k === 0 ? "jusqu'à " + entier(seuils[0]) + " €"
@@ -399,7 +399,7 @@
                           : "Pas d'écriture : les déductions se portent ligne 43 de la 2035, sans écriture comptable.";
     }
     note = M.aLaLigne(note);   // une phrase par ligne, à l'écran comme dans la copie
-    $("note").textContent = note || "La note s'affichera une fois la configuration complète.";
+    M.afficheNote($("note"), note || "La note s'affichera une fois la configuration complète.");
     $("copierNote").disabled = !note;
     $("pdf").disabled = !dernier;
     $("etatNote").textContent = "";

@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.24.29";
+  var VERSION = "1.24.30";
 
   // Catégorie « Outils de production » du menu : écritures courantes de la tenue.
   // Pour ajouter un outil : une ligne ici, à sa place dans l'ordre d'affichage.
@@ -620,10 +620,12 @@ window.MiniOutils = (function () {
   // éléments séparés par « ; » devient une liste : son introduction (jusqu'au « : » qui précède
   // la liste) sur une ligne, puis un élément par ligne précédé de « - ». Une coupure ne se fait
   // qu'après un point suivi d'une majuscule : « art. 39 » ou « 6,8 / 9,7 » ne sont pas coupés.
-  // La note copiée garde ces retours à la ligne.
+  // La note copiée garde ces retours à la ligne. Dans une note, les milliers sont séparés par un
+  // point (« 7.200,00 ») : l'espace fine insécable que mettent affiche() et les formats des pages
+  // devient « . » ; une espace ordinaire entre deux nombres (« T2 2025 136,81 ») reste.
   function aLaLigne(texte) {
     if (!texte) return texte;
-    return String(texte).split("\n").map(function (bloc) {
+    return String(texte).replace(/(\d)[\u202f\u00a0](?=\d{3}(?!\d))/g, "$1.").split("\n").map(function (bloc) {
       // Découpe après « . » suivi d'une majuscule, ou après un chiffre suivi de « . » puis d'un
       // chiffre (« au 26/09/2026. 3 écritures »), sans « lookbehind », que d'anciens Safari ignorent.
       var phrases = bloc.replace(/\. (?=[A-ZÀ-ÖØ-ÞŒ«(])/g, ".\u0001").replace(/(\d)\. (?=\d)/g, "$1.\u0001").split("\u0001");
@@ -636,6 +638,49 @@ window.MiniOutils = (function () {
         return intro + elements.map(function (e, k) { return "- " + e + (k < elements.length - 1 ? " ;" : ""); }).join("\n");
       }).join("\n");
     }).join("\n");
+  }
+
+  // Calculs d'une note (« 7 200,00 Euros x 50 % = 3 600,00 Euros », « (8 000 km x 0,357) + 1 395 »),
+  // affichés en bleu gras. Un calcul : des opérandes (montant avec son unité, code de case suivi
+  // d'un montant comme « BK 15 000,00 », mots suivis d'un montant comme « somme des crédits
+  // 20,00 Euros », ou mot seul comme « solde ») reliés par x, /, +, - ou =, avec au moins un =,
+  // un x ou un / : « compte 445660 - Restaurant » ou « 13/06/2026 » ne sont pas des calculs.
+  var CALCUL = (function () {
+    var nb = "\\(*\\d+(?:[. \\u202f\\u00a0]\\d{3})*(?:,\\d+)?(?: ?(?:Euros|€|%|km|jours?|lavages?|ans))?\\)*";
+    var mots = "[a-zà-ÿœ']+(?: [a-zà-ÿœ']+){0,3}";
+    // Le premier opérande n'est jamais précédé de mots (« coefficients 6,8 / 9,7 » -> « 6,8 / 9,7 ») ;
+    // les suivants peuvent l'être (« - somme des crédits 20,00 Euros », « - abattement de 26 % … »).
+    var premier = "(?:\\(*[A-Z]{2} " + nb + "|" + nb + "|\\(*[a-zà-ÿœ]+\\)*)";
+    var operande = "(?:\\(*[A-Z]{2} " + nb + "|\\(*" + mots + " " + nb + "(?: " + nb + ")?|" + nb + "|\\(*[a-zà-ÿœ]+\\)*)";
+    return new RegExp(premier + "(?: (?:x|×|/|\\+|-|=) " + operande + ")+", "g");
+  })();
+  // Petits mots qu'un calcul ne garde pas en tête (« soit 48 lavages x 4,00 » -> « 48 lavages… »).
+  var MOTS_VIDES = /^(?:(?:de|du|des|d'|le|la|les|l'|à|au|aux|pour|par|sur|en|et|soit|porté|portée|portés|portées) )+/;
+  function calculs(texte) {
+    var morceaux = [], debut = 0, m;
+    CALCUL.lastIndex = 0;
+    while ((m = CALCUL.exec(texte))) {
+      var i = m.index, t = m[0];
+      // Pas de départ au milieu d'un mot (« omme des… » dans « Somme des… »).
+      if (i > 0 && /[A-Za-zÀ-ÿœ']/.test(texte.charAt(i - 1))) { CALCUL.lastIndex = i + 1; continue; }
+      if (!/ (?:=|x|×|\/) /.test(t) || !/\d/.test(t)) continue;
+      var vide = t.match(MOTS_VIDES);
+      if (vide) { i += vide[0].length; t = t.slice(vide[0].length); }
+      morceaux.push({ texte: texte.slice(debut, i) }, { texte: t, calcul: true });
+      debut = i + t.length;
+    }
+    morceaux.push({ texte: texte.slice(debut) });
+    return morceaux;
+  }
+  // Affiche une note dans son cadre : texte brut (retours à la ligne compris), calculs en
+  // <strong class="calcul">. Rien n'est interprété comme du HTML.
+  function afficheNote(cadre, texte) {
+    cadre.textContent = "";
+    calculs(String(texte || "")).forEach(function (m) {
+      if (!m.texte) return;
+      if (m.calcul) { var s = document.createElement("strong"); s.className = "calcul"; s.textContent = m.texte; cadre.appendChild(s); }
+      else cadre.appendChild(document.createTextNode(m.texte));
+    });
   }
 
   // Second menu repliable des pages du référentiel (colonne #filtres) : un chevron en haut de
@@ -1130,5 +1175,5 @@ window.MiniOutils = (function () {
 
   return { VERSION: VERSION, $: $, centimes: centimes, deux: deux, code6: code6, affiche: affiche, lireDate: lireDate,
            decale: decale, dateFr: dateFr, copierTexte: copierTexte, fete: fete, tempsGagne: tempsGagne, verifieVersion: verifieVersion, rendre: rendre, texteACopier: texteACopier, brancher: brancher,
-           secondMenu: secondMenu, aLaLigne: aLaLigne };
+           secondMenu: secondMenu, aLaLigne: aLaLigne, afficheNote: afficheNote, calculs: calculs };
 })();

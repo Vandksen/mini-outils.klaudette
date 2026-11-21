@@ -446,7 +446,7 @@
     }
 
     note = M.aLaLigne(note);   // une phrase par ligne, à l'écran comme dans la copie
-    $("note").textContent = note || "La note s'affichera une fois la ligne de révision cochée.";
+    M.afficheNote($("note"), note || "La note s'affichera une fois la ligne de révision cochée.");
     $("copierNote").disabled = !note;
     $("pdf").disabled = !dernier;
     $("etatNote").textContent = "";

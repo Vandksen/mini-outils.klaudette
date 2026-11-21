@@ -404,7 +404,7 @@ D&#9;626000&#9;Frais postaux et télécommunications&#9;&#9;&#9;1 320,00&#9;1 29
 
     $("copier").disabled = !synthese;
     synthese = M.aLaLigne(synthese);   // une phrase par ligne, à l'écran comme dans la copie
-    $("note").textContent = synthese || "La note s'affichera une fois la balance collée.";
+    M.afficheNote($("note"), synthese || "La note s'affichera une fois la balance collée.");
     $("etatPdf").textContent = "";
     $("pdf").disabled = !dernier;
     $("etat").textContent = "";

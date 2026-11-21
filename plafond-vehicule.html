@@ -255,7 +255,7 @@
     var fin = new Date(d.a, d.m, 0).getDate();
     return (d.m - 1) * 30 + (d.j === fin ? 30 : Math.min(d.j, 30));
   }
-  function entier(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
+  function entier(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "\u202f"); }   // espace fine insécable, comme M.affiche
   function pourcent(c) { return M.affiche(c).replace(/,00$/, "").replace(/(,\d)0$/, "$1") + " %"; }
 
   function calcule() {
@@ -441,7 +441,7 @@
                       : "Pas d'écriture : la part non déductible des loyers se réintègre ligne 36 de la 2035.";
     }
     note = M.aLaLigne(note);   // une phrase par ligne, à l'écran comme dans la copie
-    $("note").textContent = note || "La note s'affichera une fois la configuration complète.";
+    M.afficheNote($("note"), note || "La note s'affichera une fois la configuration complète.");
     $("copierNote").disabled = !note;
     $("pdf").disabled = !dernier;
     $("etatNote").textContent = "";

@@ -193,13 +193,31 @@
   var note = "";
   var dernier = null;   // dernier calcul valide, repris par le justificatif PDF
 
-  // Exemple fictif de départ : un compte courant d'associé sur l'année, au format collé.
-  $("source").value = [
-    ["01/01/2026", "AN", "455100", "AN", "Report à nouveau", "", "50000,00"],
-    ["15/03/2026", "BQ", "455100", "VIR01", "Apport en compte courant", "", "20000,00"],
-    ["30/06/2026", "BQ", "455100", "VIR02", "Remboursement partiel", "10000,00", ""],
-    ["15/10/2026", "BQ", "455100", "VIR03", "Apport en compte courant", "", "5000,00"]
-  ].map(function (l) { return l.join(TAB); }).join(SAUT);
+  // Exemples fictifs de départ, un par nature de compte, au format collé : un compte courant
+  // d'associé se lit au crédit, un compte à terme au débit. Les deux portent les mêmes
+  // montants, donc les mêmes intérêts.
+  var EXEMPLES = {
+    cca: [
+      ["01/01/2026", "AN", "455100", "AN", "Report à nouveau", "", "50000,00"],
+      ["15/03/2026", "BQ", "455100", "VIR01", "Apport en compte courant", "", "20000,00"],
+      ["30/06/2026", "BQ", "455100", "VIR02", "Remboursement partiel", "10000,00", ""],
+      ["15/10/2026", "BQ", "455100", "VIR03", "Apport en compte courant", "", "5000,00"]
+    ],
+    cat: [
+      ["01/01/2026", "AN", "512500", "AN", "Report à nouveau", "50000,00", ""],
+      ["15/03/2026", "BQ", "512500", "VIR01", "Versement sur compte à terme", "20000,00", ""],
+      ["30/06/2026", "BQ", "512500", "VIR02", "Retrait partiel", "", "10000,00"],
+      ["15/10/2026", "BQ", "512500", "VIR03", "Versement sur compte à terme", "5000,00", ""]
+    ]
+  };
+  var exemple = function (nature) { return EXEMPLES[nature].map(function (l) { return l.join(TAB); }).join(SAUT); };
+  $("source").value = exemple($("nature").value);
+  // Changer de nature remplace l'exemple de l'autre nature, sans toucher à un collage de
+  // l'utilisateur : sinon l'exemple, lu dans le mauvais sens, donne un solde négatif et 0 €.
+  $("nature").addEventListener("change", function () {
+    var autre = $("nature").value === "cat" ? "cca" : "cat";
+    if ($("source").value.trim() === exemple(autre).trim()) $("source").value = exemple($("nature").value);
+  });
 
   // Place des colonnes (à partir de 0) ; -1 : colonne absente.
   // Format de l'outil : date, journal, compte, pièce, libellé, débit, crédit.
@@ -313,19 +331,23 @@
     if (!blocage && !lues) blocage = "Collez le contenu du compte dans le cadre « Contenu du compte ».";
     else if (!blocage && !lignes.length) blocage = "Aucune ligne exploitable avant la clôture : vérifiez le format collé et la date de clôture.";
 
-    // Soldes successifs : le mouvement d'une ligne compte à partir de sa date.
+    // Soldes successifs : le mouvement d'une ligne compte à partir de sa date. Les lignes
+    // antérieures au début du calcul ou datées de ce jour-là (report à nouveau) forment le
+    // solde d'ouverture.
     var periodes = [], total = 0, ouverture = 0, soldeCourant = 0, negatif = false, cumulJours = 0;
     if (!blocage) {
       var d0 = jour(debut), fin = jour(cloture) + 1;   // le jour de clôture porte intérêts
       lignes.sort(function (a, b) { return a.n - b.n; });
-      lignes.forEach(function (l) { if (l.n < d0) ouverture += l.mouvement; });
+      lignes.forEach(function (l) { if (l.n <= d0) ouverture += l.mouvement; });
       soldeCourant = ouverture;
       var dates = [];
-      lignes.forEach(function (l) { if (l.n >= d0 && dates.indexOf(l.n) === -1) dates.push(l.n); });
+      lignes.forEach(function (l) { if (l.n > d0 && dates.indexOf(l.n) === -1) dates.push(l.n); });
       var curseur = d0;
       dates.concat([fin]).forEach(function (n) {
         if (n > curseur) {
-          var jours = n - curseur, interets = soldeCourant > 0 ? soldeCourant * t / 100 * jours / base : 0;
+          // Intérêts de la période arrondis au centime : le total est la somme des montants
+          // affichés, et le tableau tombe juste.
+          var jours = n - curseur, interets = soldeCourant > 0 ? Math.round(soldeCourant * t / 100 * jours / base) : 0;
           if (soldeCourant < 0) negatif = true;
           periodes.push({ du: deJour(curseur), au: deJour(n - 1), jours: jours, solde: soldeCourant, interets: interets });
           total += interets; cumulJours += jours * soldeCourant;
@@ -333,7 +355,6 @@
         }
         lignes.forEach(function (l) { if (l.n === n) soldeCourant += l.mouvement; });
       });
-      total = Math.round(total);
       if (negatif) alertes.push("Le solde passe " + (cca ? "débiteur" : "créditeur") + " sur une partie de la période : ces jours-là ne portent pas d'intérêts. Vérifiez la nature du compte choisie.");
     }
 

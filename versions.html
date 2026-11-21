@@ -40,6 +40,15 @@
 
     <!-- À chaque publication : ajouter un bloc en tête, avec le même numéro que VERSION dans commun.js. -->
     <section class="version-bloc">
+      <h2><span class="numero">1.24.8</span> 21 novembre 2026</h2>
+      <ul>
+        <li>Intérêts courus : l'exemple de départ suit la nature du compte. Choisir « Compte à terme » affichait 0,00 € parce que l'exemple, un compte courant d'associé, était lu dans le mauvais sens ; il est désormais remplacé par un exemple de compte à terme (même résultat, 2 480,00 €), sans toucher à un contenu collé.</li>
+        <li>Intérêts courus : une ligne datée du premier jour du calcul, comme le report à nouveau, compte dans le solde d'ouverture, qui n'affiche plus 0,00.</li>
+        <li>Intérêts courus : les intérêts de chaque période sont arrondis au centime et le total est leur somme, pour que le tableau et le justificatif tombent juste.</li>
+      </ul>
+    </section>
+
+    <section class="version-bloc">
       <h2><span class="numero">1.24.7</span> 21 novembre 2026</h2>
       <ul>
         <li>Dans les justificatifs PDF, l'icône « M » du site remplace la mention MINI-OUTILS en haut à gauche ; un clic dessus ouvre la page d'accueil du site.</li>

@@ -158,7 +158,7 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
 .encart {
   position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; gap: 6px;
   aspect-ratio: 1 / 1; padding: 14px; border-radius: 14px; text-decoration: none; color: var(--on-blue);
-  background: #1136DB url("images/fond-tempete.jpg") 78% 70% / 230% auto no-repeat;
+  background: #1136DB url("images/fond-tempete.webp") 78% 70% / 230% auto no-repeat;
   border: 1px solid rgba(248, 243, 230, .28);
 }
 /* Les catégories du menu étant repliées d'office, l'encart tient presque toujours. Il ne
@@ -245,6 +245,8 @@ h1 em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-
   padding: 9px 0; border-bottom: 1px solid var(--line);
 }
 .champ:last-child { border-bottom: 0; }
+/* Dernier champ d'un cadre, même suivi de la liste des alertes (souvent vide) : pas de trait en bas du cadre. */
+.panel > .champ:last-of-type { border-bottom: 0; }
 /* Libellés des champs à l'encre foncée ; leur aide (« Facultatif… ») en gris plein, sans transparence. */
 .champ label, .champ .etiquette {
   font-family: var(--mono); font-size: 11px; text-transform: uppercase;
@@ -521,7 +523,7 @@ a.carte:hover { box-shadow: 0 24px 44px -24px rgba(17, 54, 219, .45), 0 2px 6px 
 .final {
   position: relative; overflow: hidden; border-radius: 10px; min-height: 440px;
   display: flex; align-items: center; padding: 48px 44px;
-  background: #1136DB url("images/fond-tempete.jpg") center 78% / cover no-repeat;
+  background: #1136DB url("images/fond-tempete.webp") center 78% / cover no-repeat;
   color: var(--on-blue);
 }
 .final::before {

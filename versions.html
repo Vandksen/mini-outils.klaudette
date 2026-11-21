@@ -21,6 +21,10 @@
 <meta property="og:image:alt" content="Un navire dans la tempête, avec le slogan « Quand la période fiscale se déchaîne, gardez le cap. »">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="commun.css">
+<!-- Polices de tout écran, demandées dès l'en-tête plutôt qu'après la lecture du style. -->
+<link rel="preload" href="polices/inter-tight-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="polices/jetbrains-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="polices/instrument-serif-italique-latin.woff2" as="font" type="font/woff2" crossorigin>
 </head>
 <body>
 
@@ -39,6 +43,20 @@
     <p class="lead"><strong>But de la page :</strong> garder la trace de ce qui change d'une version à l'autre. Le numéro de la version installée figure en bas du menu ; la plus récente est en tête de cette page.</p>
 
     <!-- À chaque publication : ajouter un bloc en tête, avec le même numéro que VERSION dans commun.js. -->
+    <section class="version-bloc">
+      <h2><span class="numero">1.24.35</span> 21 novembre 2026</h2>
+      <ul>
+        <li>Chargement plus rapide : la vérification des mises à jour lit un petit fichier version.json au lieu de retélécharger tout le script commun à chaque page ; l'image de la tempête passe en WebP (40 Ko au lieu de 140 Ko) ; la page « Goodies » montre un aperçu léger du fond d'écran tempête (21 Ko au lieu de 468 Ko) ; les polices principales sont demandées dès l'en-tête des pages.</li>
+      </ul>
+    </section>
+
+    <section class="version-bloc">
+      <h2><span class="numero">1.24.34</span> 21 novembre 2026</h2>
+      <ul>
+        <li>Plus de trait sous le dernier champ d'un cadre (« 01 — Configuration » et les autres).</li>
+      </ul>
+    </section>
+
     <section class="version-bloc">
       <h2><span class="numero">1.24.33</span> 21 novembre 2026</h2>
       <ul>

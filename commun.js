@@ -11,8 +11,10 @@ window.MiniOutils = (function () {
   // dernier chiffre pour une retouche, chiffre du milieu pour un nouvel outil.
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
+  // Mettre le MÊME numéro dans version.json : c'est ce petit fichier que les pages ouvertes
+  // consultent pour savoir si une nouvelle version est publiée.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.24.33";
+  var VERSION = "1.24.35";
 
   // Catégorie « Outils de production » du menu : écritures courantes de la tenue.
   // Pour ajouter un outil : une ligne ici, à sa place dans l'ordre d'affichage.
@@ -980,10 +982,12 @@ window.MiniOutils = (function () {
   var DELAI_MAJ = 60000, majPrevue = null;   // une minute entre la détection et le rechargement
   function verifieVersion() {
     if (!enLigne) return;
-    fetch("commun.js", { cache: "no-store" })
-      .then(function (r) { return r.ok ? r.text() : ""; })
-      .then(function (texte) {
-        var m = /var VERSION = "([^"]+)"/.exec(texte);
+    // Le numéro publié est lu dans version.json (quelques octets) plutôt qu'en retéléchargeant
+    // commun.js en entier à chaque page vue.
+    fetch("version.json", { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : {}; })
+      .then(function (publie) {
+        var m = publie && publie.version ? [null, String(publie.version)] : null;
         if (!m || m[1] === VERSION) return;
         var deja = null;
         try { deja = sessionStorage.getItem("mini-outils-maj"); } catch (e) {}

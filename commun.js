@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.24.2";
+  var VERSION = "1.24.3";
 
   // Catégorie « Outils de production » du menu : écritures courantes de la tenue.
   // Pour ajouter un outil : une ligne ici, à sa place dans l'ordre d'affichage.
@@ -153,6 +153,8 @@ window.MiniOutils = (function () {
   // Remplit <nav id="menu"> et branche l'ouverture du menu sur petit écran.
   // Le site et les outils sont en bêta : étiquette sur le logo du menu et dans la barre mobile.
   var BETA = '<span class="beta">Bêta</span>';
+  // Raccourci de la recherche du menu, écrit comme sur le clavier du poste : ⌘K sur Mac, Ctrl+K ailleurs.
+  var RACCOURCI = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent) ? "⌘K" : "Ctrl+K";
   function menu() {
     var nav = $("menu");
     if (!nav) return;
@@ -172,7 +174,7 @@ window.MiniOutils = (function () {
     nav.innerHTML =
       '<a class="logo" href="index.html" title="Accueil" aria-label="Mini-outils, version bêta, accueil"><span class="logo-mot">' + MOT_LOGO + BETA + '</span></a>' +
       '<div class="recherche-menu"><input id="recherche-menu" type="search" autocomplete="off" spellcheck="false" ' +
-      'placeholder="Rechercher un outil…" aria-label="Rechercher un outil dans le menu" aria-keyshortcuts="Control+K Meta+K" title="Ctrl+K ou ⌘K"></div>' +
+      'placeholder="Rechercher un outil (' + RACCOURCI + ')" aria-label="Rechercher un outil dans le menu" aria-keyshortcuts="Control+K Meta+K" title="Ctrl+K ou ⌘K"></div>' +
       '<div class="defile">' +
       '<a class="entree" href="index.html"' + (page === "index.html" ? ' aria-current="page"' : '') +
       ' title="Accueil"><span class="num">' + ICONE_ACCUEIL + '</span><span class="lib">Accueil</span></a>' +

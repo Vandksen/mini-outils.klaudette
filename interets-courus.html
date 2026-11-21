@@ -112,9 +112,7 @@
           <div class="champ"><span class="etiquette">Solde moyen</span><span class="valeur droite" id="moyen"></span></div>
           <div class="champ"><span class="etiquette">Lignes retenues</span><span class="valeur droite" id="nbRetenues"></span></div>
           <div class="champ avecMax"><span class="etiquette">Taux maximal déductible</span><span class="valeur droite" id="tauxMaxRetenu"></span></div>
-          <div class="champ avecMax"><span class="etiquette">Intérêts non déductibles</span><span class="valeur droite" id="nonDeductible"></span></div>
-          <div class="champ avecMax"><span class="etiquette">2033-B (régime simplifié)<span class="aide">Case 247, à inclure en ligne 330</span></span><span class="valeur droite" id="case2033"></span></div>
-          <div class="champ avecMax"><span class="etiquette">2058-A (régime normal)<span class="aide">Case SU, à inclure en ligne WQ</span></span><span class="valeur droite" id="case2058"></span></div>
+          <div class="champ avecMax libelle-large"><span class="etiquette">Intérêts non déductibles<span class="aide">À réintégrer : 2033-B case 247 (dans la ligne 330), 2058-A case SU (dans la ligne WQ)</span></span><span class="valeur droite" id="nonDeductible"></span></div>
         </section>
 
         <section class="panel">
@@ -428,7 +426,6 @@
     $("nbRetenues").textContent = String(lignes.length) + " sur " + lues;
     $("tauxMaxRetenu").textContent = max ? pct(max.taux) + (max.provisoire ? " (provisoire)" : "") : "—";
     $("nonDeductible").textContent = dernier && max ? M.affiche(nonDeductible) + " €" : "—";
-    $("case2033").textContent = $("case2058").textContent = dernier && max ? (nonDeductible ? M.affiche(nonDeductible) + " €" : "Rien à réintégrer") : "—";
     $("aideTaux").textContent = cca && max ? "Taux maximal déductible : " + pct(max.taux) : "Taux prévu par la convention";
     $("note").textContent = note || "La note s'affichera une fois le contenu du compte collé.";
     $("copierNote").disabled = !note;

@@ -344,6 +344,8 @@ h1 em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-
 /* Sélecteur à segments : deux choix nommés (ou plus) côte à côte, le choix actif en bleu.
    Construit par commun.js à partir d'une liste déroulante de classe « segments ». */
 .champ.pleine { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+/* Ligne de résultat au libellé long (aide détaillée) : le libellé prend la largeur, le montant reste à droite. */
+.champ.libelle-large { grid-template-columns: minmax(0, 1fr) auto; }
 div.segments { display: flex; gap: 2px; padding: 3px; border-radius: 9999px; background: var(--cream); border: 1px solid var(--line); }
 div.segments button {
   flex: 1 1 0; min-width: 0; min-height: 30px; padding: 4px 10px; border: 0; border-radius: 9999px; cursor: pointer;

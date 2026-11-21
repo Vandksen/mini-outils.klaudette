@@ -102,12 +102,21 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
 /* Un nom de logiciel garde sa casse, même dans un libellé en majuscules. */
 .nom-propre { text-transform: none; }
 /* Recherche du menu : un champ en pilule sous le logo, qui filtre les entrées à la frappe. */
-.recherche-menu { padding: 0 20px 16px; }
+.recherche-menu { position: relative; padding: 0 20px 16px; }
 #recherche-menu {
-  display: block; width: 100%; height: 36px; padding: 0 14px; border-radius: 9999px;
+  display: block; width: 100%; height: 36px; padding: 0 38px 0 14px; border-radius: 9999px;
   font-family: var(--mono); font-size: 12px; color: var(--on-blue);
   background: rgba(248, 243, 230, .10); border: 1px solid rgba(248, 243, 230, .30);
 }
+#recherche-menu::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+/* Croix crème qui annule la recherche, à droite dans le champ. */
+.effacer-recherche {
+  position: absolute; top: 9px; right: 29px; display: grid; place-items: center; width: 18px; height: 18px;
+  padding: 0; border: 0; background: none; color: var(--on-blue); cursor: pointer; opacity: .9;
+}
+.effacer-recherche[hidden] { display: none; }
+.effacer-recherche:hover { opacity: 1; }
+.effacer-recherche:focus-visible { outline: 2px solid var(--on-blue); outline-offset: 2px; border-radius: 4px; }
 #recherche-menu::placeholder { color: var(--on-blue-muted); opacity: .85; }
 #recherche-menu:focus { outline: 2px solid var(--on-blue); outline-offset: 1px; background: rgba(248, 243, 230, .16); }
 #menu h2[hidden] { display: none; }

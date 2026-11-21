@@ -62,10 +62,6 @@
         <label for="cloture">Date de clôture de l'exercice</label>
         <input id="cloture" type="date" value="2025-12-31">
       </div>
-      <div>
-        <label for="dossier">Dossier (facultatif, pour le PDF)</label>
-        <input id="dossier" type="text" value="Restaurant MIRABELLE">
-      </div>
     </div>
     <p class="resultat-taux" id="resultatTaux" role="status"></p>
 
@@ -106,12 +102,11 @@
 
   // Justificatif PDF d'une période : le taux, son champ, sa base légale et sa source.
   function justificatif(l) {
-    var dossier = $("dossier").value.trim(), cloture = lit($("cloture").value);
+    var cloture = lit($("cloture").value);
     var dedans = cloture && l[0] <= iso(cloture) && iso(cloture) <= l[1];
     var f = window.MiniPdf.fiche("Taux maximal des intérêts déductibles");
     f.section("Période");
-    if (dossier) f.ligne("Dossier", dossier);
-    if (dedans) f.ligne("Clôture de l'exercice du dossier", M.dateFr(cloture));
+    if (dedans) f.ligne("Clôture de l'exercice", M.dateFr(cloture));
     f.ligne("Clôtures concernées", "du " + longue(lit(l[0])) + " au " + longue(lit(l[1])))
      .ligne("Durée de l'exercice", "12 mois");
     f.total("Taux maximal des intérêts déductibles", pct(l[2]));
@@ -154,7 +149,7 @@
       b.title = "Télécharger le justificatif de cette période";
       b.setAttribute("aria-label", "Télécharger le justificatif PDF, clôtures " + periode(l).toLowerCase() + ", " + pct(l[2]));
       b.addEventListener("click", function () {
-        var nom = window.MiniPdf.nomFichier(["Taux max interets", l[0], l[1], $("dossier").value.trim()].filter(Boolean).join(" "));
+        var nom = window.MiniPdf.nomFichier(["Taux max interets", l[0], l[1]].join(" "));
         justificatif(l).telecharger(nom + ".pdf");
       });
       td.appendChild(b);
@@ -178,7 +173,7 @@
     s.append("Source : ", a, verifie() ? ", vérifiée le " + verifie() + "." : ".");
   }
   window.justificatifPdf = function () { var l = TAUX.lignes[TAUX.lignes.length - 1]; return l ? justificatif(l) : null; };   // pour les contrôles
-  ["cloture", "dossier"].forEach(function (id) { $(id).addEventListener("input", affiche); $(id).addEventListener("change", affiche); });
+  ["cloture"].forEach(function (id) { $(id).addEventListener("input", affiche); $(id).addEventListener("change", affiche); });
   affiche();
 })();
 </script>

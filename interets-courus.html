@@ -427,6 +427,7 @@
     $("tauxMaxRetenu").textContent = max ? pct(max.taux) + (max.provisoire ? " (provisoire)" : "") : "—";
     $("nonDeductible").textContent = dernier && max ? M.affiche(nonDeductible) + " €" : "—";
     $("aideTaux").textContent = cca && max ? "Taux maximal déductible : " + pct(max.taux) : "Taux prévu par la convention";
+    note = M.aLaLigne(note);   // une phrase par ligne, à l'écran comme dans la copie
     $("note").textContent = note || "La note s'affichera une fois le contenu du compte collé.";
     $("copierNote").disabled = !note;
     $("pdf").disabled = !dernier;

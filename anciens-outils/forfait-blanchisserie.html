@@ -203,6 +203,7 @@
       alertes.unshift(blocage);
     }
 
+    note = M.aLaLigne(note);   // une phrase par ligne, à l'écran comme dans la copie
     $("note").textContent = note || "La note s'affichera une fois la configuration complète.";
     $("copier").disabled = !note;
     $("pdf").disabled = !dernier;

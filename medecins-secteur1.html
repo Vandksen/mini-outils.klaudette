@@ -398,6 +398,7 @@
       blocage = v.option2 ? "Pas d'écriture : renseignez les frais réels couverts par les 2 % déjà passés en charges pour les reclasser au compte de l'exploitant."
                           : "Pas d'écriture : les déductions se portent ligne 43 de la 2035, sans écriture comptable.";
     }
+    note = M.aLaLigne(note);   // une phrase par ligne, à l'écran comme dans la copie
     $("note").textContent = note || "La note s'affichera une fois la configuration complète.";
     $("copierNote").disabled = !note;
     $("pdf").disabled = !dernier;

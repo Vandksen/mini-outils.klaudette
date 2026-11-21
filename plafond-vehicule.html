@@ -440,6 +440,7 @@
       blocage = achat ? "Pas d'écriture : la réintégration se porte ligne 36 de la 2035. Activez « Écriture de dotation » pour obtenir la dotation de l'exercice."
                       : "Pas d'écriture : la part non déductible des loyers se réintègre ligne 36 de la 2035.";
     }
+    note = M.aLaLigne(note);   // une phrase par ligne, à l'écran comme dans la copie
     $("note").textContent = note || "La note s'affichera une fois la configuration complète.";
     $("copierNote").disabled = !note;
     $("pdf").disabled = !dernier;

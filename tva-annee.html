@@ -334,6 +334,7 @@
     $("periode").textContent = blocage || !periode ? "—" : periode;
     $("vide").hidden = !blocage;
     $("vide").textContent = blocage;
+    note = M.aLaLigne(note);   // une phrase par ligne, à l'écran comme dans la copie
     $("note").textContent = note || "La note s'affichera une fois le contenu du compte collé.";
     $("copier").disabled = !note;
     $("pdf").disabled = !dernier;

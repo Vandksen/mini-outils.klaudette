@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.24.28";
+  var VERSION = "1.24.29";
 
   // Catégorie « Outils de production » du menu : écritures courantes de la tenue.
   // Pour ajouter un outil : une ligne ici, à sa place dans l'ordre d'affichage.
@@ -616,6 +616,28 @@ window.MiniOutils = (function () {
     });
   }
 
+  // Note de calcul lisible : une phrase par ligne. Une phrase qui énumère au moins trois
+  // éléments séparés par « ; » devient une liste : son introduction (jusqu'au « : » qui précède
+  // la liste) sur une ligne, puis un élément par ligne précédé de « - ». Une coupure ne se fait
+  // qu'après un point suivi d'une majuscule : « art. 39 » ou « 6,8 / 9,7 » ne sont pas coupés.
+  // La note copiée garde ces retours à la ligne.
+  function aLaLigne(texte) {
+    if (!texte) return texte;
+    return String(texte).split("\n").map(function (bloc) {
+      // Découpe après « . » suivi d'une majuscule, ou après un chiffre suivi de « . » puis d'un
+      // chiffre (« au 26/09/2026. 3 écritures »), sans « lookbehind », que d'anciens Safari ignorent.
+      var phrases = bloc.replace(/\. (?=[A-ZÀ-ÖØ-ÞŒ«(])/g, ".\u0001").replace(/(\d)\. (?=\d)/g, "$1.\u0001").split("\u0001");
+      return phrases.map(function (phrase) {
+        var elements = phrase.split(" ; ");
+        if (elements.length < 2) return phrase;
+        if (elements.length < 3) return elements.join(" ;\n");
+        var deux = elements[0].lastIndexOf(" : "), intro = "";
+        if (deux !== -1) { intro = elements[0].slice(0, deux) + " :\n"; elements[0] = elements[0].slice(deux + 3); }
+        return intro + elements.map(function (e, k) { return "- " + e + (k < elements.length - 1 ? " ;" : ""); }).join("\n");
+      }).join("\n");
+    }).join("\n");
+  }
+
   // Second menu repliable des pages du référentiel (colonne #filtres) : un chevron en haut de
   // la colonne la replie sur ordinateur. Le champ de recherche (le même, avec sa croix) passe
   // alors au-dessus de la liste (#liste), avec le nombre de résultats, un bouton « Filtres »
@@ -1108,5 +1130,5 @@ window.MiniOutils = (function () {
 
   return { VERSION: VERSION, $: $, centimes: centimes, deux: deux, code6: code6, affiche: affiche, lireDate: lireDate,
            decale: decale, dateFr: dateFr, copierTexte: copierTexte, fete: fete, tempsGagne: tempsGagne, verifieVersion: verifieVersion, rendre: rendre, texteACopier: texteACopier, brancher: brancher,
-           secondMenu: secondMenu };
+           secondMenu: secondMenu, aLaLigne: aLaLigne };
 })();

@@ -34,12 +34,13 @@
 .composants .fixe { display: flex; align-items: center; height: 38px; padding: 0 10px; font-family: var(--mono); font-size: 13px; color: var(--muted); border: 1px dashed var(--line); border-radius: 8px; }
 .composants .fixe.droite { justify-content: flex-end; }
 .composants .separateur { grid-column: 1 / -1; height: 1px; margin: 4px 0; background: var(--line); }
-/* Contrôle des 100 % sous le tableau : bleu quand le compte est bon, sur fond grisé sinon. */
+/* Contrôle des 100 % sous le tableau : bleu quand le compte est bon, rouge sinon. */
 .controle-pct { display: flex; justify-content: space-between; gap: 12px; margin: 14px 0 0; padding: 10px 12px; border-radius: 8px; font-family: var(--mono); font-size: 12px; color: var(--muted); background: var(--cream); }
 .controle-pct strong { font-weight: 700; color: var(--ink); }
 .controle-pct.ok { color: var(--blue); background: rgba(17, 54, 219, .07); }
 .controle-pct.ok strong { color: var(--blue); }
-.controle-pct.ecart { color: var(--ink); background: var(--chip); }
+.controle-pct.ecart { color: var(--rouge); background: rgba(198, 40, 40, .08); box-shadow: inset 0 0 0 1px rgba(198, 40, 40, .35); }
+.controle-pct.ecart strong { color: var(--rouge); }
 </style>
 </head>
 <body>
@@ -362,6 +363,7 @@
       $("totalBien").textContent = montantsValides && valeur ? M.affiche(valeur + droits + honoraires) + " €" : "—";
     }
 
+    note = M.aLaLigne(note);   // une phrase par ligne, à l'écran comme dans la copie
     $("note").textContent = note || "La note s'affichera une fois la configuration complète.";
     $("copierNote").disabled = !note;
     $("pdf").disabled = !dernier;

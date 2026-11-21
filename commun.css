@@ -29,6 +29,7 @@
   --cream: #F4EFE3;
   --paper: #FCF9F1;
   --chip: #EBE6D9;
+  --rouge: #C62828;   /* anomalie à corriger (contrôle des 100 % d'une décomposition) */
   --line: #E0DACA;
   --on-blue: #F8F3E6;
   --on-blue-muted: #DCE1FA;
@@ -454,7 +455,8 @@ tbody tr.retenu td { color: var(--blue); font-weight: 600; }
 .vide { background: var(--cream); border-radius: 8px; padding: 18px 20px; margin-top: 12px; }
 
 .resultat { font-size: clamp(44px, 6vw, 68px); line-height: 1; font-weight: 500; letter-spacing: -0.035em; color: var(--blue); margin: 6px 0 22px; }
-.note { background: var(--cream); border-radius: 8px; padding: 18px 20px; margin: 0; font-size: 16px; }
+/* Note de calcul : les retours à la ligne du texte (une phrase, un élément de liste par ligne) sont affichés. */
+.note { background: var(--cream); border-radius: 8px; padding: 18px 20px; margin: 0; font-size: 16px; white-space: pre-line; }
 
 .site-footer { border-top: 1px solid var(--line); }
 .site-footer .conteneur {

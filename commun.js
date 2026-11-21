@@ -1,6 +1,6 @@
 /* Mini-outils — fonctions communes : montants, dates, tableau d'écritures, copie pour ACDCompta.
-   Chaque page attend les éléments d'id : lignes, vide, totDebit, totCredit, equilibre,
-   nbLignes, copier, etat, alertes. */
+   Chaque page attend les éléments d'id : lignes, vide, copier, etat, alertes ; et, si elle
+   affiche le bloc de contrôle, totDebit, totCredit, equilibre, nbLignes. */
 window.MiniOutils = (function () {
   "use strict";
   var $ = function (id) { return document.getElementById(id); };
@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.24.4";
+  var VERSION = "1.24.5";
 
   // Catégorie « Outils de production » du menu : écritures courantes de la tenue.
   // Pour ajouter un outil : une ligne ici, à sa place dans l'ordre d'affichage.
@@ -176,7 +176,7 @@ window.MiniOutils = (function () {
     nav.innerHTML =
       '<a class="logo" href="index.html" title="Accueil" aria-label="Mini-outils, version bêta, accueil"><span class="logo-mot">' + MOT_LOGO + BETA + '</span></a>' +
       '<div class="recherche-menu"><input id="recherche-menu" type="search" autocomplete="off" spellcheck="false" ' +
-      'placeholder="Rechercher un outil (' + RACCOURCI + ')" aria-label="Rechercher un outil dans le menu" aria-keyshortcuts="Control+K Meta+K" title="Ctrl+K ou ⌘K">' +
+      'placeholder="Chercher un outil en cliquant ' + RACCOURCI + '" aria-label="Rechercher un outil dans le menu" aria-keyshortcuts="Control+K Meta+K" title="Ctrl+K ou ⌘K">' +
       '<button type="button" id="effacer-recherche" class="effacer-recherche" aria-label="Annuler la recherche" title="Annuler la recherche" hidden>' +
       ICONE_EFFACER + '</button></div>' +
       '<div class="defile">' +
@@ -395,12 +395,15 @@ window.MiniOutils = (function () {
 
     $("vide").hidden = !blocage;
     $("vide").textContent = blocage || "";
-    $("totDebit").textContent = affiche(totD);
-    $("totCredit").textContent = affiche(totC);
+    // Bloc de contrôle (totaux, équilibre, nombre de lignes) : facultatif, une page peut s'en passer.
+    if ($("totDebit")) $("totDebit").textContent = affiche(totD);
+    if ($("totCredit")) $("totCredit").textContent = affiche(totC);
     var eq = $("equilibre");
-    eq.className = ecritures.length ? (equilibre ? "ok" : "ecart") : "";
-    eq.textContent = ecritures.length ? (equilibre ? "OK" : "Écart de " + affiche(Math.abs(totD - totC))) : "—";
-    $("nbLignes").textContent = ecritures.length;
+    if (eq) {
+      eq.className = ecritures.length ? (equilibre ? "ok" : "ecart") : "";
+      eq.textContent = ecritures.length ? (equilibre ? "OK" : "Écart de " + affiche(Math.abs(totD - totC))) : "—";
+    }
+    if ($("nbLignes")) $("nbLignes").textContent = ecritures.length;
     $("copier").disabled = !ecritures.length;
     $("etat").textContent = "";
 

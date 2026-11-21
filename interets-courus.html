@@ -67,13 +67,6 @@
             <label for="taux">Taux annuel (%)<span class="aide" id="aideTaux">Taux prévu par la convention</span></label>
             <input id="taux" class="droite" type="text" inputmode="decimal" value="4,00">
           </div>
-          <div class="champ pleine">
-            <label for="base">Base de calcul</label>
-            <select id="base" class="segments">
-              <option value="365">365 jours</option>
-              <option value="360">360 jours</option>
-            </select>
-          </div>
           <div class="champ">
             <label for="cptResultat"><span id="libResultat">Compte de charge</span><span class="aide" id="aideResultat">Vide : 661500</span></label>
             <input id="cptResultat" type="text" inputmode="numeric">
@@ -124,7 +117,7 @@
 
         <section class="panel">
           <p class="eyebrow">04 — Calcul par période</p>
-          <p class="aide-bloc">Le solde change à la date de chaque ligne : chaque période porte intérêts au taux annuel, sur le nombre de jours de la période rapporté à la base.</p>
+          <p class="aide-bloc">Le solde change à la date de chaque ligne : chaque période porte intérêts au taux annuel, sur le nombre de jours de la période rapporté à 365 jours.</p>
           <div class="cadre-table">
             <table>
               <thead>
@@ -167,10 +160,6 @@
             </table>
           </div>
           <div class="vide" id="vide" hidden></div>
-          <div class="champ"><span class="etiquette">Total débit</span><span class="valeur droite" id="totDebit"></span></div>
-          <div class="champ"><span class="etiquette">Total crédit</span><span class="valeur droite" id="totCredit"></span></div>
-          <div class="champ"><span class="etiquette">Équilibre</span><span class="valeur droite"><span id="equilibre"></span></span></div>
-          <div class="champ"><span class="etiquette">Lignes générées</span><span class="valeur droite" id="nbLignes"></span></div>
         </section>
       </div>
 
@@ -180,7 +169,7 @@
 
 <footer class="site-footer">
   <div class="conteneur">
-    <span>Intérêts = solde × taux × jours / base, période par période</span>
+    <span>Intérêts = solde × taux × jours / 365, période par période</span>
     <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
   </div>
 </footer>
@@ -194,7 +183,7 @@
   "use strict";
   var M = window.MiniOutils, $ = M.$;
   var TAB = String.fromCharCode(9), SAUT = String.fromCharCode(10);
-  var ids = ["nature", "dossier", "cloture", "debut", "taux", "base", "cptResultat", "cptCourus", "piece", "source"];
+  var ids = ["nature", "dossier", "cloture", "debut", "taux", "cptResultat", "cptCourus", "piece", "source"];
   var TAUX_MAX = (window.DONNEES_MENSUELLES && window.DONNEES_MENSUELLES.tauxMaxDeductible) || { lignes: [] };
   // Comptes proposés : compte courant d'associé créditeur (charge), compte à terme débiteur (produit).
   var NATURES = {
@@ -288,7 +277,7 @@
     Array.prototype.forEach.call(document.querySelectorAll(".avecMax"), function (e) { e.hidden = !cca; });
 
     var alertes = [], blocage = "", ecritures = [];
-    var cloture = M.lireDate(v.cloture), t = taux(v.taux), base = v.base === "360" ? 360 : 365;
+    var cloture = M.lireDate(v.cloture), t = taux(v.taux), base = 365;   // base de calcul fixe : 365 jours
     var debut = v.debut ? M.lireDate(v.debut) : (cloture ? deJour(jour(M.decale(cloture, -12)) + 1) : null);
     if (!cloture) blocage = "Indiquez la date de clôture.";
     else if (!debut) blocage = "La date de début du calcul est illisible.";

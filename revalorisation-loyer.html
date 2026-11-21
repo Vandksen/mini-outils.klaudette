@@ -46,7 +46,7 @@
           <p class="eyebrow">01 — Configuration</p>
           <div class="champ">
             <label for="dossier">Dossier<span class="aide">Facultatif, pour le justificatif PDF</span></label>
-            <input id="dossier" type="text" value="EXEMPLE SARL">
+            <input id="dossier" type="text" value="Restaurant MIRABELLE">
           </div>
           <div class="champ pleine">
             <label for="indice">Indice du bail</label>
@@ -223,7 +223,7 @@
   var cumul = 0, exemple = [TITRES_ACD];
   for (var m = 1; m <= 12; m++) {
     cumul += 250000;
-    exemple.push(["01/" + M.deux(m) + "/2026", "AC", "Bail", "", "SCI EXEMPLE - Loyer 2026." + M.deux(m), "2 500,00", "", "0,00",
+    exemple.push(["01/" + M.deux(m) + "/2026", "AC", "Bail", "", "Henri MARCHAL - Loyer 2026." + M.deux(m), "2 500,00", "", "0,00",
                   M.affiche(cumul), "", "R", "E", "1", "2 500,00", "2 500,00", "", ""]);
   }
   $("source").value = exemple.map(function (l) { return l.join(TAB); }).join(SAUT);

@@ -556,6 +556,13 @@ body.avec-filtres { grid-template-columns: 276px 300px minmax(0, 1fr); }
 }
 #filtres input[type="search"]:focus { outline: 2px solid var(--blue); outline-offset: 1px; border-color: var(--blue); }
 #filtres input::placeholder { color: var(--muted); opacity: .7; }
+/* Croix bleue qui annule la recherche du référentiel, cachée tant que le champ est vide. */
+#filtres .recherche-ref { position: relative; }
+#filtres .recherche-ref input[type="search"] { padding-right: 40px; }
+#filtres .recherche-ref input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+#filtres .recherche-ref .effacer-recherche { top: 11px; right: 12px; color: var(--blue); }
+#filtres .recherche-ref input:placeholder-shown + .effacer-recherche { display: none; }
+#filtres .recherche-ref .effacer-recherche:focus-visible { outline-color: var(--blue); }
 .pcg-categories { display: flex; flex-direction: column; gap: 2px; }
 .pcg-categorie {
   display: flex; align-items: baseline; gap: 10px; width: 100%; padding: 7px 12px; border: 0; border-radius: 9999px; cursor: pointer;

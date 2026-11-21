@@ -12,7 +12,7 @@ window.MiniOutils = (function () {
   // C'est ce numéro qui déclenche la mise à jour automatique des pages déjà ouvertes
   // (voir verifieVersion) : sans changement de numéro, pas de mise à jour.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.24.13";
+  var VERSION = "1.24.14";
 
   // Catégorie « Outils de production » du menu : écritures courantes de la tenue.
   // Pour ajouter un outil : une ligne ici, à sa place dans l'ordre d'affichage.
@@ -591,6 +591,30 @@ window.MiniOutils = (function () {
     document.head.appendChild(lien);
   }
 
+  // Recherche des pages du référentiel (colonne de filtres) : la même croix ronde que la
+  // recherche du menu, en bleu, au bout du champ. Elle n'apparaît que s'il y a du texte
+  // (règle CSS sur le texte d'invite) ; elle vide le champ, comme Échap, et y laisse le curseur.
+  function croixRecherche() {
+    Array.prototype.forEach.call(document.querySelectorAll("#filtres input[type=search]"), function (champ) {
+      var cadre = document.createElement("div");
+      cadre.className = "recherche-ref";
+      champ.parentNode.insertBefore(cadre, champ);
+      cadre.appendChild(champ);
+      var croix = document.createElement("button");
+      croix.type = "button";
+      croix.className = "effacer-recherche";
+      croix.setAttribute("aria-label", "Annuler la recherche");
+      croix.title = "Annuler la recherche";
+      croix.innerHTML = ICONE_EFFACER;
+      cadre.appendChild(croix);
+      var vide = function () { champ.value = ""; champ.dispatchEvent(new Event("input", { bubbles: true })); };
+      croix.addEventListener("click", function () { vide(); champ.focus(); });
+      champ.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && champ.value) { vide(); e.stopPropagation(); }
+      });
+    });
+  }
+
   // Ajoute « Réinitialiser » en tête du premier panneau de saisie : tous les champs
   // reprennent les données de départ de l'outil (exemple compris), puis le calcul est relancé.
   // Ces valeurs sont relevées une fois la page chargée, après que son propre script a rempli
@@ -1002,6 +1026,7 @@ window.MiniOutils = (function () {
   installation();
   icone();
   reinitialisation();
+  croixRecherche();
   lienPage();
 
   return { VERSION: VERSION, $: $, centimes: centimes, deux: deux, code6: code6, affiche: affiche, lireDate: lireDate,

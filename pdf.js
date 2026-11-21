@@ -237,6 +237,27 @@
     return doc;
   }
 
+  // En-tête et pied communs à tous les justificatifs, y compris ceux qu'une page dessine
+  // elle-même avec creer() : bande bleue, icône « M » cliquable vers le site en haut à gauche,
+  // mention à droite ; filet, date et heure de production en bas à gauche.
+  function entete(doc, mention, titre) {
+    var G = 48, D = LARGEUR - 48;
+    doc.rectangle(0, 0, LARGEUR, 5, "bleu");
+    doc.iconeM(G - 2, 26, 22).lien(G - 2, 26, 22, 22, SITE);
+    doc.texte(D, 44, mention, { taille: 8, couleur: "gris", align: "droite" });
+    if (titre) doc.texte(G, 78, titre, { taille: 22, gras: true });
+    return doc;
+  }
+  function pied(doc, jour, droite) {
+    var G = 48, D = LARGEUR - 48, deux = function (n) { return (n < 10 ? "0" : "") + n; };
+    doc.trait(G, 792, D, 792);
+    // Date et heure du poste, au moment où le justificatif est produit.
+    doc.texte(G, 806, "Document établi le " + deux(jour.getDate()) + "/" + deux(jour.getMonth() + 1) + "/" + jour.getFullYear() +
+              " à " + deux(jour.getHours()) + "h" + deux(jour.getMinutes()) + " avec mini-outils-compta.fr", { taille: 8, couleur: "gris" });
+    doc.texte(D, 806, droite || "Calcul à contrôler avant utilisation", { taille: 8, couleur: "gris", align: "droite" });
+    return doc;
+  }
+
   // Nom de fichier sans accents ni caractères gênants : « IK 2025 – Été » -> « IK-2025-Ete ».
   function nomFichier(texte) {
     return String(texte).normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -252,25 +273,16 @@
   // en-têtes de colonnes d'un tableau coupé sont répétés. Chaque page porte le pied de page.
   function fiche(titre) {
     var doc = creer(), G = 48, D = LARGEUR - 48, y = 86, fini = false, BAS = 774;
-    var jour = new Date(), deux = function (n) { return (n < 10 ? "0" : "") + n; };
-    doc.rectangle(0, 0, LARGEUR, 5, "bleu");
+    var jour = new Date();
     // En haut à gauche, l'icône « M » du site, qui ouvre sa page d'accueil.
-    doc.iconeM(G - 2, 26, 22).lien(G - 2, 26, 22, 22, SITE);
-    doc.texte(D, 44, "Justificatif de calcul", { taille: 8, couleur: "gris", align: "droite" });
-    doc.texte(G, 78, titre, { taille: 22, gras: true });
+    entete(doc, "Justificatif de calcul", titre);
 
     // Pied de la page en cours ; le numéro n'est écrit que pour un document de plusieurs pages.
-    var pied = function (numero) {
-      doc.trait(G, 792, D, 792);
-      // Date et heure du poste, au moment où le justificatif est produit.
-      doc.texte(G, 806, "Document établi le " + deux(jour.getDate()) + "/" + deux(jour.getMonth() + 1) + "/" + jour.getFullYear() +
-                " à " + deux(jour.getHours()) + "h" + deux(jour.getMinutes()) +
-                " avec mini-outils-compta.fr", { taille: 8, couleur: "gris" });
-      doc.texte(D, 806, (numero ? "Page " + doc.nbPages() + " · " : "") + "Calcul à contrôler avant utilisation",
-                { taille: 8, couleur: "gris", align: "droite" });
+    var piedPage = function (numero) {
+      pied(doc, jour, (numero ? "Page " + doc.nbPages() + " · " : "") + "Calcul à contrôler avant utilisation");
     };
     var saut = function () {
-      pied(true);
+      piedPage(true);
       doc.nouvellePage();
       doc.rectangle(0, 0, LARGEUR, 5, "bleu");
       doc.iconeM(G - 2, 22, 16).lien(G - 2, 22, 16, 16, SITE);
@@ -360,7 +372,7 @@
       fin: function () {
         if (fini) return doc;
         fini = true;
-        pied(doc.nbPages() > 1);
+        piedPage(doc.nbPages() > 1);
         return doc;
       },
       octets: function () { return f.fin().octets(); },
@@ -369,5 +381,5 @@
     return f;
   }
 
-  window.MiniPdf = { creer: creer, fiche: fiche, nomFichier: nomFichier };
+  window.MiniPdf = { creer: creer, fiche: fiche, nomFichier: nomFichier, entete: entete, pied: pied };
 })();

@@ -286,10 +286,8 @@
       doc.trait(G, y + 6, D, y + 6);
     };
 
-    doc.rectangle(0, 0, doc.largeur, 5, "bleu");
-    doc.texte(G, 44, "MINI-OUTILS", { taille: 8, gras: true, couleur: "bleu" });
-    doc.texte(D, 44, "Justificatif de calcul", { taille: 8, couleur: "gris", align: "droite" });
-    doc.texte(G, 78, "Indemnités kilométriques " + d.annee, { taille: 22, gras: true });
+    // En-tête commun des justificatifs (pdf.js) : icône « M » cliquable vers le site.
+    window.MiniPdf.entete(doc, "Justificatif de calcul", "Indemnités kilométriques " + d.annee);
     y = 86;
 
     titre("Identification");
@@ -360,14 +358,12 @@
       });
     }
 
-    var jour = new Date();
-    doc.trait(G, 792, D, 792);
-    doc.texte(G, 806, "Document établi le " + M.deux(jour.getDate()) + "/" + M.deux(jour.getMonth() + 1) + "/" + jour.getFullYear() +
-              " avec mini-outils-compta.fr", { taille: 8, couleur: "gris" });
-    doc.texte(D, 806, "Calcul à contrôler avant utilisation", { taille: 8, couleur: "gris", align: "droite" });
+    // Pied commun des justificatifs (pdf.js) : date et heure de production en bas à gauche.
+    window.MiniPdf.pied(doc, new Date());
     return doc;
   }
 
+  window.justificatifPdf = function () { return dernier ? justificatif(dernier) : null; };   // pour les contrôles
   $("pdf").addEventListener("click", function () {
     if (!dernier) return;
     var nom = window.MiniPdf.nomFichier(["IK", dernier.annee, dernier.vehicule || dernier.conducteur].filter(Boolean).join(" "));

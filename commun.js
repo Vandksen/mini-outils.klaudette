@@ -14,7 +14,7 @@ window.MiniOutils = (function () {
   // Mettre le MÊME numéro dans version.json : c'est ce petit fichier que les pages ouvertes
   // consultent pour savoir si une nouvelle version est publiée.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.28.4";
+  var VERSION = "1.29.0";
 
   // Type de chaque outil (champ « type ») : ce sur quoi il travaille, affiché en étiquette sur
   // sa page et sur sa carte de l'accueil (voir etiquettesType).
@@ -175,6 +175,9 @@ window.MiniOutils = (function () {
   var ICONE_LIEN = '<svg width="18" height="18" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M30.0002 11.0287C29.9501 12.7695 29.2342 14.4248 28.0002 15.6537L23.6565 19.9999C23.0238 20.636 22.2713 21.1403 21.4424 21.4837C20.6136 21.827 19.7249 22.0024 18.8277 21.9999H18.8215C17.909 21.9993 17.0059 21.8158 16.1656 21.4603C15.3253 21.1048 14.5647 20.5844 13.9288 19.93C13.2929 19.2756 12.7947 18.5004 12.4634 17.6502C12.1322 16.8 11.9747 15.892 12.0002 14.9799C12.0077 14.7147 12.1202 14.4633 12.313 14.2811C12.5058 14.0988 12.7631 14.0006 13.0283 14.0081C13.2936 14.0155 13.545 14.128 13.7272 14.3209C13.9095 14.5137 14.0077 14.771 14.0002 15.0362C13.982 15.6811 14.0933 16.3231 14.3274 16.9243C14.5615 17.5255 14.9138 18.0736 15.3633 18.5364C15.8129 18.9991 16.3507 19.367 16.9448 19.6184C17.539 19.8698 18.1776 19.9995 18.8227 19.9999C19.4569 20.0016 20.0852 19.8775 20.6711 19.6348C21.2571 19.3921 21.7891 19.0357 22.2365 18.5862L26.5802 14.2424C27.4764 13.335 27.9772 12.1098 27.9732 10.8343C27.9692 9.55891 27.4608 8.33686 26.5589 7.435C25.6571 6.53313 24.435 6.0247 23.1596 6.02071C21.8842 6.01672 20.659 6.51749 19.7515 7.41369L18.3765 8.78869C18.1874 8.96831 17.9357 9.06697 17.6749 9.06363C17.4141 9.0603 17.165 8.95522 16.9806 8.77082C16.7962 8.58642 16.6911 8.33728 16.6878 8.07652C16.6844 7.81576 16.7831 7.56401 16.9627 7.37494L18.3377 5.99994C18.9721 5.36536 19.7253 4.86196 20.5542 4.51851C21.3832 4.17506 22.2717 3.99829 23.169 3.99829C24.0663 3.99829 24.9548 4.17506 25.7837 4.51851C26.6127 4.86196 27.3659 5.36536 28.0002 5.99994C28.6573 6.65864 29.1735 7.44416 29.5173 8.30868C29.8611 9.1732 30.0254 10.0986 30.0002 11.0287ZM13.6252 23.2074L12.2502 24.5824C11.8018 25.0339 11.268 25.3917 10.68 25.635C10.0921 25.8784 9.46157 26.0024 8.82522 25.9999C7.8706 25.9992 6.93763 25.7155 6.14418 25.1847C5.35073 24.6539 4.73242 23.8998 4.36737 23.0177C4.00232 22.1357 3.9069 21.1652 4.09319 20.2289C4.27947 19.2926 4.73909 18.4326 5.41398 17.7574L9.75023 13.4137C10.4332 12.7271 11.3069 12.2617 12.2577 12.0781C13.2086 11.8944 14.1927 12.0008 15.0823 12.3836C15.9718 12.7664 16.7258 13.4078 17.2461 14.2246C17.7665 15.0413 18.0292 15.9957 18.0002 16.9637C17.9928 17.2289 18.091 17.4862 18.2732 17.679C18.4555 17.8719 18.7069 17.9844 18.9721 17.9918C19.2373 17.9993 19.4946 17.9011 19.6874 17.7188C19.8803 17.5366 19.9928 17.2852 20.0002 17.0199C20.0242 16.0914 19.8593 15.1676 19.5155 14.3046C19.1717 13.4417 18.6562 12.6576 18.0002 11.9999C16.7192 10.7195 14.9821 10.0002 13.1708 10.0002C11.3596 10.0002 9.6225 10.7195 8.34148 11.9999L4.00023 16.3437C3.04551 17.298 2.39512 18.5139 2.13124 19.8378C1.86736 21.1616 2.00183 22.534 2.51766 23.7814C3.0335 25.0289 3.90754 26.0954 5.02934 26.8463C6.15113 27.5971 7.47033 27.9986 8.82022 27.9999C9.71756 28.0025 10.6065 27.8271 11.4356 27.4838C12.2647 27.1405 13.0174 26.6361 13.6502 25.9999L15.0252 24.6249C15.1871 24.4343 15.2716 24.19 15.2622 23.9401C15.2528 23.6902 15.1501 23.453 14.9744 23.275C14.7987 23.0971 14.5627 22.9915 14.3129 22.979C14.0632 22.9665 13.8178 23.048 13.6252 23.2074Z"/></svg>';
   // Cadenas (Phosphor Lock Simple, graisse Fill) des pages sous code, au bout de leur entrée du menu.
   var ICONE_VERROU = '<span class="verrou" title="Page protégée par un code" aria-label="protégée par un code"><svg width="12" height="12" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96Z"/></svg></span>';
+  // Pile d'écritures : Cards Three (Phosphor, graisse Fill) identifie la fonction ; Broom la vide.
+  var ICONE_PILE = '<svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,104v96a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V104A16,16,0,0,1,48,88H208A16,16,0,0,1,224,104ZM56,72H200a8,8,0,0,0,0-16H56a8,8,0,0,0,0,16ZM72,40H184a8,8,0,0,0,0-16H72a8,8,0,0,0,0,16Z"/></svg>';
+  var ICONE_BALAI = '<svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M235.29,216.7C212.86,205.69,200,182.12,200,152V134.69a15.94,15.94,0,0,0-10.09-14.87l-28.65-11.46A8,8,0,0,1,156.79,98l22.32-56.67C184,28.79,178,14.21,165.34,9.51a24,24,0,0,0-30.7,13.71L112.25,80.08a8,8,0,0,1-10.41,4.5L73.11,73.08a15.91,15.91,0,0,0-17.38,3.66C34.68,98.4,24,123.71,24,152a111.53,111.53,0,0,0,31.15,77.53A8.06,8.06,0,0,0,61,232H232a8,8,0,0,0,8-7.51A8.21,8.21,0,0,0,235.29,216.7ZM115.11,216a87.52,87.52,0,0,1-24.26-41.71,8.21,8.21,0,0,0-9.25-6.18A8,8,0,0,0,75.28,178a105.33,105.33,0,0,0,18.36,38H64.44A95.62,95.62,0,0,1,40,152a85.92,85.92,0,0,1,7.73-36.3l137.8,55.13c3,18.06,10.55,33.5,21.89,45.19Z"/></svg>';
   // Icône de l'entrée « Accueil » du menu : House (Phosphor, graisse Fill).
   var ICONE_ACCUEIL = '<svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,120v96a8,8,0,0,1-8,8H160a8,8,0,0,1-8-8V164a4,4,0,0,0-4-4H108a4,4,0,0,0-4,4v52a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V120a16,16,0,0,1,4.69-11.31l80-80a16,16,0,0,1,22.62,0l80,80A16,16,0,0,1,224,120Z"/></svg>';
 
@@ -190,11 +193,11 @@ window.MiniOutils = (function () {
     if (barre && !barre.querySelector(".beta")) barre.insertAdjacentHTML("beforeend", " " + BETA);
     var page = location.pathname.split("/").pop() || "index.html";
     // Chaque catégorie du menu est un accordéon : son titre est un bouton qui déplie ses
-    // entrées. À chaque chargement, seule « Outils de production » est dépliée ; les autres
-    // sont repliées, sauf celle de la page affichée. Un clic sur un titre replie ou déplie
-    // sa seule catégorie.
+    // entrées. À chaque chargement, seule la catégorie de la page affichée est dépliée ;
+    // toutes les autres sont repliées (toutes, si la page n'appartient à aucune catégorie).
+    // Un clic sur un titre replie ou déplie sa seule catégorie.
     var rubrique = function (cle, titre, contenu, classe) {
-      var ouverte = cle === "production" || contenu.indexOf('aria-current="page"') !== -1;
+      var ouverte = contenu.indexOf('aria-current="page"') !== -1;
       return '<h2' + (classe ? ' class="' + classe + '"' : '') + '><button type="button" class="rubrique" data-cle="' + cle +
              '" aria-expanded="' + ouverte + '" aria-controls="rubrique-' + cle + '"><span>' + titre + '</span>' + CHEVRON + '</button></h2>' +
              '<div class="groupe' + (classe ? ' ' + classe : '') + '" id="rubrique-' + cle + '"' + (ouverte ? '' : ' hidden') + '>' + contenu + '</div>';
@@ -248,11 +251,14 @@ window.MiniOutils = (function () {
       (page === "index.html" ? '' :
         '<div class="encart-zone"><a class="encart" href="index.html"><strong>Quand la période fiscale se déchaîne, <em>gardez le cap.</em></strong>' +
         '<small>Laissez les écritures répétitives à Mini-outils-compta.fr</small></a></div>') +
+      // Écritures empilées depuis les outils : bloc au-dessus du bouton d'installation (voir majPile).
+      '<div class="pile-zone" id="pile-zone" hidden></div>' +
       '<div class="pied"><button id="installer" type="button">Installer l’application</button>' +
       '<span id="installer-info" role="status" hidden></span>' +
       // Deux lignes pour gagner de la place : « bêta » reste sur la pastille du logo.
       '<span>Calcul dans votre navigateur</span>' +
       '<span>Rien n\'est envoyé · <a class="version" href="versions.html" title="Version ' + VERSION + ' (bêta) : suivi des versions">v' + VERSION + '</a></span></div>';
+    majPile(false);
     // Le menu n'est plus repliable : on efface le choix qu'une ancienne version a pu mémoriser.
     try { localStorage.removeItem("mini-outils-menu-replie"); } catch (e) {}
     // Les accordéons ne mémorisent plus rien non plus.
@@ -433,6 +439,7 @@ window.MiniOutils = (function () {
     }
     if ($("nbLignes")) $("nbLignes").textContent = ecritures.length;
     $("copier").disabled = !ecritures.length;
+    if ($("empiler")) $("empiler").disabled = !ecritures.length;
     $("etat").textContent = "";
 
     var ul = $("alertes");
@@ -446,10 +453,11 @@ window.MiniOutils = (function () {
 
   // Colonnes séparées par des tabulations : date, pièce, compte, libellé, débit, crédit
   // (avec deux colonnes vides avant le débit au format 8 colonnes).
-  function texteACopier() {
-    return ecritures.map(function (e) {
+  function texteACopier() { return texteLignes(ecritures, milieu); }
+  function texteLignes(liste, colonnes) {
+    return liste.map(function (e) {
       return [e.date, e.piece, e.compte, e.libelle]
-        .concat(milieu)
+        .concat(colonnes)
         .concat([e.debit === null ? "" : brut(e.debit), e.credit === null ? "" : brut(e.credit)])
         .map(function (c) { return String(c).replace(/[\t\r\n]+/g, " "); })
         .join("\t");
@@ -529,7 +537,11 @@ window.MiniOutils = (function () {
 
   // Met un texte dans le presse-papiers et affiche le message dans #etat.
   function copierTexte(txt, message, gain) {
-    var ok = function () { $("etat").textContent = message; fete($("copier"), gain); };
+    pressePapiers(txt, function () { $("etat").textContent = message; fete($("copier"), gain); },
+      function () { $("etat").textContent = "Copie impossible dans ce navigateur"; });
+  }
+  // Écrit un texte dans le presse-papiers, puis appelle ok() ou echec().
+  function pressePapiers(txt, ok, echec) {
     var secours = function () {
       var ta = document.createElement("textarea");
       ta.value = txt;
@@ -539,7 +551,7 @@ window.MiniOutils = (function () {
       var reussi = false;
       try { reussi = document.execCommand("copy"); } catch (e) { reussi = false; }
       document.body.removeChild(ta);
-      if (reussi) ok(); else $("etat").textContent = "Copie impossible dans ce navigateur";
+      if (reussi) ok(); else echec();
     };
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(txt).then(ok, secours);
@@ -555,7 +567,185 @@ window.MiniOutils = (function () {
       $(id).addEventListener("change", calcule);
     });
     $("copier").addEventListener("click", copie);
+    // « Empiler les écritures », à gauche du bouton de copie : met les écritures de côté
+    // pour les copier plus tard avec celles d'autres outils, en un seul collage.
+    var empiler = document.createElement("button");
+    empiler.className = "btn ghost bouton-empiler";
+    empiler.id = "empiler";
+    empiler.type = "button";
+    empiler.title = "Garder ces écritures de côté pour les copier avec celles d'autres outils";
+    empiler.innerHTML = ICONE_PILE + "Empiler les écritures";
+    $("copier").parentNode.insertBefore(empiler, $("copier"));
+    empiler.addEventListener("click", empile);
     calcule();
+  }
+
+  // ---------- Pile d'écritures ----------
+  // Les écritures empilées depuis les outils sont gardées le temps de la navigation, dans
+  // l'onglet (sessionStorage) : { colonnes: colonnes du milieu (format 6 ou 8 colonnes),
+  // lots: [{ nom: outil d'origine, lignes: [écritures] }] }. Le bloc du menu les regroupe,
+  // les copie en un seul collage pour ACDCompta, ou les vide.
+  var CLE_PILE = "mini-outils-pile";
+  function litPile() {
+    try {
+      var p = JSON.parse(sessionStorage.getItem(CLE_PILE));
+      if (p && p.lots && p.lots.length) return p;
+    } catch (e) {}
+    return { colonnes: [], lots: [] };
+  }
+  function ecritPile(p) {
+    try {
+      if (p.lots.length) sessionStorage.setItem(CLE_PILE, JSON.stringify(p));
+      else sessionStorage.removeItem(CLE_PILE);
+      return true;
+    } catch (e) { return false; }
+  }
+  function lignesPile(p) { return p.lots.reduce(function (t, l) { return t.concat(l.lignes); }, []); }
+  function empile() {
+    if (!ecritures.length) return;
+    var p = litPile();
+    // Un seul collage suppose un seul format d'import : on ne mêle pas 6 et 8 colonnes.
+    if (p.lots.length && JSON.stringify(p.colonnes) !== JSON.stringify(milieu)) {
+      $("etat").textContent = "Format d'import différent des écritures déjà empilées : copiez-les ou videz la pile d'abord.";
+      return;
+    }
+    var page = location.pathname.split("/").pop();
+    var outil = PRODUCTION.concat(REVISION, ANALYSE, DASHBOARD).filter(function (o) { return o.fichier === page; })[0];
+    p.colonnes = milieu.slice();
+    p.lots.push({
+      nom: outil ? outil.nom : document.title.split(" — ")[0],
+      lignes: ecritures.map(function (e) {
+        return { date: e.date, piece: e.piece, compte: e.compte, libelle: e.libelle, debit: e.debit, credit: e.credit };
+      })
+    });
+    if (!ecritPile(p)) { $("etat").textContent = "Empilage impossible dans ce navigateur"; return; }
+    $("etat").textContent = ecritures.length + " lignes empilées";
+    // Désactivé jusqu'au prochain calcul, pour ne pas empiler deux fois les mêmes lignes.
+    $("empiler").disabled = true;
+    majPile(true);
+  }
+  function majPile(anime) {
+    var zone = $("pile-zone");
+    if (!zone) return;
+    var p = litPile(), lignes = lignesPile(p);
+    zone.hidden = !lignes.length;
+    zone.textContent = "";
+    if (!lignes.length) return;
+    var totD = 0, totC = 0;
+    lignes.forEach(function (e) { totD += e.debit || 0; totC += e.credit || 0; });
+    var bloc = document.createElement("div");
+    bloc.className = "pile" + (anime ? " anime" : "");
+    bloc.innerHTML =
+      // Le nombre de lignes empilées est une pastille sur l'icône de la pile.
+      '<div class="pile-tete"><span class="pile-icone">' + ICONE_PILE +
+      '<span class="pile-nombre" title="' + lignes.length + ' lignes empilées">' + lignes.length + '</span></span><strong>Écritures empilées</strong>' +
+      '<button type="button" class="pile-vider" title="Vider les écritures empilées" aria-label="Vider les écritures empilées">' + ICONE_BALAI + '</button></div>' +
+      '<ul class="pile-lots"></ul><p class="pile-total"></p>' +
+      '<button type="button" class="pile-voir">Voir les écritures</button>' +
+      '<button type="button" class="pile-copier">Copier pour ACDCompta</button>' +
+      '<span class="pile-etat" role="status"></span>';
+    var ul = bloc.querySelector(".pile-lots");
+    p.lots.forEach(function (l) {
+      var li = document.createElement("li"), nom = document.createElement("span"), nb = document.createElement("span");
+      nom.textContent = l.nom;
+      nb.textContent = l.lignes.length + " l.";
+      li.append(nom, nb);
+      ul.appendChild(li);
+    });
+    bloc.querySelector(".pile-total").textContent = lignes.length + " lignes · " +
+      (totD === totC ? "équilibre OK" : "écart de " + affiche(Math.abs(totD - totC)));
+    bloc.querySelector(".pile-copier").addEventListener("click", function () {
+      copiePile(this, bloc.querySelector(".pile-etat"));
+    });
+    bloc.querySelector(".pile-voir").addEventListener("click", listePile);
+    bloc.querySelector(".pile-vider").addEventListener("click", function () {
+      if (!window.confirm("Vider les " + lignes.length + " lignes empilées ?")) return;
+      ecritPile({ colonnes: [], lots: [] });
+      majPile(false);
+      majListePile();
+    });
+    zone.appendChild(bloc);
+  }
+  function copiePile(bouton, etat) {
+    var p = litPile(), lignes = lignesPile(p);
+    if (!lignes.length) return;
+    pressePapiers(texteLignes(lignes, p.colonnes), function () {
+      etat.textContent = lignes.length + " lignes copiées";
+      fete(bouton, tempsGagne(lignes.length));
+    }, function () { etat.textContent = "Copie impossible dans ce navigateur"; });
+  }
+
+  // Listing des écritures empilées, dans une fenêtre : un groupe par outil d'origine,
+  // numérotation continue, totaux et équilibre de toute la pile ; chaque lot peut être retiré.
+  var dialogue = null;
+  function listePile() {
+    if (!dialogue) {
+      dialogue = document.createElement("dialog");
+      dialogue.className = "pile-dialogue";
+      dialogue.setAttribute("aria-labelledby", "pile-titre");
+      dialogue.innerHTML =
+        '<div class="barre"><p class="eyebrow" id="pile-titre">' + ICONE_PILE + 'Écritures empilées</p>' +
+        '<div class="actions"><span class="etat" id="pile-etat-liste" role="status"></span>' +
+        '<button class="btn" type="button" id="pile-copier-liste">Copier pour ACDCompta</button>' +
+        '<button class="pile-fermer" type="button" aria-label="Fermer" title="Fermer">' + ICONE_EFFACER + '</button></div></div>' +
+        '<div class="cadre-table"><table><thead><tr><th>N°</th><th>Date</th><th>Pièce</th><th>Compte</th><th>Libellé</th>' +
+        '<th class="droite">Débit</th><th class="droite">Crédit</th></tr></thead><tbody id="pile-lignes"></tbody>' +
+        '<tfoot><tr><td colspan="5" id="pile-bilan"></td><td class="droite" id="pile-debit"></td><td class="droite" id="pile-credit"></td></tr></tfoot>' +
+        '</table></div>';
+      document.body.appendChild(dialogue);
+      dialogue.querySelector(".pile-fermer").addEventListener("click", function () { dialogue.close(); });
+      // Un clic hors du cadre (sur le fond) ferme la fenêtre.
+      dialogue.addEventListener("click", function (e) { if (e.target === dialogue) dialogue.close(); });
+      $("pile-copier-liste").addEventListener("click", function () { copiePile(this, $("pile-etat-liste")); });
+    }
+    $("pile-etat-liste").textContent = "";
+    majListePile();
+    if (!dialogue.open) dialogue.showModal();
+  }
+  function majListePile() {
+    if (!dialogue) return;
+    var p = litPile(), corps = $("pile-lignes"), n = 0, totD = 0, totC = 0;
+    if (!p.lots.length) { if (dialogue.open) dialogue.close(); return; }
+    corps.textContent = "";
+    p.lots.forEach(function (lot, k) {
+      var tete = document.createElement("tr"), td = document.createElement("td");
+      tete.className = "pile-lot";
+      td.colSpan = 7;
+      var nom = document.createElement("span");
+      nom.textContent = lot.nom + " · " + lot.lignes.length + " lignes";
+      var retirer = document.createElement("button");
+      retirer.type = "button";
+      retirer.className = "btn ghost";
+      retirer.textContent = "Retirer";
+      retirer.title = "Retirer ces écritures de la pile";
+      retirer.addEventListener("click", function () {
+        var q = litPile();
+        q.lots.splice(k, 1);
+        ecritPile(q);
+        majPile(false);
+        majListePile();
+      });
+      td.append(nom, retirer);
+      tete.appendChild(td);
+      corps.appendChild(tete);
+      lot.lignes.forEach(function (e, i) {
+        totD += e.debit || 0; totC += e.credit || 0;
+        var tr = document.createElement("tr");
+        if (i === 0) tr.className = "debut";
+        [[deux(++n), "num"], [e.date], [e.piece], [e.compte, "compte"], [e.libelle, "lib"],
+         [e.debit === null ? "" : affiche(e.debit), "droite"],
+         [e.credit === null ? "" : affiche(e.credit), "droite"]].forEach(function (c) {
+          var cel = document.createElement("td");
+          cel.textContent = c[0];
+          if (c[1]) cel.className = c[1];
+          tr.appendChild(cel);
+        });
+        corps.appendChild(tr);
+      });
+    });
+    $("pile-bilan").textContent = n + " lignes · " + (totD === totC ? "équilibre OK" : "écart de " + affiche(Math.abs(totD - totC)));
+    $("pile-debit").textContent = affiche(totD);
+    $("pile-credit").textContent = affiche(totC);
   }
 
   // Bouton « Copier le lien pour le partager », en haut à droite de chaque page : copie
@@ -1061,17 +1251,44 @@ window.MiniOutils = (function () {
     if (document.visibilityState === "visible") verifieVersion();
   });
 
-  // Bouton « Installer l'application » en bas du menu, toujours visible.
+  // Bouton « Installer l'application » en bas du menu, masqué quand l'application est installée.
   // Le navigateur (Chrome, Edge) signale par l'événement beforeinstallprompt que
   // l'installation est possible : le clic ouvre alors sa fenêtre d'installation.
   // Sans ce signal (application déjà installée, ou navigateur qui ne le propose pas),
   // le clic affiche une explication sous le bouton au lieu de ne rien faire.
   var invite = null;
+  // Application installée : vrai dans la fenêtre de l'application ; dans un onglet, le poste
+  // garde la trace de l'installation (événement appinstalled, ou getInstalledRelatedApps,
+  // grâce à related_applications du manifeste). Une invite d'installation du navigateur
+  // prouve au contraire qu'elle ne l'est pas (ou plus) : la trace est alors effacée.
+  var CLE_INSTALLEE = "mini-outils-installee";
+  function enApplication() {
+    return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+  }
+  function notePoste(installee) {
+    try { if (installee) localStorage.setItem(CLE_INSTALLEE, "1"); else localStorage.removeItem(CLE_INSTALLEE); } catch (e) {}
+    majInstaller();
+  }
+  function estInstallee() {
+    if (enApplication()) return true;
+    try { return localStorage.getItem(CLE_INSTALLEE) === "1"; } catch (e) { return false; }
+  }
+  function majInstaller() {
+    var masque = estInstallee();
+    var boutons = Array.prototype.slice.call(document.querySelectorAll("[data-installer]"));
+    if ($("installer")) boutons.push($("installer"));
+    boutons.forEach(function (b) {
+      b.hidden = masque;
+      var info = $(b.id === "installer" ? "installer-info" : b.getAttribute("data-installer"));
+      if (info && masque) info.hidden = true;
+    });
+  }
   window.addEventListener("beforeinstallprompt", function (e) {
     e.preventDefault(); // on garde l'invite pour la déclencher au clic
     invite = e;
+    notePoste(false);
   });
-  window.addEventListener("appinstalled", function () { invite = null; });
+  window.addEventListener("appinstalled", function () { invite = null; notePoste(true); });
   function brancheInstaller(b, info) {
     if (!b || !info) return;
     b.addEventListener("click", function () {
@@ -1098,6 +1315,10 @@ window.MiniOutils = (function () {
       b.insertAdjacentHTML("afterbegin", ICONE_INSTALLER);
       brancheInstaller(b, $(b.getAttribute("data-installer")));
     });
+    majInstaller();
+    if (!enApplication() && navigator.getInstalledRelatedApps) {
+      navigator.getInstalledRelatedApps().then(function (apps) { if (apps && apps.length) notePoste(true); }).catch(function () {});
+    }
   }
 
   // Pied de page commun : liens légaux et mention « Un projet STRUCTURRE », ajoutés

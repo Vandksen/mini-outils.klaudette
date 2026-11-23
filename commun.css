@@ -180,6 +180,76 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
 .encart strong { font-family: var(--sans); font-size: 17px; font-weight: 500; line-height: 1.15; letter-spacing: -0.02em; }
 .encart em { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: calc(1.1em * var(--serif-echelle)); letter-spacing: var(--serif-approche); }
 .encart small { font-family: var(--sans); font-size: 12px; line-height: 1.35; color: var(--on-blue-muted); }
+/* ---------- Écritures empilées (bloc du menu, au-dessus du bouton d'installation) ----------
+   Même encadré que l'encart du bas du menu, sans l'image. */
+.pile-zone { padding: 0 26px 16px; }
+.pile-zone[hidden] { display: none; }
+/* Une pile en cours passe avant l'encart slogan, pour ne pas allonger le bas du menu. */
+#menu:has(.pile-zone:not([hidden])) .encart-zone { display: none; }
+.pile {
+  padding: 12px 14px 14px; border-radius: 14px; color: var(--on-blue);
+  background: rgba(248, 243, 230, .08); border: 1px solid rgba(248, 243, 230, .28);
+}
+.pile.anime { animation: pile-arrivee .6s ease; }
+@keyframes pile-arrivee {
+  0% { transform: scale(.96); box-shadow: 0 0 0 0 rgba(248, 243, 230, .55); }
+  100% { transform: none; box-shadow: 0 0 0 12px rgba(248, 243, 230, 0); }
+}
+.pile-tete { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.pile-tete strong { flex: 1; min-width: 0; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pile-icone { position: relative; flex: none; margin-right: 6px; }
+.pile-icone svg { display: block; width: 20px; height: 20px; }
+.pile-vider {
+  display: grid; place-items: center; width: 30px; height: 30px; padding: 0; flex: none; cursor: pointer;
+  border-radius: 50%; border: 1px solid rgba(248, 243, 230, .35); background: transparent; color: var(--on-blue);
+  transition: background .15s, color .15s;
+}
+.pile-vider:hover { background: var(--cream); color: var(--blue); border-color: var(--cream); }
+.pile-vider:focus-visible, .pile-copier:focus-visible { outline: 2px solid var(--on-blue); outline-offset: 2px; }
+.pile-lots { list-style: none; margin: 10px 0 0; padding: 0; max-height: 104px; overflow-y: auto; font-size: 13px; color: var(--on-blue-muted); }
+.pile-lots li { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; }
+.pile-lots li span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pile-lots li span:last-child { flex: none; font-family: var(--mono); font-size: 11px; }
+.pile-total { margin: 8px 0 10px; padding-top: 8px; border-top: 1px solid rgba(248, 243, 230, .16); font-family: var(--mono); font-size: 11px; color: var(--on-blue-muted); }
+.pile-copier {
+  display: block; width: 100%; height: 34px; padding: 0 14px; cursor: pointer; border: 0; border-radius: 9999px;
+  background: var(--cream); color: var(--blue); font-family: var(--sans); font-size: 13px; font-weight: 500;
+}
+.pile-copier:hover { background: #ffffff; }
+.pile-etat { display: block; margin-top: 6px; font-family: var(--mono); font-size: 11px; color: var(--on-blue-muted); }
+.pile-etat:empty { display: none; }
+.pile-nombre {
+  position: absolute; top: -8px; right: -10px; min-width: 18px; height: 16px; padding: 0 4px; border-radius: 9999px;
+  display: grid; place-items: center; background: var(--cream); color: var(--blue); box-shadow: 0 0 0 2px var(--blue);
+  font-family: var(--mono); font-size: 10px; font-weight: 700; line-height: 1;
+}
+.pile-voir {
+  display: block; width: 100%; height: 32px; margin-bottom: 8px; padding: 0 14px; cursor: pointer; border-radius: 9999px;
+  border: 1px solid rgba(248, 243, 230, .45); background: transparent; color: var(--on-blue);
+  font-family: var(--sans); font-size: 13px; font-weight: 500; transition: background .15s, color .15s;
+}
+.pile-voir:hover { background: rgba(248, 243, 230, .14); }
+.pile-voir:focus-visible { outline: 2px solid var(--on-blue); outline-offset: 2px; }
+/* Listing des écritures empilées : fenêtre au-dessus de la page. */
+.pile-dialogue {
+  width: min(1100px, calc(100vw - 32px)); max-height: calc(100vh - 64px); padding: 24px 26px 26px; color: var(--ink);
+  background: var(--paper); border: 1px solid var(--blue); border-radius: 10px;
+  box-shadow: 0 30px 60px -20px rgba(17, 54, 219, .45);
+}
+.pile-dialogue::backdrop { background: rgba(27, 36, 80, .45); }
+.pile-dialogue .eyebrow { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.pile-dialogue .eyebrow svg { width: 16px; height: 16px; }
+.pile-fermer {
+  display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; background: none; cursor: pointer; color: var(--blue);
+}
+.pile-fermer:hover { color: var(--ink); }
+.pile-lot td { background: var(--chip); font-weight: 500; }
+.pile-lot span { margin-right: 12px; }
+.pile-lot .btn.ghost { height: 26px; padding: 0 10px; font-size: 12px; }
+.pile-dialogue tfoot td { font-family: var(--mono); font-size: 12px; font-weight: 700; border-top: 1px solid var(--line); padding-top: 10px; }
+/* Bouton « Empiler les écritures » des outils, avec l'icône de la pile. */
+.bouton-empiler svg { vertical-align: -3px; margin-right: 7px; }
+#installer[hidden], [data-installer][hidden] { display: none; }
 #installer {
   display: block; width: 100%; height: 36px; margin: 0 0 12px; padding: 0 14px; cursor: pointer;
   border-radius: 9999px; border: 1px solid rgba(248, 243, 230, .45); background: transparent; color: var(--on-blue);
@@ -740,7 +810,7 @@ body.filtres-replies #filtres { display: none; }
 
   /* Téléphone : pages d'information seulement. Les outils disparaissent du menu,
      leurs pages affichent un message, et l'accueil ne propose pas de les ouvrir. */
-  #menu .outil, #installer, #installer-info, [data-installer], .info-installer { display: none !important; }
+  #menu .outil, #installer, #installer-info, [data-installer], .info-installer, .pile-zone { display: none !important; }
   body.page-outil main { display: none; }
   body.page-outil .mobile-info { display: block; padding: 36px 0 48px; }
   body.page-outil .site-footer .conteneur > span { display: none; }

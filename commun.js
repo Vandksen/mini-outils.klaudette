@@ -13,7 +13,7 @@ window.MiniOutils = (function () {
   // Mettre le MÊME numéro dans version.json : c'est ce petit fichier que les pages ouvertes
   // consultent pour savoir si une nouvelle version est publiée.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.29.1";
+  var VERSION = "1.29.2";
 
   // Type de chaque outil (champ « type ») : ce sur quoi il travaille, affiché en étiquette sur
   // sa page et sur sa carte de l'accueil (voir etiquettesType).
@@ -648,12 +648,49 @@ window.MiniOutils = (function () {
     });
     bloc.querySelector(".pile-voir").addEventListener("click", listePile);
     bloc.querySelector(".pile-vider").addEventListener("click", function () {
-      if (!window.confirm("Vider les " + lignes.length + " lignes empilées ?")) return;
-      ecritPile({ lots: [] });
-      majPile(false);
-      majListePile();
+      confirmer("Vider les écritures empilées ?",
+        "Les " + lignes.length + " lignes empilées seront retirées de la pile. Celles déjà collées dans ACDCompta ne sont pas touchées.",
+        "Vider la pile", function () {
+          ecritPile({ lots: [] });
+          majPile(false);
+          majListePile();
+        });
     });
     zone.appendChild(bloc);
+  }
+
+  // Fenêtre de confirmation au style du site, à la place de celle du navigateur.
+  // « faire » n'est appelé que si l'on confirme ; Échap, « Annuler » ou un clic sur le fond annulent.
+  var fenetreConfirmation = null, confirme = null;
+  function confirmer(titre, texte, action, faire) {
+    if (!fenetreConfirmation) {
+      fenetreConfirmation = document.createElement("dialog");
+      fenetreConfirmation.className = "confirmation";
+      fenetreConfirmation.setAttribute("aria-labelledby", "confirmation-titre");
+      fenetreConfirmation.setAttribute("aria-describedby", "confirmation-texte");
+      fenetreConfirmation.innerHTML =
+        '<span class="confirmation-icone" aria-hidden="true">' + ICONE_BALAI + '</span>' +
+        '<p class="confirmation-titre" id="confirmation-titre"></p>' +
+        '<p class="confirmation-texte" id="confirmation-texte"></p>' +
+        '<div class="confirmation-actions"><button class="btn ghost" type="button" data-choix="non">Annuler</button>' +
+        '<button class="btn" type="button" data-choix="oui"></button></div>';
+      document.body.appendChild(fenetreConfirmation);
+      fenetreConfirmation.addEventListener("click", function (e) {
+        var b = e.target.closest("[data-choix]");
+        if (b || e.target === fenetreConfirmation) {
+          var ok = b && b.getAttribute("data-choix") === "oui";
+          fenetreConfirmation.close();
+          if (ok && confirme) confirme();
+        }
+      });
+    }
+    fenetreConfirmation.querySelector(".confirmation-titre").textContent = titre;
+    fenetreConfirmation.querySelector(".confirmation-texte").textContent = texte;
+    fenetreConfirmation.querySelector('[data-choix="oui"]').textContent = action;
+    confirme = faire;
+    fenetreConfirmation.showModal();
+    // Le choix prudent a le focus : Entrée par réflexe ne vide pas la pile.
+    fenetreConfirmation.querySelector('[data-choix="non"]').focus();
   }
   function copiePile(bouton, etat) {
     var p = litPile(), lignes = lignesPile(p);

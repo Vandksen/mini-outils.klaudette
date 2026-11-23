@@ -247,6 +247,19 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
 .pile-lot span { margin-right: 12px; }
 .pile-lot .btn.ghost { height: 26px; padding: 0 10px; font-size: 12px; }
 .pile-dialogue tfoot td { font-family: var(--mono); font-size: 12px; font-weight: 700; border-top: 1px solid var(--line); padding-top: 10px; }
+/* Fenêtre de confirmation au style du site (vider la pile). */
+.confirmation {
+  width: min(400px, calc(100vw - 32px)); padding: 26px 26px 22px; text-align: center; color: var(--ink);
+  background: var(--paper); border: 1px solid var(--blue); border-radius: 10px;
+  box-shadow: 0 30px 60px -20px rgba(17, 54, 219, .45);
+}
+.confirmation::backdrop { background: rgba(27, 36, 80, .45); }
+.confirmation-icone { display: inline-grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--blue); color: var(--on-blue); }
+.confirmation-icone svg { width: 24px; height: 24px; }
+.confirmation-titre { margin: 14px 0 6px; font-size: 19px; font-weight: 500; letter-spacing: -0.02em; color: var(--blue); }
+.confirmation-texte { margin: 0 0 20px; font-size: 14px; color: var(--muted); }
+.confirmation-actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.confirmation-actions .btn.ghost { height: 38px; padding: 0 18px; font-size: 14px; }
 /* Bouton « Empiler les écritures » des outils, avec l'icône de la pile. */
 .bouton-empiler svg { vertical-align: -3px; margin-right: 7px; }
 #installer[hidden], [data-installer][hidden] { display: none; }

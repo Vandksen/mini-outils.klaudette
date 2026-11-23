@@ -26,7 +26,8 @@
 <link rel="preload" href="polices/jetbrains-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="polices/instrument-serif-italique-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>
-.filtres-dvf { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px 16px; margin: 20px 0 10px; }
+.panel-dvf { margin: 28px 0 18px; }
+.filtres-dvf { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px 16px; margin: 12px 0 0; }
 .filtres-dvf .large { grid-column: 1 / -1; }
 .filtres-dvf label { display: block; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink); margin-bottom: 6px; }
 .filtres-dvf input { width: 100%; height: 40px; padding: 0 12px; font-family: var(--mono); font-size: 13px; color: var(--ink);
@@ -49,6 +50,26 @@
 .conteneur.prose.page-dvf { max-width: 1240px; }
 .page-dvf > p, .page-dvf > h1 { max-width: 844px; }
 #cadreVentes td { white-space: nowrap; }
+/* ---------- Page sous code ---------- */
+/* Tant que la page est verrouillée, la recherche et les résultats restent visibles mais
+   floutés et inactifs : on devine le contenu sans pouvoir s'en servir. */
+.zone-verrou { position: relative; }
+.zone-verrou.verrouillee .contenu-verrou { filter: blur(3px); opacity: .7; pointer-events: none; user-select: none; }
+.verrou-dvf { position: absolute; inset: 0; display: flex; justify-content: center; align-items: flex-start; padding: 40px 16px; }
+.verrou-dvf[hidden] { display: none; }
+.carte-verrou { width: 100%; max-width: 360px; display: grid; gap: 12px; text-align: center; justify-items: center; }
+.carte-verrou .eyebrow { margin: 0; }
+.icone-verrou { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--blue); color: var(--on-blue); }
+.icone-verrou svg { width: 24px; height: 24px; }
+.titre-verrou { margin: 0; font-size: 16px; color: var(--ink); }
+.carte-verrou input { width: 100%; height: 40px; padding: 0 12px; font-family: var(--mono); font-size: 14px; color: var(--ink); text-align: center;
+                      background: var(--cream); border: 1px solid var(--line); border-radius: 8px; }
+.carte-verrou input:focus { outline: 2px solid var(--blue); outline-offset: 1px; border-color: var(--blue); }
+.carte-verrou input.erreur { border-color: var(--rouge); }
+.carte-verrou .btn { width: 100%; justify-content: center; }
+.erreur-verrou { margin: 0; min-height: 1em; font-size: 13px; color: var(--rouge); }
+.erreur-verrou:empty { display: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -68,6 +89,10 @@
     <p class="lead"><strong>But de la page :</strong> retrouver les ventes immobilières récentes d'une commune, avec leur prix, pour situer la valeur d'un bien : maison, appartement, local ou terrain.</p>
     <p>Les ventes viennent des <strong>Demandes de valeurs foncières</strong> (DVF) publiées par la DGFiP : toutes les ventes enregistrées par les services de publicité foncière. La page reprend le fichier le plus récent. L'Alsace, la Moselle et Mayotte n'y figurent pas, leur publicité foncière relevant d'un autre régime.</p>
 
+    <div class="zone-verrou" id="zoneVerrou">
+    <div class="contenu-verrou" id="contenuVerrou">
+    <section class="panel panel-dvf">
+    <p class="eyebrow">01 — Recherche</p>
     <div class="filtres-dvf">
       <div class="large">
         <label for="commune">Commune</label>
@@ -92,6 +117,7 @@
       <div><label for="piecesMax">Pièces max.</label><input id="piecesMax" type="text" inputmode="numeric"></div>
       <div class="large"><label for="adresse">Adresse contient</label><input id="adresse" type="text" autocomplete="off" spellcheck="false" placeholder="rue, avenue, code postal…"></div>
     </div>
+    </section>
 
     <p class="aide-bloc" id="etatDvf" role="status">Choisissez une commune pour afficher ses ventes.</p>
     <div class="synthese-dvf" id="synthese" hidden>
@@ -109,6 +135,21 @@
       </table>
     </div>
     <p class="plus-dvf"><button class="btn ghost" id="plus" type="button" hidden>Afficher les ventes suivantes</button></p>
+    </div>
+
+    <!-- Page sous code : le contenu reste visible, flouté, derrière ce cadre. -->
+    <div class="verrou-dvf" id="verrou" hidden>
+      <form class="panel carte-verrou" id="formVerrou" autocomplete="off">
+        <span class="icone-verrou" aria-hidden="true"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96Z"/></svg></span>
+        <p class="eyebrow">Page protégée</p>
+        <p class="titre-verrou">Saisissez le code pour débloquer la page.</p>
+        <label for="codeVerrou" class="sr-only">Code</label>
+        <input id="codeVerrou" type="password" placeholder="Code" autocomplete="off" spellcheck="false">
+        <button class="btn" type="submit">Débloquer</button>
+        <p class="erreur-verrou" id="erreurVerrou" role="alert"></p>
+      </form>
+    </div>
+    </div>
 
     <p class="aide-bloc" id="source"></p>
     <p class="cgu-dvf">Conditions d'utilisation des DVF : ces données ne doivent servir ni à réidentifier les personnes concernées par les ventes, ni à être indexées par les moteurs de recherche (livre des procédures fiscales, art. R*112 A-3). La page ne les affiche qu'à la demande et les fichiers de données sont exclus des moteurs de recherche.</p>
@@ -128,6 +169,46 @@
 (function () {
   "use strict";
   var M = window.MiniOutils, $ = M.$;
+
+  // ---------- Page sous code ----------
+  // Le code n'est pas écrit en clair : on compare son empreinte SHA-256. Une fois la page
+  // débloquée, elle le reste jusqu'à la fermeture de l'onglet (sessionStorage).
+  // Simple barrière d'accès dans le navigateur, pas une protection des données : les fichiers
+  // dvf/ restent publics.
+  var EMPREINTE = "2f9b41cb15524d25550b14708d0f706fc01365135102d6e7f16756223f698a2c";
+  var CLE_VERROU = "mini-outils-dvf-debloque";
+  function verrouille(oui) {
+    $("zoneVerrou").classList.toggle("verrouillee", oui);
+    $("contenuVerrou").inert = oui;
+    if (oui) $("contenuVerrou").setAttribute("aria-hidden", "true"); else $("contenuVerrou").removeAttribute("aria-hidden");
+    $("verrou").hidden = !oui;
+  }
+  var debloquee = false;
+  try { debloquee = sessionStorage.getItem(CLE_VERROU) === "1"; } catch (e) {}
+  verrouille(!debloquee);
+  if (!debloquee) $("codeVerrou").focus({ preventScroll: true });
+  function empreinte(texte) {
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(texte)).then(function (h) {
+      return Array.prototype.map.call(new Uint8Array(h), function (b) { return ("0" + b.toString(16)).slice(-2); }).join("");
+    });
+  }
+  $("formVerrou").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var champ = $("codeVerrou");
+    empreinte(champ.value).then(function (h) {
+      if (h === EMPREINTE) {
+        try { sessionStorage.setItem(CLE_VERROU, "1"); } catch (e) {}
+        verrouille(false);
+        $("commune").focus();
+      } else {
+        champ.classList.add("erreur");
+        $("erreurVerrou").textContent = "Code incorrect.";
+        champ.select();
+      }
+    });
+  });
+  $("codeVerrou").addEventListener("input", function () { this.classList.remove("erreur"); $("erreurVerrou").textContent = ""; });
+
   var PAGE = 200;                 // ventes affichées à la fois
   var TYPES = { M: "Maison", A: "Appartement", L: "Local", D: "Dépendance", T: "Terrain" };
   var NATURES = { V: "", F: "VEFA", B: "terrain à bâtir", A: "adjudication", E: "échange", X: "expropriation" };

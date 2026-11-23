@@ -147,6 +147,9 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
 .entree:hover { background: rgba(248, 243, 230, .10); color: var(--on-blue); }
 .entree[aria-current="page"] { background: var(--cream); color: var(--blue); font-weight: 500; box-shadow: 0 6px 18px rgba(8, 20, 90, .25); }
 .entree[aria-current="page"] .num { color: var(--blue); }
+/* Cadenas des pages sous code, au bout de l'entrée. */
+.entree .verrou { flex: none; align-self: center; display: grid; color: var(--on-blue-muted); }
+.entree[aria-current="page"] .verrou { color: var(--blue); }
 #menu .pied {
   padding: 14px 26px 20px; border-top: 1px solid rgba(248, 243, 230, .16); color: var(--on-blue-muted);
   font-family: var(--mono); font-size: 11px; line-height: 2;

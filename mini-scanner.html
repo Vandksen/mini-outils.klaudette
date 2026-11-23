@@ -62,13 +62,16 @@
             <span class="lecteur-titre">Glisser un PDF ou une photo ici</span>
             <span class="lecteur-sous">ou cliquer pour choisir un fichier — lu dans votre navigateur, rien n'est envoyé</span>
           </label>
-          <p class="lecteur-etat" id="etatLecture" role="status"></p>
+          <div class="lecteur-suivi">
+            <p class="lecteur-etat" id="etatLecture" role="status"></p>
+            <button class="btn ghost" id="arreter" type="button" hidden>Arrêter la lecture</button>
+          </div>
         </section>
 
         <section class="panel">
           <p class="eyebrow">Comment c'est lu</p>
-          <p class="aide-bloc">Un PDF qui contient du texte est lu directement. Un PDF scanné ou une photo passe par une reconnaissance de caractères en français : environ 5 Mo sont chargés au premier usage, puis gardés pour le hors-ligne. Photographiez le document à plat, bien éclairé, sans reflet.</p>
-          <p class="aide-bloc">Seules les 6 premières pages d'un PDF sont lues, dont 3 pages scannées au plus.</p>
+          <p class="aide-bloc">Un PDF qui contient du texte est lu en entier, en une ou deux secondes. Un PDF scanné ou une photo passe par une reconnaissance de caractères en français : environ 5 Mo sont chargés au premier usage, puis gardés pour le hors-ligne. Photographiez le document à plat, bien éclairé, sans reflet.</p>
+          <p class="aide-bloc">Chaque page scannée demande quelques secondes : 10 pages scannées au plus sont reconnues, et la lecture s'arrête dès que les données du type choisi sont trouvées (pour un bail : indice, trimestre et indice de base). « Arrêter la lecture » garde les pages déjà lues.</p>
         </section>
       </div>
 
@@ -126,6 +129,7 @@
     carte: {
       aide: "Carte grise (certificat d'immatriculation) : immatriculation (A), première immatriculation (B), marque et modèle (D.1, D.3), genre (J.1), énergie (P.3) et CO₂ (V.7). <strong>Prix, date d'acquisition et mode de détention n'y figurent pas</strong> : ils restent à saisir dans l'outil.",
       lire: L.carteGrise,
+      complet: function (d) { return !!(d.immat && d.b && d.co2 && d.energie); },
       refus: "Ce document ne ressemble pas à une carte grise : aucune rubrique V.7, J.1 ou P.3 n'a été trouvée.",
       lignes: function (d) {
         var l = [];
@@ -177,6 +181,7 @@
     avis: {
       aide: "Avis d'échéance ou facture couvrant plusieurs mois (assurance, abonnement annuel) : période « du … au … », total à payer, date d'échéance et assureur.",
       lire: L.avisEcheance,
+      complet: function (d) { return !!(d.montant && d.du && d.echeance); },
       refus: "Ni période « du … au … » ni montant à payer trouvés dans ce document.",
       lignes: function (d) {
         var l = [];
@@ -210,6 +215,7 @@
     bail: {
       aide: "Bail ou avenant : indice de la clause d'indexation (ILC, ILAT ou ICC), trimestre de référence, indice de base, TVA, surface et adresse du bien, date d'effet et loyer.",
       lire: L.bail,
+      complet: function (d) { return !!(d.indice && d.trimestre && d.base); },
       refus: "Aucune clause d'indexation, surface ou loyer trouvés : est-ce bien un bail ?",
       lignes: function (d) {
         var l = [];
@@ -252,6 +258,17 @@
     }
   };
 
+  // Pages du document qui n'ont pas été lues, et pourquoi.
+  function pagesNonLues(doc) {
+    var m = [], pl = function (n, mot) { return n + " " + mot + (n > 1 ? "s" : ""); };
+    if (doc.arretPage) m.push("Lecture arrêtée à la page " + doc.arretPage + " sur " + doc.total + " : les pages suivantes n'ont pas été lues.");
+    else {
+      if (doc.scanneesNonLues && doc.suffisant) m.push("Les données cherchées ont été trouvées : " + pl(doc.scanneesNonLues, "page") + " scannée" + (doc.scanneesNonLues > 1 ? "s" : "") + " suivante" + (doc.scanneesNonLues > 1 ? "s n'ont" : " n'a") + " pas été reconnue" + (doc.scanneesNonLues > 1 ? "s" : "") + ". Pour les lire après un changement de type, déposez à nouveau le document.");
+      else if (doc.scanneesNonLues) m.push("Seules les " + L.PAGES_OCR_MAX + " premières pages scannées ont été reconnues (" + doc.scanneesNonLues + " de plus dans le document).");
+      if (doc.reste) m.push("Seules les " + L.PAGES_MAX + " premières pages ont été lues (" + doc.reste + " de plus dans le document).");
+    }
+    return m;
+  }
   function nomVehicule(d) { return [d.marque && d.marque.valeur, d.modele && d.modele.valeur].filter(Boolean).join(" "); }
   function moisPeriode(d) { return Math.round((L.jour(d.au.valeur) + 1 - L.jour(d.du.valeur)) / 30.4375); }
   function el(balise, classe, texte) {
@@ -272,7 +289,7 @@
     if (doc && doc.ocr) messages.push("Texte reconnu sur une image : relisez chaque valeur avant de vous en servir.");
     if (d && !d.reconnue) messages.push(t.refus);
     else if (d) messages = messages.concat(t.alertes(d));
-    if (doc && doc.reste) messages.push("Seules les " + L.PAGES_MAX + " premières pages ont été lues (" + doc.reste + " de plus dans le document).");
+    if (doc) messages = messages.concat(pagesNonLues(doc));
     messages.forEach(function (m) { alertes.appendChild(el("li", "", m)); });
     lignes.forEach(function (l) {
       var tr = el("tr");
@@ -309,19 +326,29 @@
     });
   }
 
-  var occupe = false;
+  var occupe = false, lecture = null;
   function traite(fichier) {
     if (!fichier || occupe) return;
     occupe = true;
     $("depot").classList.add("occupe");
-    L.lireDocument(fichier, function (e) { $("etatLecture").textContent = e; }).then(function (d) {
+    var t = TYPES[$("typeDoc").value];
+    lecture = L.lireDocument(fichier, {
+      etat: function (e) { $("etatLecture").textContent = e; },
+      // Les pages scannées suivantes sont sautées dès que les données du type choisi sont là.
+      assez: function (partiel) { var d = t.lire(partiel); return d.reconnue && t.complet(d); }
+    });
+    $("arreter").hidden = false;
+    $("arreter").disabled = false;
+    lecture.then(function (d) {
       doc = d;
-      $("etatLecture").textContent = "« " + d.nom + " » lu.";
+      $("etatLecture").textContent = "« " + d.nom + " » lu" + (d.total > 1 ? " : " + (d.arretPage ? (d.arretPage - 1) + " page" + (d.arretPage > 2 ? "s" : "") + " sur " + d.total : d.total + " pages") : "") + ".";
     }).catch(function (e) {
       doc = null;
       $("etatLecture").textContent = e && e.message ? e.message : "Lecture impossible.";
     }).then(function () {
       occupe = false;
+      lecture = null;
+      $("arreter").hidden = true;
       $("depot").classList.remove("occupe");
       $("fichier").value = "";
       affiche();
@@ -329,6 +356,12 @@
   }
 
   $("typeDoc").addEventListener("change", affiche);
+  $("arreter").addEventListener("click", function () {
+    if (!lecture) return;
+    lecture.arreter();
+    $("arreter").disabled = true;
+    $("etatLecture").textContent = "Arrêt de la lecture…";
+  });
   $("fichier").addEventListener("change", function () { traite($("fichier").files[0]); });
   ["dragenter", "dragover"].forEach(function (t) {
     $("depot").addEventListener(t, function (e) { e.preventDefault(); $("depot").classList.add("survol"); });

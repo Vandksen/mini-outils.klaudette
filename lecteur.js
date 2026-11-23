@@ -18,8 +18,14 @@ window.MiniLecteur = (function () {
   var M = window.MiniOutils, $ = M.$;
   // Racine du site : lecteur.js y est rangé.
   var RACINE = new URL(".", (document.currentScript && document.currentScript.src) || location.href).href;
-  var PAGES_MAX = 6;          // pages lues au plus dans un PDF
-  var PAGES_OCR_MAX = 3;      // pages scannées passées à la reconnaissance de caractères
+  // Un PDF qui contient du texte est lu en entier : pdf.js en lit des dizaines de pages en
+  // une ou deux secondes. PAGES_MAX n'est qu'un garde-fou contre un dépôt par erreur.
+  // Une page scannée prend plusieurs secondes de reconnaissance de caractères : au plus
+  // PAGES_OCR_MAX pages scannées sont reconnues, et la lecture s'arrête plus tôt quand
+  // les données cherchées sont trouvées (option « assez » de lireDocument).
+  var PAGES_MAX = 100;
+  var PAGES_OCR_MAX = 10;
+  var ARRET = { arret: true };   // rejet interne quand l'utilisateur arrête la lecture
 
   // ---------- Chargement des bibliothèques ----------
   var pdfjs = null, ocr = null, suivi = null;
@@ -92,64 +98,87 @@ window.MiniLecteur = (function () {
 
   function etat(z, texte) { if (z) z(texte); }
 
-  function lirePdf(fichier, z) {
+  // Lecture d'un PDF, page après page. ctl : { arrete, signal } pour l'arrêt demandé par
+  // l'utilisateur ; assez(lignes) : true quand les données cherchées sont trouvées.
+  function lirePdf(fichier, z, ctl, assez) {
     etat(z, "Ouverture du PDF…");
     return Promise.all([chargePdf(), fichier.arrayBuffer()]).then(function (r) {
       var lib = r[0];
       // isEvalSupported à false : aucun code tiré du document n'est exécuté.
       return lib.getDocument({ data: new Uint8Array(r[1]), isEvalSupported: false, disableFontFace: true }).promise;
     }).then(function (pdf) {
-      var n = Math.min(pdf.numPages, PAGES_MAX), pages = [], scannees = 0;
-      var suite = Promise.resolve();
-      for (var i = 1; i <= n; i++) (function (k) {
-        suite = suite.then(function () {
-          etat(z, "Lecture de la page " + k + " sur " + n + "…");
-          return pdf.getPage(k).then(function (page) {
-            return page.getTextContent().then(function (c) {
-              var lignes = lignesPage(c);
-              if (lignes.join("").replace(/\s/g, "").length >= 30) { pages.push({ lignes: lignes, ocr: false }); return; }
-              // Page sans texte : c'est un scan, la reconnaissance de caractères prend le relais.
-              if (scannees >= PAGES_OCR_MAX) return;
-              scannees++;
-              var vue = page.getViewport({ scale: 2.5 });
-              var toile = document.createElement("canvas");
-              toile.width = Math.ceil(vue.width); toile.height = Math.ceil(vue.height);
-              return page.render({ canvasContext: toile.getContext("2d"), viewport: vue }).promise.then(function () {
-                return reconnait(toile, z, "page " + k);
-              }).then(function (lignesOcr) { pages.push({ lignes: lignesOcr, ocr: true }); });
+      var n = Math.min(pdf.numPages, PAGES_MAX);
+      var lu = { pages: [], total: pdf.numPages, reste: pdf.numPages - n, scannees: 0, scanneesNonLues: 0, suffisant: false, arretPage: 0 };
+      var toutes = function () { return lu.pages.reduce(function (t, pg) { return t.concat(pg.lignes); }, []); };
+      function page(k) {
+        if (k > n) return Promise.resolve();
+        if (ctl.arrete) { lu.arretPage = k; return Promise.resolve(); }
+        lu.enCours = k;
+        etat(z, "Lecture de la page " + k + " sur " + n + "…");
+        return pdf.getPage(k).then(function (pg) {
+          return pg.getTextContent().then(function (c) {
+            var lignes = lignesPage(c);
+            if (lignes.join("").replace(/\s/g, "").length >= 30) { lu.pages.push({ lignes: lignes, ocr: false }); return; }
+            // Page sans texte : c'est un scan, la reconnaissance de caractères prend le
+            // relais, sauf si les données sont déjà trouvées ou le plafond atteint.
+            if (lu.suffisant || lu.scannees >= PAGES_OCR_MAX) { lu.scanneesNonLues++; return; }
+            lu.scannees++;
+            var vue = pg.getViewport({ scale: 2.5 });
+            var toile = document.createElement("canvas");
+            toile.width = Math.ceil(vue.width); toile.height = Math.ceil(vue.height);
+            return pg.render({ canvasContext: toile.getContext("2d"), viewport: vue }).promise.then(function () {
+              return reconnait(toile, z, ctl, "Page " + k + " sur " + n + " (page scannée " + lu.scannees + " sur " + PAGES_OCR_MAX + " au plus)");
+            }).then(function (lignesOcr) {
+              lu.pages.push({ lignes: lignesOcr, ocr: true });
+              if (assez && assez(toutes())) lu.suffisant = true;
             });
           });
-        });
-      })(i);
-      return suite.then(function () {
-        var reste = pdf.numPages > n ? pdf.numPages - n : 0;
-        return { pages: pages, reste: reste };
-      });
+        }).then(function () { return page(k + 1); });
+      }
+      return page(1).catch(function (e) {
+        if (e !== ARRET) throw e;
+        lu.arretPage = lu.arretPage || lu.enCours;
+      }).then(function () { return lu; });
     });
   }
 
-  function reconnait(image, z, quoi) {
-    etat(z, "Préparation de la reconnaissance de caractères (5 Mo au premier usage)…");
+  // Reconnaissance de caractères d'une image ou d'une page rendue. Un arrêt demandé pendant
+  // la reconnaissance l'interrompt aussitôt : le moteur est arrêté, puis rechargé au besoin.
+  function reconnait(image, z, ctl, quoi) {
+    etat(z, ocr ? (quoi ? quoi + " — r" : "R") + "econnaissance du texte…" :
+                  (quoi ? quoi + " — p" : "P") + "réparation de la reconnaissance de caractères (5 Mo au premier usage)…");
     suivi = function (m) {
-      if (m.status === "recognizing text") etat(z, "Reconnaissance du texte" + (quoi ? " de la " + quoi : "") + " : " + Math.round(m.progress * 100) + " %");
+      if (m.status === "recognizing text") etat(z, (quoi ? quoi + " — r" : "R") + "econnaissance du texte : " + Math.round(m.progress * 100) + " %");
       else if (/loading/.test(m.status)) etat(z, "Chargement de la reconnaissance de caractères : " + Math.round((m.progress || 0) * 100) + " %");
     };
-    return chargeOcr().then(function (w) { return w.recognize(image); }).then(function (r) {
+    var travail = chargeOcr().then(function (w) { return w.recognize(image); });
+    var arret = ctl.signal.then(function () {
+      var moteur = ocr;
+      ocr = null;
+      if (moteur) moteur.then(function (w) { w.terminate(); }, function () {});
+      throw ARRET;
+    });
+    arret.catch(function () {});   // un arrêt demandé après la fin de cette page n'est pas une erreur
+    return Promise.race([travail, arret]).then(function (r) {
       suivi = null;
       return r.data.text.split(/\r?\n/).map(function (l) { return l.replace(/\s+$/, ""); }).filter(Boolean);
-    });
+    }, function (e) { suivi = null; throw e; });
   }
 
-  function lire(fichier, z) {
+  function lire(fichier, z, ctl, assez) {
     var pdf = fichier.type === "application/pdf" || /\.pdf$/i.test(fichier.name);
-    if (pdf) return lirePdf(fichier, z);
-    if (/^image\//.test(fichier.type)) return reconnait(fichier, z, "").then(function (lignes) { return { pages: [{ lignes: lignes, ocr: true }], reste: 0 }; });
+    if (pdf) return lirePdf(fichier, z, ctl, assez);
+    if (/^image\//.test(fichier.type)) {
+      return reconnait(fichier, z, ctl, "").then(function (lignes) {
+        return { pages: [{ lignes: lignes, ocr: true }], total: 1, reste: 0, scannees: 1, scanneesNonLues: 0, suffisant: false, arretPage: 0 };
+      }, function (e) { throw e === ARRET ? new Error("Lecture arrêtée.") : e; });
+    }
     return Promise.reject(new Error("Format non pris en charge : déposez un PDF ou une image (JPEG, PNG)."));
   }
 
   // ---------- Aides pour les extracteurs ----------
   // Minuscules sans accents, pour comparer des mots.
-  function simple(s) { return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); }
+  function simple(s) { return String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
   var MOIS = ["janvier", "fevrier", "mars", "avril", "mai", "juin", "juillet", "aout", "septembre", "octobre", "novembre", "decembre"];
   // Toutes les dates d'un texte, dans l'ordre : 15/03/2026, 15.03.2026, 15-03-26, 1er mars 2026.
   function dates(txt) {
@@ -179,16 +208,28 @@ window.MiniLecteur = (function () {
   function jour(d) { return Math.round(Date.UTC(d.a, d.m - 1, d.j) / 86400000); }
   function extrait(ligne) { ligne = String(ligne).replace(/\s+/g, " ").trim(); return ligne.length > 90 ? ligne.slice(0, 87) + "…" : ligne; }
 
-  // Lit un fichier et rend { nom, lignes, texte, ocr, reste } ; surEtat(texte) reçoit
-  // l'avancement, à afficher pendant la lecture.
-  function lireDocument(fichier, surEtat) {
-    return lire(fichier, surEtat).then(function (lu) {
+  // Lit un fichier. o : { etat: fonction qui reçoit l'avancement à afficher,
+  //                        assez: fonction(doc partiel) -> true quand les données cherchées
+  //                               sont trouvées : les pages scannées suivantes sont sautées }.
+  // Rend une promesse de { nom, lignes, texte, ocr, total, reste, scannees, scanneesNonLues,
+  // suffisant, arretPage } ; la promesse porte arreter(), qui interrompt la lecture et garde
+  // les pages déjà lues (arretPage : première page non lue).
+  function lireDocument(fichier, o) {
+    if (typeof o === "function") o = { etat: o };
+    o = o || {};
+    var ctl = { arrete: false };
+    ctl.signal = new Promise(function (r) { ctl.declenche = r; });
+    var assez = o.assez && function (lignes) { return o.assez({ lignes: lignes, texte: lignes.join("\n") }); };
+    var p = lire(fichier, o.etat, ctl, assez).then(function (lu) {
       var lignes = [], ocr = false;
       lu.pages.forEach(function (pg) { lignes = lignes.concat(pg.lignes); ocr = ocr || pg.ocr; });
-      var doc = { nom: fichier.name, lignes: lignes, texte: lignes.join("\n"), ocr: ocr, reste: lu.reste };
-      if (!doc.texte.replace(/\s/g, "")) throw new Error("Aucun texte lisible dans ce document.");
+      var doc = { nom: fichier.name, lignes: lignes, texte: lignes.join("\n"), ocr: ocr, total: lu.total, reste: lu.reste,
+                  scannees: lu.scannees, scanneesNonLues: lu.scanneesNonLues, suffisant: lu.suffisant, arretPage: lu.arretPage };
+      if (!doc.texte.replace(/\s/g, "")) throw new Error(lu.arretPage ? "Lecture arrêtée avant qu'un texte soit lu." : "Aucun texte lisible dans ce document.");
       return doc;
     });
+    p.arreter = function () { if (!ctl.arrete) { ctl.arrete = true; ctl.declenche(); } };
+    return p;
   }
 
   // ---------- Documents reconnus ----------
@@ -373,6 +414,6 @@ window.MiniLecteur = (function () {
     return r;
   }
 
-  return { lireDocument: lireDocument, PAGES_MAX: PAGES_MAX, dates: dates, premiereDate: premiereDate, montants: montants, centimes: centimes, simple: simple, iso: iso, jour: jour, extrait: extrait,
+  return { lireDocument: lireDocument, PAGES_MAX: PAGES_MAX, PAGES_OCR_MAX: PAGES_OCR_MAX, dates: dates, premiereDate: premiereDate, montants: montants, centimes: centimes, simple: simple, iso: iso, jour: jour, extrait: extrait,
            carteGrise: carteGrise, avisEcheance: avisEcheance, bail: bail };
 })();

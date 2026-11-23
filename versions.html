@@ -44,6 +44,15 @@
 
     <!-- À chaque publication : ajouter un bloc en tête, avec le même numéro que VERSION dans commun.js. -->
     <section class="version-bloc">
+      <h2><span class="numero">1.30.1</span> 23 novembre 2026</h2>
+      <ul>
+        <li>« Mini-scanner » lit désormais un PDF texte en entier (jusqu'à 100 pages), au lieu des 6 premières pages : la clause d'indexation d'un long bail est trouvée.</li>
+        <li>PDF scanné : jusqu'à 10 pages reconnues au lieu de 3, et la lecture s'arrête dès que les données du type choisi sont trouvées (pour un bail : indice, trimestre et indice de base).</li>
+        <li>L'avancement s'affiche page par page (« Page 4 sur 18 (page scannée 2 sur 10 au plus) — reconnaissance du texte : 45 % ») et un bouton « Arrêter la lecture » interrompt la lecture en gardant les pages déjà lues.</li>
+      </ul>
+    </section>
+
+    <section class="version-bloc">
       <h2><span class="numero">1.30.0</span> 23 novembre 2026</h2>
       <ul>
         <li>Nouvel outil « Mini-scanner » : on choisit carte grise, avis d'échéance ou bail, on dépose le PDF, le scan ou la photo, et la page affiche les données lues avec la ligne du document d'où vient chacune. Le document est lu dans le navigateur (pdf.js, et reconnaissance de caractères Tesseract pour les scans et photos) : rien n'est envoyé.</li>

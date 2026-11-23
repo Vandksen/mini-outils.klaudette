@@ -60,8 +60,8 @@
           <tr><td><a href="decomposition-immeuble.html">Décomposition d'un immeuble</a></td><td>Écriture d'acquisition par composants, note de calcul et justificatif</td><td>6 colonnes, texte, PDF</td></tr>
           <tr><td><a href="plafond-vehicule.html">Plafond d'amortissement véhicule</a></td><td>Écriture de dotation (facultative), note de calcul et justificatif</td><td>6 colonnes, texte, PDF</td></tr>
           <tr><td><a href="medecins-secteur1.html">Médecins du secteur 1</a></td><td>Écriture de reclassement des frais couverts par les 2 %, note de calcul et justificatif</td><td>6 colonnes, texte, PDF</td></tr>
-          <tr><td><a href="extournes.html">Extournes</a></td><td>Écritures d'extourne à l'ouverture de l'exercice</td><td>8 colonnes</td></tr>
-          <tr><td><a href="import-banque.html">Import banque</a></td><td>Écritures de banque ou de caisse issues d'un relevé</td><td>8 colonnes</td></tr>
+          <tr><td><a href="extournes.html">Extournes</a></td><td>Écritures d'extourne à l'ouverture de l'exercice</td><td>6 colonnes</td></tr>
+          <tr><td><a href="import-banque.html">Import banque</a></td><td>Écritures de banque ou de caisse issues d'un relevé</td><td>6 colonnes</td></tr>
           <tr><td><a href="fnp.html">Calcul de FNP</a></td><td>Note de compte d'une facture non parvenue</td><td>Texte</td></tr>
           <tr><td><a href="revalorisation-loyer.html">Revalorisation de loyer</a></td><td>Écriture de provision du complément de loyer, note de calcul et justificatif</td><td>6 colonnes, texte, PDF</td></tr>
           <tr><td><a href="revenu-brut-social.html">Revenu brut social</a></td><td>Note de calcul du cadre 8 de la 2035-B et justificatif</td><td>Texte, PDF</td></tr>
@@ -72,9 +72,8 @@
 
     <h2>Le format des écritures</h2>
     <p>Chaque écriture tient sur une ligne. Les colonnes sont séparées par des tabulations, comme lors d'un copier-coller depuis un tableur.</p>
-    <p><strong>Format à 6 colonnes :</strong> date, pièce, compte, libellé, débit, crédit.</p>
-    <p><strong>Format à 8 colonnes :</strong> date, pièce, compte, libellé, deux colonnes techniques, débit, crédit. Les deux colonnes techniques sont vides pour les extournes ; pour l'import banque, la seconde contient « FAUX ».</p>
-    <p>Dans les deux formats, la date est écrite JJ/MM/AAAA et les montants avec une virgule décimale, sans séparateur de milliers, par exemple <span class="donnee">1200,00</span>.</p>
+    <p><strong>Format à 6 colonnes</strong>, le même pour tous les outils : date, pièce, compte, libellé, débit, crédit. Les écritures de plusieurs outils peuvent donc être empilées puis collées en une fois.</p>
+    <p>La date est écrite JJ/MM/AAAA et les montants avec une virgule décimale, sans séparateur de milliers, par exemple <span class="donnee">1200,00</span>.</p>
 
     <h2>Autres logiciels comptables</h2>
     <p>Mini-outils n'a été utilisé qu'avec ACDCompta. Un autre logiciel comptable peut recevoir ces écritures s'il accepte le collage de lignes dans cet ordre de colonnes ; cela n'a pas été vérifié.</p>

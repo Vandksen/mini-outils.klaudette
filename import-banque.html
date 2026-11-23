@@ -115,7 +115,7 @@
 
 <footer class="site-footer">
   <div class="conteneur">
-    <span>Colonnes copiées : date · pièce · compte · libellé · vide · FAUX · débit · crédit</span>
+    <span>Colonnes copiées : date · pièce · compte · libellé · débit · crédit</span>
     <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
   </div>
 </footer>
@@ -184,7 +184,7 @@
 
     $("nbLues").textContent = ops.length;
     $("nbDefaut").textContent = nbDefaut;
-    M.rendre(ecritures, blocage, alertes, ["", "FAUX"]);
+    M.rendre(ecritures, blocage, alertes);
   }
 
   M.brancher(ids, calcule);

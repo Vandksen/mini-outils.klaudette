@@ -107,7 +107,7 @@
 
 <footer class="site-footer">
   <div class="conteneur">
-    <span>Colonnes copiées : date · pièce · compte · libellé · vide · vide · débit · crédit</span>
+    <span>Colonnes copiées : date · pièce · compte · libellé · débit · crédit</span>
     <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
   </div>
 </footer>
@@ -177,7 +177,7 @@
     else if (!ecritures.length) blocage = "Aucune ligne exploitable : vérifiez le format collé.";
 
     $("nbLues").textContent = lues;
-    M.rendre(ecritures, blocage, alertes, true);
+    M.rendre(ecritures, blocage, alertes);
   }
 
   M.brancher(ids, calcule);

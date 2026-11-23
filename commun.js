@@ -5,7 +5,6 @@ window.MiniOutils = (function () {
   "use strict";
   var $ = function (id) { return document.getElementById(id); };
   var ecritures = [];
-  var milieu = [];
 
   // Numéro de version affiché en bas du menu. À augmenter à CHAQUE publication :
   // dernier chiffre pour une retouche, chiffre du milieu pour un nouvel outil.
@@ -14,7 +13,7 @@ window.MiniOutils = (function () {
   // Mettre le MÊME numéro dans version.json : c'est ce petit fichier que les pages ouvertes
   // consultent pour savoir si une nouvelle version est publiée.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.29.0";
+  var VERSION = "1.29.1";
 
   // Type de chaque outil (champ « type ») : ce sur quoi il travaille, affiché en étiquette sur
   // sa page et sur sa carte de l'accueil (voir etiquettesType).
@@ -400,11 +399,9 @@ window.MiniOutils = (function () {
 
   // Affiche les écritures {date, piece, compte, libelle, debit, credit, debut}
   // (montants en centimes ou null), les totaux, l'équilibre et les alertes.
-  // huit : copie au format d'import ACDCompta à 8 colonnes. true = deux colonnes vides avant
-  // le débit ; un tableau donne leur contenu, par exemple ["", "FAUX"].
-  function rendre(liste, blocage, alertes, huit) {
+  // Tous les outils copient au même format à 6 colonnes : leurs écritures s'empilent ensemble.
+  function rendre(liste, blocage, alertes) {
     ecritures = liste;
-    milieu = huit === true ? ["", ""] : (huit || []);
     alertes = alertes || [];
     var corps = $("lignes");
     corps.textContent = "";
@@ -451,14 +448,12 @@ window.MiniOutils = (function () {
     });
   }
 
-  // Colonnes séparées par des tabulations : date, pièce, compte, libellé, débit, crédit
-  // (avec deux colonnes vides avant le débit au format 8 colonnes).
-  function texteACopier() { return texteLignes(ecritures, milieu); }
-  function texteLignes(liste, colonnes) {
+  // Colonnes séparées par des tabulations : date, pièce, compte, libellé, débit, crédit.
+  function texteACopier() { return texteLignes(ecritures); }
+  function texteLignes(liste) {
     return liste.map(function (e) {
-      return [e.date, e.piece, e.compte, e.libelle]
-        .concat(colonnes)
-        .concat([e.debit === null ? "" : brut(e.debit), e.credit === null ? "" : brut(e.credit)])
+      return [e.date, e.piece, e.compte, e.libelle,
+              e.debit === null ? "" : brut(e.debit), e.credit === null ? "" : brut(e.credit)]
         .map(function (c) { return String(c).replace(/[\t\r\n]+/g, " "); })
         .join("\t");
     }).join("\r\n");
@@ -582,8 +577,8 @@ window.MiniOutils = (function () {
 
   // ---------- Pile d'écritures ----------
   // Les écritures empilées depuis les outils sont gardées le temps de la navigation, dans
-  // l'onglet (sessionStorage) : { colonnes: colonnes du milieu (format 6 ou 8 colonnes),
-  // lots: [{ nom: outil d'origine, lignes: [écritures] }] }. Le bloc du menu les regroupe,
+  // l'onglet (sessionStorage) : { lots: [{ nom: outil d'origine, lignes: [écritures] }] }.
+  // Le bloc du menu les regroupe,
   // les copie en un seul collage pour ACDCompta, ou les vide.
   var CLE_PILE = "mini-outils-pile";
   function litPile() {
@@ -591,7 +586,7 @@ window.MiniOutils = (function () {
       var p = JSON.parse(sessionStorage.getItem(CLE_PILE));
       if (p && p.lots && p.lots.length) return p;
     } catch (e) {}
-    return { colonnes: [], lots: [] };
+    return { lots: [] };
   }
   function ecritPile(p) {
     try {
@@ -604,14 +599,8 @@ window.MiniOutils = (function () {
   function empile() {
     if (!ecritures.length) return;
     var p = litPile();
-    // Un seul collage suppose un seul format d'import : on ne mêle pas 6 et 8 colonnes.
-    if (p.lots.length && JSON.stringify(p.colonnes) !== JSON.stringify(milieu)) {
-      $("etat").textContent = "Format d'import différent des écritures déjà empilées : copiez-les ou videz la pile d'abord.";
-      return;
-    }
     var page = location.pathname.split("/").pop();
     var outil = PRODUCTION.concat(REVISION, ANALYSE, DASHBOARD).filter(function (o) { return o.fichier === page; })[0];
-    p.colonnes = milieu.slice();
     p.lots.push({
       nom: outil ? outil.nom : document.title.split(" — ")[0],
       lignes: ecritures.map(function (e) {
@@ -660,7 +649,7 @@ window.MiniOutils = (function () {
     bloc.querySelector(".pile-voir").addEventListener("click", listePile);
     bloc.querySelector(".pile-vider").addEventListener("click", function () {
       if (!window.confirm("Vider les " + lignes.length + " lignes empilées ?")) return;
-      ecritPile({ colonnes: [], lots: [] });
+      ecritPile({ lots: [] });
       majPile(false);
       majListePile();
     });
@@ -669,7 +658,7 @@ window.MiniOutils = (function () {
   function copiePile(bouton, etat) {
     var p = litPile(), lignes = lignesPile(p);
     if (!lignes.length) return;
-    pressePapiers(texteLignes(lignes, p.colonnes), function () {
+    pressePapiers(texteLignes(lignes), function () {
       etat.textContent = lignes.length + " lignes copiées";
       fete(bouton, tempsGagne(lignes.length));
     }, function () { etat.textContent = "Copie impossible dans ce navigateur"; });

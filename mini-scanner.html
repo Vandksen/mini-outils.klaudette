@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#1136DB">
-<meta name="description" content="Mini-scanner : lit une carte grise, un avis d'échéance ou un bail (PDF, scan ou photo) et préremplit l'outil qui s'en sert : plafond véhicule, avantage en nature, étalement, revalorisation de loyer, loyer du bureau. Lecture dans le navigateur, sans envoi du document.">
+<meta name="description" content="Mini-scanner : lit une carte grise (PDF, scan ou photo) et préremplit « Plafond véhicule » ou « Avantage en nature » : immatriculation, première immatriculation, marque et modèle, énergie, CO₂. Lecture dans le navigateur, sans envoi du document.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icones/icone-m-180.png">
 <title>Mini-scanner — Mini-outils</title>
@@ -12,7 +12,7 @@
 <meta property="og:site_name" content="Mini-outils">
 <meta property="og:locale" content="fr_FR">
 <meta property="og:title" content="Mini-scanner — Mini-outils">
-<meta property="og:description" content="Mini-scanner : lit une carte grise, un avis d'échéance ou un bail (PDF, scan ou photo) et préremplit l'outil qui s'en sert. Lecture dans le navigateur, sans envoi du document.">
+<meta property="og:description" content="Mini-scanner : lit une carte grise (PDF, scan ou photo) et préremplit « Plafond véhicule » ou « Avantage en nature » : immatriculation, première immatriculation, marque et modèle, énergie, CO₂. Lecture dans le navigateur, sans envoi du document.">
 <meta property="og:url" content="https://mini-outils-compta.fr/mini-scanner.html">
 <link rel="canonical" href="https://mini-outils-compta.fr/mini-scanner.html">
 <meta property="og:image" content="https://mini-outils-compta.fr/images/og-tempete.jpg">
@@ -38,25 +38,17 @@
 
 <main>
   <div class="conteneur">
-    <p class="eyebrow">Lecture de documents — PDF, scan ou photo</p>
+    <p class="eyebrow">Lecture de la carte grise — PDF, scan ou photo</p>
     <h1>Mini-<em>scanner.</em></h1>
-    <p class="lead"><strong>But de la page :</strong> ne plus retaper ce qui dort dans un document. Déposez une carte grise, un avis d'échéance ou un bail : la page en lit les données utiles, puis remplit l'outil qui s'en sert.</p>
-    <p class="lead">Choisissez le type de document, déposez le fichier, vérifiez les valeurs lues, puis ouvrez l'outil prérempli. Le document est lu dans votre navigateur : il n'est envoyé nulle part.</p>
+    <p class="lead"><strong>But de la page :</strong> ne plus retaper la carte grise. Déposez-la : la page en lit les rubriques utiles, puis remplit « Plafond véhicule » ou « Avantage en nature ».</p>
+    <p class="lead">Déposez le fichier, vérifiez les valeurs lues, puis ouvrez l'outil prérempli. Le document est lu dans votre navigateur : il n'est envoyé nulle part.</p>
 
     <div class="grille">
 
       <div class="colonne">
         <section class="panel">
-          <p class="eyebrow">01 — Document</p>
-          <div class="champ pleine">
-            <label for="typeDoc">Type de document</label>
-            <select id="typeDoc" class="segments">
-              <option value="carte">Carte grise</option>
-              <option value="avis">Avis d'échéance</option>
-              <option value="bail">Bail</option>
-            </select>
-          </div>
-          <p class="aide-bloc" id="aideDoc"></p>
+          <p class="eyebrow">01 — Carte grise</p>
+          <p class="aide-bloc">Certificat d'immatriculation : immatriculation (A), première immatriculation (B), marque et modèle (D.1, D.3), date du certificat (I), genre (J.1), énergie (P.3) et CO₂ (V.7). <strong>Prix, date d'acquisition et mode de détention n'y figurent pas</strong> : ils restent à saisir dans l'outil.</p>
           <label class="lecteur-depot" id="depot">
             <input id="fichier" class="lecteur-fichier" type="file" accept="application/pdf,.pdf,image/jpeg,image/png,image/webp">
             <span class="lecteur-titre">Glisser un PDF ou une photo ici</span>
@@ -70,8 +62,8 @@
 
         <section class="panel">
           <p class="eyebrow">Comment c'est lu</p>
-          <p class="aide-bloc">Un PDF qui contient du texte est lu en entier, en une ou deux secondes. Un PDF scanné ou une photo passe par une reconnaissance de caractères en français : environ 5 Mo sont chargés au premier usage, puis gardés pour le hors-ligne. Photographiez le document à plat, bien éclairé, sans reflet.</p>
-          <p class="aide-bloc">Chaque page scannée demande quelques secondes : 10 pages scannées au plus sont reconnues, et la lecture s'arrête dès que les données du type choisi sont trouvées (pour un bail : indice, trimestre et indice de base). « Arrêter la lecture » garde les pages déjà lues.</p>
+          <p class="aide-bloc">Un PDF qui contient du texte est lu en entier, en une ou deux secondes. Un PDF scanné ou une photo passe par une reconnaissance de caractères en français : environ 5 Mo sont chargés au premier usage, puis gardés pour le hors-ligne. Photographiez la carte grise à plat, bien éclairée, sans reflet.</p>
+          <p class="aide-bloc">Chaque page scannée demande quelques secondes : 10 pages scannées au plus sont reconnues, et la lecture s'arrête dès que l'immatriculation, la date B, l'énergie et le CO₂ sont trouvés. « Arrêter la lecture » garde les pages déjà lues.</p>
         </section>
       </div>
 
@@ -87,7 +79,7 @@
               <tbody id="lu"></tbody>
             </table>
           </div>
-          <p class="vide" id="videLu">Déposez un document pour voir les données reconnues.</p>
+          <p class="vide" id="videLu">Déposez une carte grise pour voir les données reconnues.</p>
           <details class="lecteur-texte" id="texteLu" hidden>
             <summary id="resumeTexte">Texte lu</summary>
             <pre id="texte"></pre>
@@ -119,158 +111,72 @@
 (function () {
   "use strict";
   var M = window.MiniOutils, L = window.MiniLecteur, $ = M.$;
-  var brut = function (c) { return Math.floor(c / 100) + "," + M.deux(c % 100); };
-  var doc = null;   // dernier document lu, relu sans nouveau dépôt si le type change
+  var doc = null;   // dernière carte grise lue
 
-  // Chaque type de document : son aide, la lecture de ses données, et les outils qu'il
-  // remplit. Pour chaque outil, champs(d) rend les champs de sa page à remplir
-  // ({ id, valeur, libelle }), à partir des données lues d.
-  var TYPES = {
-    carte: {
-      aide: "Carte grise (certificat d'immatriculation) : immatriculation (A), première immatriculation (B), marque et modèle (D.1, D.3), genre (J.1), énergie (P.3) et CO₂ (V.7). <strong>Prix, date d'acquisition et mode de détention n'y figurent pas</strong> : ils restent à saisir dans l'outil.",
-      lire: L.carteGrise,
-      complet: function (d) { return !!(d.immat && d.b && d.co2 && d.energie); },
-      refus: "Ce document ne ressemble pas à une carte grise : aucune rubrique V.7, J.1 ou P.3 n'a été trouvée.",
-      lignes: function (d) {
-        var l = [];
-        if (d.immat) l.push(["Immatriculation (A)", d.immat.valeur, d.immat.ligne]);
-        if (d.b) l.push(["Première immatriculation (B)", M.dateFr(d.b.valeur), d.b.ligne]);
-        if (d.marque || d.modele) l.push(["Marque et modèle (D.1, D.3)", nomVehicule(d), (d.marque || d.modele).ligne]);
-        if (d.i) l.push(["Date du certificat (I)", M.dateFr(d.i.valeur), d.i.ligne]);
-        if (d.genre) l.push(["Genre national (J.1)", d.genre.valeur, d.genre.ligne]);
-        if (d.energie) l.push(["Énergie (P.3)", d.energie.valeur + (d.energie.nom ? " — " + d.energie.nom : ""), d.energie.ligne]);
-        if (d.co2) l.push(["Taux de CO₂ (V.7)", d.co2.valeur + " g/km", d.co2.ligne]);
-        return l;
-      },
-      alertes: function (d) {
-        var a = [];
-        if (!d.co2) a.push("Taux de CO₂ (rubrique V.7) non trouvé.");
-        if (!d.b) a.push("Date de première immatriculation (rubrique B) non trouvée.");
-        if (d.genre && d.genre.valeur !== "VP") a.push("Genre « " + d.genre.valeur + " » (rubrique J.1) : ce n'est pas une voiture particulière. Vérifiez que le véhicule relève bien des véhicules de tourisme avant d'appliquer le plafond.");
-        if (d.energie && d.energie.valeur === "EL" && d.co2 && +d.co2.valeur > 0) a.push("Énergie « EL » (électrique) avec un CO₂ de " + d.co2.valeur + " g/km : relisez la rubrique V.7.");
-        return a;
-      },
-      cibles: [
-        { page: "plafond-vehicule.html", nom: "Plafond véhicule", champs: function (d) {
-          var c = [];
-          if (d.immat) c.push({ id: "vehicule", valeur: d.immat.valeur, libelle: "véhicule" });
-          if (d.co2) c.push({ id: "co2", valeur: d.co2.valeur, libelle: "CO₂" });
-          if (d.b) {
-            var jb = L.jour(d.b.valeur);
-            c.push({ id: "ancien", valeur: jb < L.jour({ a: 2004, m: 6, j: 2 }), libelle: "mise en circulation avant le 2 juin 2004" });
-            // Les cartes grises établies depuis le 1er mars 2020 portent un CO2 mesuré en WLTP.
-            c.push({ id: "norme", valeur: jb >= L.jour({ a: 2020, m: 3, j: 1 }) ? "wltp" : "autre", libelle: "mesure WLTP ou NEDC" });
-          }
-          return c;
-        } },
-        { page: "avantage-nature.html", nom: "Avantage en nature", champs: function (d) {
-          var c = [];
-          if (d.immat) c.push({ id: "immat", valeur: d.immat.valeur, libelle: "immatriculation" });
-          if (nomVehicule(d)) c.push({ id: "vehicule", valeur: nomVehicule(d), libelle: "marque et modèle" });
-          if (d.energie) c.push({ id: "electrique", valeur: d.energie.valeur === "EL", libelle: "100 % électrique" });
-          if (d.b) {
-            // Âge au 1er janvier de l'année en cours : plus de 5 ans si la première
-            // immatriculation précède le 1er janvier de l'année moins 5.
-            var annee = new Date().getFullYear();
-            c.push({ id: "age", valeur: L.jour(d.b.valeur) < L.jour({ a: annee - 5, m: 1, j: 1 }) ? "ancien" : "recent", libelle: "âge du véhicule (au 1er janvier " + annee + ")" });
-          }
-          return c;
-        } }
-      ]
-    },
-    avis: {
-      aide: "Avis d'échéance ou facture couvrant plusieurs mois (assurance, abonnement annuel) : période « du … au … », total à payer, date d'échéance et assureur.",
-      lire: L.avisEcheance,
-      complet: function (d) { return !!(d.montant && d.du && d.echeance); },
-      refus: "Ni période « du … au … » ni montant à payer trouvés dans ce document.",
-      lignes: function (d) {
-        var l = [];
-        if (d.montant) l.push(["Montant à payer", M.affiche(d.montant.valeur) + " €", d.montant.ligne]);
-        if (d.du && d.au) l.push(["Période couverte", "Du " + M.dateFr(d.du.valeur) + " au " + M.dateFr(d.au.valeur) + " (" + moisPeriode(d) + " mois)", d.du.ligne]);
-        if (d.echeance) l.push(["Date d'échéance", M.dateFr(d.echeance.valeur), d.echeance.ligne]);
-        if (d.assureur) l.push(["Assureur", d.assureur.valeur, ""]);
-        return l;
-      },
-      alertes: function (d) {
-        var a = [];
-        if (!d.montant) a.push("Montant à payer non trouvé.");
-        if (!(d.du && d.au)) a.push("Période « du … au … » non trouvée.");
-        return a;
-      },
-      cibles: [
-        { page: "etalement.html", nom: "Cutter", champs: function (d) {
-          var c = [];
-          if (d.montant) c.push({ id: "montant", valeur: brut(d.montant.valeur), libelle: "montant à répartir" });
-          if (d.du && d.au) {
-            c.push({ id: "debut", valeur: d.du.valeur, libelle: "début de la répartition" });
-            var mois = moisPeriode(d);
-            if (mois >= 1 && mois <= 120) c.push({ id: "duree", valeur: String(mois), libelle: "durée" });
-          }
-          if (d.echeance) c.push({ id: "dateFacture", valeur: d.echeance.valeur, libelle: "date de la facture" });
-          if (d.assurance || d.assureur) c.push({ id: "libelle", valeur: "Assurance" + (d.assureur ? " " + d.assureur.valeur : ""), libelle: "libellé" });
-          return c;
-        } }
-      ]
-    },
-    bail: {
-      aide: "Bail ou avenant : indice de la clause d'indexation (ILC, ILAT ou ICC), trimestre de référence, indice de base, TVA, surface et adresse du bien, date d'effet et loyer.",
-      lire: L.bail,
-      complet: function (d) { return !!(d.indice && d.trimestre && d.base); },
-      refus: "Aucune clause d'indexation, surface ou loyer trouvés : est-ce bien un bail ?",
-      lignes: function (d) {
-        var l = [];
-        if (d.indice) l.push(["Indice du bail", d.indice.valeur, d.indice.ligne]);
-        if (d.trimestre) l.push(["Trimestre de référence", "T" + d.trimestre.valeur, d.trimestre.ligne]);
-        if (d.base) l.push(["Indice de base", d.base.valeur, d.base.ligne]);
-        if (d.tva) l.push(["Loyer soumis à la TVA", d.tva.valeur ? "Oui" : "Non", d.tva.ligne]);
-        if (d.surface) l.push(["Surface", d.surface.valeur + " m2", d.surface.ligne]);
-        if (d.commune) l.push(["Commune du bien", d.commune.valeur, d.commune.ligne]);
-        if (d.effet) l.push(["Date d'effet", M.dateFr(d.effet.valeur), d.effet.ligne]);
-        if (d.loyer) {
-          var mensuel = d.loyer.annuel ? Math.round(d.loyer.valeur / 12) : d.loyer.valeur;
-          var surface = d.surface ? parseFloat(d.surface.valeur.replace(",", ".")) : NaN;
-          l.push(["Loyer", M.affiche(d.loyer.valeur) + " €" + (d.loyer.annuel ? " par an, soit " + M.affiche(mensuel) + " € par mois" : " par mois") +
-                  (surface > 0 ? " (" + M.affiche(Math.round(mensuel / surface)) + " €/m2 par mois)" : ""), d.loyer.ligne]);
-        }
-        return l;
-      },
-      alertes: function (d) {
-        var a = [];
-        if (!d.indice) a.push("Indice de révision (ILC, ILAT, ICC) non trouvé.");
-        return a;
-      },
-      cibles: [
-        { page: "revalorisation-loyer.html", nom: "Revalorisation de loyer", champs: function (d) {
-          var c = [];
-          if (d.indice) c.push({ id: "indice", valeur: d.indice.valeur, libelle: "indice" });
-          if (d.trimestre) c.push({ id: "trimestre", valeur: d.trimestre.valeur, libelle: "trimestre de référence" });
-          if (d.base) c.push({ id: "ancien", valeur: d.base.valeur, libelle: "indice de base" });
-          if (d.tva) c.push({ id: "tva", valeur: d.tva.valeur, libelle: "TVA" });
-          return c;
-        } },
-        { page: "loyer-bureau.html", nom: "Loyer du bureau à domicile", champs: function (d) {
-          var c = [];
-          if (d.surface) c.push({ id: "surface", valeur: d.surface.valeur, libelle: "surface" });
-          if (d.commune) c.push({ id: "commune", valeur: d.commune.valeur, libelle: "commune" });
-          return c;
-        } }
-      ]
-    }
-  };
+  // La lecture s'arrête dès que ces rubriques sont trouvées (pages scannées suivantes sautées).
+  function complet(d) { return !!(d.immat && d.b && d.co2 && d.energie); }
+  function nomVehicule(d) { return [d.marque && d.marque.valeur, d.modele && d.modele.valeur].filter(Boolean).join(" "); }
+
+  function lignes(d) {
+    var l = [];
+    if (d.immat) l.push(["Immatriculation (A)", d.immat.valeur, d.immat.ligne]);
+    if (d.b) l.push(["Première immatriculation (B)", M.dateFr(d.b.valeur), d.b.ligne]);
+    if (d.marque || d.modele) l.push(["Marque et modèle (D.1, D.3)", nomVehicule(d), (d.marque || d.modele).ligne]);
+    if (d.i) l.push(["Date du certificat (I)", M.dateFr(d.i.valeur), d.i.ligne]);
+    if (d.genre) l.push(["Genre national (J.1)", d.genre.valeur, d.genre.ligne]);
+    if (d.energie) l.push(["Énergie (P.3)", d.energie.valeur + (d.energie.nom ? " — " + d.energie.nom : ""), d.energie.ligne]);
+    if (d.co2) l.push(["Taux de CO₂ (V.7)", d.co2.valeur + " g/km", d.co2.ligne]);
+    return l;
+  }
+  function alertes(d) {
+    var a = [];
+    if (!d.co2) a.push("Taux de CO₂ (rubrique V.7) non trouvé.");
+    if (!d.b) a.push("Date de première immatriculation (rubrique B) non trouvée.");
+    if (d.genre && d.genre.valeur !== "VP") a.push("Genre « " + d.genre.valeur + " » (rubrique J.1) : ce n'est pas une voiture particulière. Vérifiez que le véhicule relève bien des véhicules de tourisme avant d'appliquer le plafond.");
+    if (d.energie && d.energie.valeur === "EL" && d.co2 && +d.co2.valeur > 0) a.push("Énergie « EL » (électrique) avec un CO₂ de " + d.co2.valeur + " g/km : relisez la rubrique V.7.");
+    return a;
+  }
+
+  // Outils préremplis : champs(d) rend les champs de leur page ({ id, valeur, libelle }).
+  var CIBLES = [
+    { page: "plafond-vehicule.html", nom: "Plafond véhicule", champs: function (d) {
+      var c = [];
+      if (d.immat) c.push({ id: "vehicule", valeur: d.immat.valeur, libelle: "véhicule" });
+      if (d.co2) c.push({ id: "co2", valeur: d.co2.valeur, libelle: "CO₂" });
+      if (d.b) {
+        var jb = L.jour(d.b.valeur);
+        c.push({ id: "ancien", valeur: jb < L.jour({ a: 2004, m: 6, j: 2 }), libelle: "mise en circulation avant le 2 juin 2004" });
+        // Les cartes grises établies depuis le 1er mars 2020 portent un CO2 mesuré en WLTP.
+        c.push({ id: "norme", valeur: jb >= L.jour({ a: 2020, m: 3, j: 1 }) ? "wltp" : "autre", libelle: "mesure WLTP ou NEDC" });
+      }
+      return c;
+    } },
+    { page: "avantage-nature.html", nom: "Avantage en nature", champs: function (d) {
+      var c = [];
+      if (d.immat) c.push({ id: "immat", valeur: d.immat.valeur, libelle: "immatriculation" });
+      if (nomVehicule(d)) c.push({ id: "vehicule", valeur: nomVehicule(d), libelle: "marque et modèle" });
+      if (d.energie) c.push({ id: "electrique", valeur: d.energie.valeur === "EL", libelle: "100 % électrique" });
+      if (d.b) {
+        // Âge au 1er janvier de l'année en cours : plus de 5 ans si la première
+        // immatriculation précède le 1er janvier de l'année moins 5.
+        var annee = new Date().getFullYear();
+        c.push({ id: "age", valeur: L.jour(d.b.valeur) < L.jour({ a: annee - 5, m: 1, j: 1 }) ? "ancien" : "recent", libelle: "âge du véhicule (au 1er janvier " + annee + ")" });
+      }
+      return c;
+    } }
+  ];
 
   // Pages du document qui n'ont pas été lues, et pourquoi.
   function pagesNonLues(doc) {
-    var m = [], pl = function (n, mot) { return n + " " + mot + (n > 1 ? "s" : ""); };
+    var m = [], n = doc.scanneesNonLues;
     if (doc.arretPage) m.push("Lecture arrêtée à la page " + doc.arretPage + " sur " + doc.total + " : les pages suivantes n'ont pas été lues.");
     else {
-      if (doc.scanneesNonLues && doc.suffisant) m.push("Les données cherchées ont été trouvées : " + pl(doc.scanneesNonLues, "page") + " scannée" + (doc.scanneesNonLues > 1 ? "s" : "") + " suivante" + (doc.scanneesNonLues > 1 ? "s n'ont" : " n'a") + " pas été reconnue" + (doc.scanneesNonLues > 1 ? "s" : "") + ". Pour les lire après un changement de type, déposez à nouveau le document.");
-      else if (doc.scanneesNonLues) m.push("Seules les " + L.PAGES_OCR_MAX + " premières pages scannées ont été reconnues (" + doc.scanneesNonLues + " de plus dans le document).");
+      if (n && doc.suffisant) m.push("Les rubriques cherchées ont été trouvées : " + n + " page" + (n > 1 ? "s scannées suivantes n'ont" : " scannée suivante n'a") + " pas été reconnue" + (n > 1 ? "s" : "") + ".");
+      else if (n) m.push("Seules les " + L.PAGES_OCR_MAX + " premières pages scannées ont été reconnues (" + n + " de plus dans le document).");
       if (doc.reste) m.push("Seules les " + L.PAGES_MAX + " premières pages ont été lues (" + doc.reste + " de plus dans le document).");
     }
     return m;
   }
-  function nomVehicule(d) { return [d.marque && d.marque.valeur, d.modele && d.modele.valeur].filter(Boolean).join(" "); }
-  function moisPeriode(d) { return Math.round((L.jour(d.au.valeur) + 1 - L.jour(d.du.valeur)) / 30.4375); }
   function el(balise, classe, texte) {
     var e = document.createElement(balise);
     if (classe) e.className = classe;
@@ -278,29 +184,27 @@
     return e;
   }
 
-  // Affiche les données du document lu selon le type choisi, et les outils à préremplir.
+  // Affiche les données de la carte grise lue et les outils à préremplir.
   function affiche() {
-    var t = TYPES[$("typeDoc").value];
-    $("aideDoc").innerHTML = t.aide;
-    var corps = $("lu"), alertes = $("alertesLecture"), cibles = $("cibles");
-    corps.textContent = ""; alertes.textContent = ""; cibles.textContent = "";
-    var d = doc ? t.lire(doc) : null, lignes = d && d.reconnue ? t.lignes(d) : [];
+    var corps = $("lu"), liste = $("alertesLecture"), cibles = $("cibles");
+    corps.textContent = ""; liste.textContent = ""; cibles.textContent = "";
+    var d = doc ? L.carteGrise(doc) : null, l = d && d.reconnue ? lignes(d) : [];
     var messages = [];
     if (doc && doc.ocr) messages.push("Texte reconnu sur une image : relisez chaque valeur avant de vous en servir.");
-    if (d && !d.reconnue) messages.push(t.refus);
-    else if (d) messages = messages.concat(t.alertes(d));
+    if (d && !d.reconnue) messages.push("Ce document ne ressemble pas à une carte grise : aucune rubrique V.7, J.1 ou P.3 n'a été trouvée.");
+    else if (d) messages = messages.concat(alertes(d));
     if (doc) messages = messages.concat(pagesNonLues(doc));
-    messages.forEach(function (m) { alertes.appendChild(el("li", "", m)); });
-    lignes.forEach(function (l) {
+    messages.forEach(function (m) { liste.appendChild(el("li", "", m)); });
+    l.forEach(function (x) {
       var tr = el("tr");
-      tr.appendChild(el("td", "", l[0]));
-      tr.appendChild(el("td", "", l[1]));
-      tr.appendChild(el("td", "lu-extrait", L.extrait(l[2] || "")));
+      tr.appendChild(el("td", "", x[0]));
+      tr.appendChild(el("td", "", x[1]));
+      tr.appendChild(el("td", "lu-extrait", L.extrait(x[2] || "")));
       corps.appendChild(tr);
     });
-    $("cadreLu").hidden = !lignes.length;
-    $("videLu").hidden = !!lignes.length;
-    $("videLu").textContent = doc ? "Aucune donnée reconnue pour ce type de document." : "Déposez un document pour voir les données reconnues.";
+    $("cadreLu").hidden = !l.length;
+    $("videLu").hidden = !!l.length;
+    $("videLu").textContent = doc ? "Aucune rubrique de carte grise reconnue." : "Déposez une carte grise pour voir les données reconnues.";
     $("texteLu").hidden = !doc;
     if (doc) {
       $("resumeTexte").textContent = "Texte lu (" + doc.lignes.length + " lignes" + (doc.ocr ? ", reconnaissance de caractères" : "") + ")";
@@ -309,7 +213,7 @@
     $("titreLu").textContent = "02 — Données lues" + (doc ? " dans « " + doc.nom + " »" : "");
 
     // Un bouton par outil, avec les champs qu'il recevra.
-    t.cibles.forEach(function (c) {
+    CIBLES.forEach(function (c) {
       var champs = d && d.reconnue ? c.champs(d) : [];
       var ligne = el("div", "scanner-cible");
       var b = el("button", "btn", "Ouvrir « " + c.nom + " » prérempli");
@@ -321,7 +225,7 @@
       });
       ligne.appendChild(b);
       ligne.appendChild(el("span", "aide-bloc", champs.length ? "Remplit : " + champs.map(function (x) { return x.libelle; }).join(", ") + "." :
-                                                (doc ? "Aucun champ de cet outil n'a été trouvé dans le document." : "Disponible une fois le document lu.")));
+                                                (doc ? "Aucun champ de cet outil n'a été trouvé dans le document." : "Disponible une fois la carte grise lue.")));
       cibles.appendChild(ligne);
     });
   }
@@ -331,11 +235,9 @@
     if (!fichier || occupe) return;
     occupe = true;
     $("depot").classList.add("occupe");
-    var t = TYPES[$("typeDoc").value];
     lecture = L.lireDocument(fichier, {
       etat: function (e) { $("etatLecture").textContent = e; },
-      // Les pages scannées suivantes sont sautées dès que les données du type choisi sont là.
-      assez: function (partiel) { var d = t.lire(partiel); return d.reconnue && t.complet(d); }
+      assez: function (partiel) { var d = L.carteGrise(partiel); return d.reconnue && complet(d); }
     });
     $("arreter").hidden = false;
     $("arreter").disabled = false;
@@ -355,7 +257,6 @@
     });
   }
 
-  $("typeDoc").addEventListener("change", affiche);
   $("arreter").addEventListener("click", function () {
     if (!lecture) return;
     lecture.arreter();
@@ -373,7 +274,7 @@
   // Un fichier lâché à côté de la zone ne doit pas remplacer la page.
   window.addEventListener("dragover", function (e) { e.preventDefault(); });
   window.addEventListener("drop", function (e) { if (!$("depot").contains(e.target)) e.preventDefault(); });
-  document.addEventListener("mini-outils-reinitialise", function () { doc = null; $("etatLecture").textContent = ""; });
+  document.addEventListener("mini-outils-reinitialise", function () { doc = null; $("etatLecture").textContent = ""; affiche(); });
   affiche();
 })();
 </script>

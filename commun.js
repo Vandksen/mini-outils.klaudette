@@ -13,7 +13,7 @@ window.MiniOutils = (function () {
   // Mettre le MÊME numéro dans version.json : c'est ce petit fichier que les pages ouvertes
   // consultent pour savoir si une nouvelle version est publiée.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.30.1";
+  var VERSION = "1.30.2";
 
   // Type de chaque outil (champ « type ») : ce sur quoi il travaille, affiché en étiquette sur
   // sa page et sur sa carte de l'accueil (voir etiquettesType).
@@ -246,7 +246,7 @@ window.MiniOutils = (function () {
       '<a class="entree" href="goodies.html"' + (page === "goodies.html" ? ' aria-current="page"' : '') +
       ' title="Goodies"><span class="num">' + ICONE_GOODIES + '</span>' +
       '<span class="lib">Goodies</span></a>') +
-      '<span class="entree-vide" id="menu-aucun" hidden>' + ICONE_FANTOME + 'Aucune page trouvée</span>' +
+      '<span class="entree-vide" id="menu-aucun" hidden>' + ICONE_FANTOME + 'Erreur 471, aucun outil trouvé</span>' +
       '</div>' +
       // Encart slogan vers l'accueil, au-dessus du trait qui sépare le bas du menu ;
       // inutile sur l'accueil lui-même, qui porte déjà ce bandeau.
@@ -1463,7 +1463,7 @@ window.MiniOutils = (function () {
   }
 
   // ---------- Champs envoyés par le Mini-scanner ----------
-  // mini-scanner.html lit un document (carte grise, avis d'échéance, bail) et range dans
+  // mini-scanner.html lit une carte grise et range dans
   // l'onglet (sessionStorage) les champs à remplir d'un outil :
   // { page, source, champs: [{ id, valeur, libelle }] } ; une date est un objet {a, m, j}.
   // La page visée les reprend une fois son propre script branché, les surligne jusqu'à ce

@@ -1,4 +1,4 @@
-/* Mini-outils — lecture d'un document déposé (PDF, scan ou photo) pour préremplir un outil.
+/* Mini-outils — lecture d'une carte grise déposée (PDF, scan ou photo) pour préremplir un outil.
 
    Tout se passe dans le navigateur : le fichier n'est envoyé nulle part.
    - PDF qui contient du texte : texte lu avec pdf.js (vendor/pdfjs).
@@ -10,7 +10,7 @@
 
    Usage (page mini-scanner.html) :
      MiniLecteur.lireDocument(fichier, function (etat) { … }).then(function (doc) {
-       var cg = MiniLecteur.carteGrise(doc);   // ou avisEcheance(doc), bail(doc)
+       var cg = MiniLecteur.carteGrise(doc);
      });
    doc.texte : tout le texte ; doc.lignes : ses lignes ; doc.ocr : true si lu par OCR. */
 window.MiniLecteur = (function () {
@@ -191,19 +191,6 @@ window.MiniLecteur = (function () {
     return res;
   }
   function premiereDate(txt) { var d = dates(txt); return d.length ? d[0].d : null; }
-  // Montant écrit à la française (« 1 234,56 », « 1.234,56 € ») -> centimes, ou NaN.
-  function centimes(txt) {
-    var s = String(txt).replace(/[\s  €]/g, "");
-    if (/^\d{1,3}(\.\d{3})+(,\d{1,2})?$/.test(s)) s = s.replace(/\./g, "");
-    s = s.replace(",", ".");
-    return /^\d+(\.\d{1,2})?$/.test(s) ? Math.round(parseFloat(s) * 100) : NaN;
-  }
-  // Montants d'un texte : nombres avec deux décimales, séparateur de milliers facultatif.
-  function montants(txt) {
-    var res = [], r = /(\d{1,3}(?:[   .]\d{3})+|\d+)[,.](\d{2})(?!\d)/g, m;
-    while ((m = r.exec(txt))) { var c = centimes(m[0]); if (!isNaN(c)) res.push({ c: c, index: m.index, texte: m[0] }); }
-    return res;
-  }
   function iso(d) { return d.a + "-" + M.deux(d.m) + "-" + M.deux(d.j); }
   function jour(d) { return Math.round(Date.UTC(d.a, d.m - 1, d.j) / 86400000); }
   function extrait(ligne) { ligne = String(ligne).replace(/\s+/g, " ").trim(); return ligne.length > 90 ? ligne.slice(0, 87) + "…" : ligne; }
@@ -233,9 +220,8 @@ window.MiniLecteur = (function () {
   }
 
   // ---------- Documents reconnus ----------
-  // Chaque fonction lit un type de document et rend ses données, avec la ligne où chacune
-  // a été trouvée (pour l'afficher à côté de la valeur). Les pages choisissent ensuite
-  // quels champs remplir.
+  // carteGrise(doc) rend les rubriques lues, chacune avec la ligne où elle a été trouvée
+  // (pour l'afficher à côté de la valeur). La page choisit ensuite quels champs remplir.
 
   // Rubrique d'une carte grise (« V.7 », « D.1 », « B ») suivie de sa valeur. Les codes
   // sont tolérants aux erreurs courantes de la reconnaissance de caractères : point lu
@@ -290,130 +276,6 @@ window.MiniLecteur = (function () {
     return r;
   }
 
-  // Avis d'échéance (assurance, abonnement annuel) : période couverte, montant à payer,
-  // date d'échéance, assureur.
-  var ASSUREURS = ["AXA", "Allianz", "Generali", "Groupama", "MAAF", "MAIF", "MMA", "MACIF", "MACSF", "Matmut", "GMF", "Gan", "Swiss Life",
-                   "SMABTP", "Hiscox", "Abeille", "Aviva", "Covéa", "Thélem", "Pacifica", "Crédit Agricole", "BNP Paribas Cardif", "LCL", "CIC",
-                   "Crédit Mutuel", "Harmonie Mutuelle", "Malakoff Humanis", "AG2R", "Alan", "April", "Hiscox", "Groupama", "SMACL", "Leocare", "Ornikar"];
-  function avisEcheance(doc) {
-    var r = {}, L = doc.lignes, S = L.map(simple);
-    // Période : « du 01/01/2026 au 31/12/2026 » sur une même ligne.
-    for (var k = 0; k < L.length && !r.du; k++) {
-      if (!/\bdu\b/.test(S[k]) || !/\bau\b/.test(S[k])) continue;
-      var d = dates(L[k]);
-      if (d.length >= 2 && jour(d[1].d) > jour(d[0].d)) { r.du = { valeur: d[0].d, ligne: L[k] }; r.au = { valeur: d[1].d, ligne: L[k] }; }
-    }
-    // Date d'échéance, à défaut date d'émission de l'avis.
-    [/echeance/, /(emis|edite|etabli|fait) le|date d.(emission|edition)|\ble \d/].forEach(function (re) {
-      if (r.echeance) return;
-      for (var k2 = 0; k2 < L.length; k2++) {
-        if (!re.test(S[k2]) || /\bdu\b.*\bau\b/.test(S[k2])) continue;
-        var d2 = dates(L[k2]);
-        if (d2.length) { r.echeance = { valeur: d2[0].d, ligne: L[k2] }; return; }
-      }
-    });
-    // Montant : la ligne la mieux désignée (total TTC, à payer, cotisation), son dernier montant.
-    var meilleur = null;
-    L.forEach(function (l, k3) {
-      var ms = montants(l);
-      if (!ms.length) return;
-      var s = S[k3], note = 0;
-      if (/total\s*(a payer|ttc|general|du)|montant\s*(total|ttc|a payer|du)|net a payer/.test(s)) note += 5;
-      if (/a payer|a regler|preleve|montant de l.echeance/.test(s)) note += 3;
-      if (/cotisation|prime/.test(s)) note += 3;
-      if (/\bttc\b/.test(s)) note += 2;
-      if (/\btotal\b/.test(s)) note += 2;
-      if (/\bmontant\b/.test(s)) note += 1;
-      if (/\bht\b|hors taxe/.test(s)) note -= 1;
-      if (/\btaxe|\bdont\b|frais|attentat|catnat|tva/.test(s)) note -= 3;
-      if (note <= 0) return;
-      var m = ms[ms.length - 1];
-      if (!meilleur || note > meilleur.note || (note === meilleur.note && m.c > meilleur.c)) meilleur = { note: note, c: m.c, ligne: l };
-    });
-    if (meilleur) r.montant = { valeur: meilleur.c, ligne: meilleur.ligne };
-    var t = doc.texte;
-    for (var a = 0; a < ASSUREURS.length && !r.assureur; a++) {
-      var re2 = new RegExp("\\b" + simple(ASSUREURS[a]).replace(/ /g, "\\s") + "\\b", "i");
-      if (re2.test(simple(t))) r.assureur = { valeur: ASSUREURS[a], ligne: "" };
-    }
-    r.assurance = /assuran|cotisation|garantie|contrat n/.test(simple(t));
-    r.reconnue = !!(r.du || r.montant);
-    return r;
-  }
-
-  // Bail : indice et trimestre de révision, indice de base, TVA, surface, adresse du bien,
-  // date d'effet et loyer.
-  var TRIMESTRES = { "1er": 1, premier: 1, "1e": 1, "1eme": 1, "2e": 2, "2eme": 2, deuxieme: 2, second: 2, "3e": 3, "3eme": 3, troisieme: 3, "4e": 4, "4eme": 4, quatrieme: 4 };
-  function bail(doc) {
-    var r = {}, L = doc.lignes, S = L.map(simple), s = S.join("\n");
-    // Indice : celui qui revient le plus souvent.
-    var comptes = {
-      ILC: (s.match(/loyers commerciaux|\bilc\b/g) || []).length,
-      ILAT: (s.match(/activites tertiaires|\bilat\b/g) || []).length,
-      ICC: (s.match(/cout de la construction|\bicc\b/g) || []).length
-    };
-    var indice = Object.keys(comptes).sort(function (x, y) { return comptes[y] - comptes[x]; })[0];
-    if (comptes[indice]) {
-      var reI = indice === "ILC" ? /loyers commerciaux|\bilc\b/ : indice === "ILAT" ? /activites tertiaires|\bilat\b/ : /cout de la construction|\bicc\b/;
-      var kI = S.findIndex(function (l) { return reI.test(l); });
-      r.indice = { valeur: indice, ligne: L[kI] };
-      // Trimestre de référence : le premier cité à partir de la mention de l'indice.
-      for (var k = kI; k < Math.min(L.length, kI + 12) && !r.trimestre; k++) {
-        var m = /\b(1er|premier|1e|1eme|2e|2eme|deuxieme|second|3e|3eme|troisieme|4e|4eme|quatrieme)\s+trimestre\b|\bt\s?([1-4])\b/.exec(S[k]);
-        if (m) r.trimestre = { valeur: String(m[1] ? TRIMESTRES[m[1]] : +m[2]), ligne: L[k] };
-      }
-      // Indice de base : nombre qui suit « indice de base », « indice de référence »…
-      var reB = /indice (de base|de reference|initial|de depart)|valeur de l.indice|dernier indice (connu|publie)/g, mb;
-      while (!r.base && (mb = reB.exec(s))) {
-        var apres = s.slice(mb.index, mb.index + 200), n, reN = /(\d{2,4}(?:[,.]\d{1,2})?)(?!\s*(?:%|m2|m²|eur|€|\d))/g;
-        while ((n = reN.exec(apres))) {
-          var x = parseFloat(n[1].replace(",", "."));
-          var plausible = indice === "ICC" ? x >= 900 && x <= 3500 : x >= 80 && x <= 250;
-          // L'extrait est pris dans le texte d'origine : sans accents, le texte simplifié
-          // garde les mêmes positions.
-          if (plausible && !/^(19|20)\d{2}$/.test(n[1])) { r.base = { valeur: n[1].replace(".", ","), ligne: extrait(doc.texte.slice(mb.index, mb.index + n.index + n[1].length)) }; break; }
-        }
-      }
-    }
-    // TVA.
-    if (/(non soumis|pas soumis|exonere|sans option)[^.\n]{0,60}(t\.?v\.?a|taxe sur la valeur)/.test(s)) r.tva = { valeur: false, ligne: "TVA écartée par le bail" };
-    else {
-      var kT = S.findIndex(function (l) { return /(soumis|assujetti|option)[^.]{0,50}(t\.?v\.?a|taxe sur la valeur)|t\.?v\.?a\.? en sus|\bhors taxes?\b|\bht\b/.test(l); });
-      if (kT !== -1) r.tva = { valeur: true, ligne: L[kT] };
-    }
-    // Surface : de préférence sur une ligne qui parle du bureau ou de la pièce.
-    var reS = /(\d{1,4}(?:[,.]\d{1,2})?)\s*(?:m2|m²|m\s?²|metres? carres)/;
-    var kS = S.findIndex(function (l, k4) { return reS.test(L[k4].toLowerCase()) && /bureau|piece|local|surface/.test(l); });
-    if (kS === -1) kS = L.findIndex(function (l) { return reS.test(l.toLowerCase()); });
-    if (kS !== -1) r.surface = { valeur: reS.exec(L[kS].toLowerCase())[1].replace(".", ","), ligne: L[kS] };
-    // Adresse du bien : code postal et commune, de préférence sur une ligne « situé », « sis ».
-    var reC = /\b((?:0[1-9]|[1-8]\d|9[0-5])\d{3}|97[1-6]\d{2})\s+([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'’\- ]{1,40}?)(?=\s*(?:,|\.|\(|$|\s{2,}|cedex))/i;
-    var kC = L.findIndex(function (l, k5) { return reC.test(l) && /situe|sis\b|adresse|bien loue|locaux/.test(S[k5]); });
-    if (kC === -1) kC = L.findIndex(function (l) { return reC.test(l); });
-    if (kC !== -1) {
-      var c = reC.exec(L[kC]), cp = c[1];
-      var dep = /^97/.test(cp) ? cp.slice(0, 3) : cp.slice(0, 2) === "20" ? (+cp < 20200 ? "2A" : "2B") : cp.slice(0, 2);
-      var ville = c[2].trim().toLowerCase().replace(/(^|[\s\-'’])([a-zà-ÿ])/g, function (t, sep, l) { return sep + l.toUpperCase(); })
-        .replace(/\b(Sur|Sous|Le|La|Les|De|Du|Des|En|Et|Aux?)\b/g, function (w, x, pos) { return pos ? w.toLowerCase() : w; });
-      r.commune = { valeur: ville + " (" + dep + ")", ligne: L[kC], cp: cp };
-    }
-    // Date d'effet.
-    for (var k6 = 0; k6 < L.length && !r.effet; k6++) {
-      var me = /(a compter du|prend(ra)? effet|prise d.effet|commencer?a? a courir|a effet du|entree en jouissance)/.exec(S[k6]);
-      if (!me) continue;
-      var de = dates(L[k6] + " " + (L[k6 + 1] || ""));
-      if (de.length) r.effet = { valeur: de[0].d, ligne: L[k6] };
-    }
-    // Loyer : la ligne qui parle de loyer et porte un montant ; annuel ramené au mois.
-    var kL = S.findIndex(function (l, k7) { return /loyer/.test(l) && montants(L[k7]).length && !/indice|revis/.test(l); });
-    if (kL !== -1) {
-      var ml = montants(L[kL]), annuel = /annuel|par an\b/.test(S[kL]) && !/mensuel|par mois/.test(S[kL]);
-      r.loyer = { valeur: ml[0].c, annuel: annuel, ligne: L[kL] };
-    }
-    r.reconnue = !!(r.indice || r.surface || r.loyer);
-    return r;
-  }
-
-  return { lireDocument: lireDocument, PAGES_MAX: PAGES_MAX, PAGES_OCR_MAX: PAGES_OCR_MAX, dates: dates, premiereDate: premiereDate, montants: montants, centimes: centimes, simple: simple, iso: iso, jour: jour, extrait: extrait,
-           carteGrise: carteGrise, avisEcheance: avisEcheance, bail: bail };
+  return { lireDocument: lireDocument, PAGES_MAX: PAGES_MAX, PAGES_OCR_MAX: PAGES_OCR_MAX, dates: dates, premiereDate: premiereDate, simple: simple, iso: iso, jour: jour, extrait: extrait,
+           carteGrise: carteGrise };
 })();

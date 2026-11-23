@@ -26,12 +26,13 @@
 <link rel="preload" href="polices/jetbrains-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="polices/instrument-serif-italique-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>
-.recherche-taux { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px 18px; margin: 22px 0 8px; }
+.panel-taux { margin: 28px 0 22px; }
+.recherche-taux { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px 18px; margin: 12px 0 8px; }
 .recherche-taux label { display: block; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink); margin-bottom: 6px; }
 .recherche-taux input { width: 100%; height: 40px; padding: 0 12px; font-family: var(--mono); font-size: 13px; color: var(--ink);
                         background: var(--cream); border: 1px solid var(--line); border-radius: 8px; }
 .recherche-taux input:focus { outline: 2px solid var(--blue); outline-offset: 1px; border-color: var(--blue); }
-.resultat-taux { margin: 6px 0 0; font-size: 15px; }
+.resultat-taux { margin: 10px 0 0; font-size: 15px; }
 .resultat-taux strong { color: var(--blue); }
 #taux td.taux { font-family: var(--mono); font-weight: 700; color: var(--blue); text-align: right; white-space: nowrap; }
 #taux tr.retenu td { background: rgba(17, 54, 219, .07); }
@@ -57,13 +58,16 @@
     <p>Les intérêts versés aux associés sur les sommes qu'ils laissent ou mettent à la disposition de la société ne sont déductibles que dans la limite d'un taux maximal (CGI, art. 39-1-3°). Ce taux est égal à la moyenne annuelle des taux effectifs moyens pratiqués par les établissements de crédit pour des prêts à taux variable aux entreprises, d'une durée initiale supérieure à deux ans. La fraction des intérêts versés au-delà n'est pas déductible : elle se réintègre au résultat fiscal (case 247 du 2033-B ou case SU du 2058-A). La déduction suppose aussi que le capital de la société soit entièrement libéré.</p>
     <p>Les taux ci-dessous valent pour un <strong>exercice de 12 mois</strong>. Ils sont repris de service-public.fr et vérifiés chaque mois ; une nouvelle période s'ajoute dès sa publication, les anciennes restent.</p>
 
-    <div class="recherche-taux">
-      <div>
-        <label for="cloture">Date de clôture de l'exercice</label>
-        <input id="cloture" type="date" value="2025-12-31">
+    <section class="panel panel-taux">
+      <p class="eyebrow">01 — Recherche</p>
+      <div class="recherche-taux">
+        <div>
+          <label for="cloture">Date de clôture de l'exercice</label>
+          <input id="cloture" type="date" value="2025-12-31">
+        </div>
       </div>
-    </div>
-    <p class="resultat-taux" id="resultatTaux" role="status"></p>
+      <p class="resultat-taux" id="resultatTaux" role="status"></p>
+    </section>
 
     <div class="cadre-table">
       <table>

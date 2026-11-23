@@ -184,6 +184,13 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
    Même encadré que l'encart du bas du menu, sans l'image. */
 .pile-zone { padding: 0 26px 16px; }
 .pile-zone[hidden] { display: none; }
+/* Fenêtre peu haute : le pied du menu (installation, version) ne bouge pas et la liste des
+   pages garde de la place ; c'est le bloc de la pile qui se réduit, avec son propre défilement. */
+#menu .logo, #menu .recherche-menu, #menu .pied { flex: none; }
+#menu .defile { min-height: 120px; }
+#menu .pile-zone { flex: 0 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(248, 243, 230, .25) transparent; }
+/* Très peu de hauteur : la pile ne garde que l'essentiel (nombre, équilibre, boutons). */
+@media (max-height: 640px) { .pile-lots { display: none; } }
 /* Une pile en cours passe avant l'encart slogan, pour ne pas allonger le bas du menu. */
 #menu:has(.pile-zone:not([hidden])) .encart-zone { display: none; }
 .pile {
@@ -850,6 +857,31 @@ body.filtres-replies #filtres { display: none; }
   .final { min-height: 360px; padding: 32px 22px; }
   .final::before { background: rgba(8, 20, 110, .55); }
 }
+/* Mini-scanner (mini-scanner.html, lecteur.js) : zone de dépôt, données lues, outils à préremplir ;
+   dans les outils, champs repris du scanner et leur avis. */
+.lecteur-depot { display: grid; gap: 4px; justify-items: center; text-align: center; padding: 22px 16px; border: 1.5px dashed rgba(17, 54, 219, .45);
+  border-radius: 10px; background: var(--paper); cursor: pointer; transition: background .15s, border-color .15s; }
+.lecteur-depot:hover, .lecteur-depot.survol { background: var(--chip); border-color: var(--blue); }
+.lecteur-depot:focus-within { outline: 2px solid var(--blue); outline-offset: 2px; }
+.lecteur-depot.occupe { cursor: progress; opacity: .7; }
+.lecteur-fichier { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+.lecteur-titre { font-weight: 700; color: var(--blue); font-size: 15px; }
+.lecteur-sous { font-size: 12px; color: var(--muted); }
+.lecteur-etat { margin: 10px 0 0; font-size: 13px; color: var(--muted); font-family: var(--mono); }
+.lecteur-etat:empty { display: none; }
+.lecteur-resultat td { font-size: 13px; vertical-align: top; }
+.lecteur-resultat .lu-extrait { font-family: var(--mono); font-size: 11px; color: var(--muted); word-break: break-word; }
+.lecteur-resultat tr.lu-info td { color: var(--muted); }
+.lecteur-texte { margin-top: 10px; font-size: 13px; }
+.lecteur-texte summary { cursor: pointer; color: var(--blue); }
+.lecteur-texte pre { max-height: 260px; overflow: auto; margin: 8px 0 0; padding: 10px; background: var(--paper); border: 1px solid var(--line);
+  border-radius: 8px; font-family: var(--mono); font-size: 11px; white-space: pre-wrap; }
+.scanner-cibles { display: grid; gap: 12px; }
+.scanner-cible { display: grid; gap: 6px; justify-items: start; padding-top: 12px; border-top: 1px solid var(--line); }
+.scanner-cible .aide-bloc { margin: 0; font-size: 13px; }
+.scanner-recu { margin: 0 0 12px; padding: 10px 14px; border-radius: 8px; background: rgba(17, 54, 219, .07); box-shadow: inset 3px 0 0 var(--blue); font-size: 14px; }
+.champ.prerempli { background: rgba(17, 54, 219, .07); box-shadow: inset 3px 0 0 var(--blue); border-radius: 6px; margin: 0 -10px; padding-left: 10px; padding-right: 10px; }
+
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 @media print {
   body { display: block; }

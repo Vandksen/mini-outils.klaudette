@@ -13,17 +13,19 @@ window.MiniOutils = (function () {
   // Mettre le MÊME numéro dans version.json : c'est ce petit fichier que les pages ouvertes
   // consultent pour savoir si une nouvelle version est publiée.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.29.2";
+  var VERSION = "1.30.0";
 
   // Type de chaque outil (champ « type ») : ce sur quoi il travaille, affiché en étiquette sur
   // sa page et sur sa carte de l'accueil (voir etiquettesType).
   //   calcul  : des paramètres saisis (taux, montants, dates) ;
   //   balance : une balance collée ;
-  //   detail  : le détail collé d'un compte (grand livre, relevé, écritures).
+  //   detail  : le détail collé d'un compte (grand livre, relevé, écritures) ;
+  //   document : un document déposé (PDF, scan ou photo).
   var TYPES = {
     calcul: { nom: "Calcul", aide: "Outil de calcul : il travaille sur les paramètres que vous saisissez." },
     balance: { nom: "Balance", aide: "Il travaille sur une balance collée." },
-    detail: { nom: "Détail d'un compte", aide: "Il travaille sur le détail collé d'un compte : grand livre, relevé ou écritures." }
+    detail: { nom: "Détail d'un compte", aide: "Il travaille sur le détail collé d'un compte : grand livre, relevé ou écritures." },
+    document: { nom: "Document", aide: "Il lit un document déposé : PDF, scan ou photo." }
   };
 
   // Catégorie « Outils de production » du menu : écritures courantes de la tenue.
@@ -34,7 +36,8 @@ window.MiniOutils = (function () {
     { fichier: "loyer-bureau.html", nom: "Loyer du bureau à domicile", type: "calcul" },
     { fichier: "rem-gerance.html", nom: "Rémunération gérance", type: "calcul" },
     { fichier: "indemnites-km.html", nom: "Indemnités kilométriques", type: "calcul" },
-    { fichier: "import-banque.html", nom: "Import banque", type: "detail" }
+    { fichier: "import-banque.html", nom: "Import banque", type: "detail" },
+    { fichier: "mini-scanner.html", nom: "Mini-scanner", type: "document" }
   ];
   // Catégorie « Outils de révision » du menu : calculs et écritures de clôture.
   var REVISION = [
@@ -1459,6 +1462,61 @@ window.MiniOutils = (function () {
     });
   }
 
+  // ---------- Champs envoyés par le Mini-scanner ----------
+  // mini-scanner.html lit un document (carte grise, avis d'échéance, bail) et range dans
+  // l'onglet (sessionStorage) les champs à remplir d'un outil :
+  // { page, source, champs: [{ id, valeur, libelle }] } ; une date est un objet {a, m, j}.
+  // La page visée les reprend une fois son propre script branché, les surligne jusqu'à ce
+  // que l'utilisateur les modifie, puis les efface de la mémoire.
+  var CLE_SCANNER = "mini-outils-scanner";
+  function envoieScanner(page, source, champs) {
+    try { sessionStorage.setItem(CLE_SCANNER, JSON.stringify({ page: page, source: source, champs: champs })); return true; }
+    catch (e) { return false; }
+  }
+  function remplitChamp(c) {
+    var champ = $(c.id);
+    if (!champ) return false;
+    var v = c.valeur;
+    if (champ.type === "checkbox") champ.checked = !!v;
+    else if (v && typeof v === "object" && v.a) champ.value = champ.type === "date" || /^\d{4}-\d{2}-\d{2}$/.test(champ.value) ?
+      v.a + "-" + deux(v.m) + "-" + deux(v.j) : dateFr(v);
+    else champ.value = String(v);
+    champ.dispatchEvent(new Event("input", { bubbles: true }));
+    champ.dispatchEvent(new Event("change", { bubbles: true }));
+    (champ.closest(".champ") || champ).classList.add("prerempli");
+    return true;
+  }
+  function recoitScanner() {
+    var d = null;
+    try { d = JSON.parse(sessionStorage.getItem(CLE_SCANNER)); } catch (e) { return; }
+    var page = location.pathname.split("/").pop() || "index.html";
+    if (!d || d.page !== page || !d.champs) return;
+    try { sessionStorage.removeItem(CLE_SCANNER); } catch (e) {}
+    var faits = d.champs.filter(remplitChamp).length;
+    var panneau = document.querySelector("main .panel");
+    if (!faits || !panneau) return;
+    var avis = document.createElement("p");
+    avis.className = "scanner-recu";
+    avis.textContent = faits + " champ" + (faits > 1 ? "s repris" : " repris") + " du Mini-scanner" + (d.source ? " (« " + d.source + " »)" : "") +
+                       " : " + (faits > 1 ? "ils sont surlignés" : "il est surligné") + " ci-dessous. Vérifiez-les avant de copier les écritures.";
+    var titre = panneau.querySelector(".barre") || panneau.querySelector(".eyebrow");
+    panneau.insertBefore(avis, titre ? titre.nextSibling : panneau.firstChild);
+  }
+  // Le surlignage disparaît dès que l'utilisateur touche au champ, ou à la réinitialisation.
+  document.addEventListener("input", function (e) {
+    var cadre = e.isTrusted && e.target.closest && e.target.closest(".prerempli");
+    if (cadre) cadre.classList.remove("prerempli");
+  }, true);
+  document.addEventListener("click", function (e) {
+    var cadre = e.isTrusted && e.target.closest && e.target.closest(".prerempli");
+    if (cadre && (e.target.closest(".segments") || e.target.type === "checkbox")) cadre.classList.remove("prerempli");
+  }, true);
+  document.addEventListener("mini-outils-reinitialise", function () {
+    Array.prototype.forEach.call(document.querySelectorAll(".prerempli, .scanner-recu"), function (c) {
+      if (c.classList.contains("scanner-recu")) c.remove(); else c.classList.remove("prerempli");
+    });
+  });
+
   segments();
   selectionCollage();
   calendrier();
@@ -1472,8 +1530,10 @@ window.MiniOutils = (function () {
   croixRecherche();
   etiquettesType();
   lienPage();
+  // Après la réinitialisation (qui relève les données de départ au même moment).
+  document.addEventListener("DOMContentLoaded", recoitScanner);
 
   return { VERSION: VERSION, $: $, centimes: centimes, deux: deux, code6: code6, affiche: affiche, lireDate: lireDate,
            decale: decale, dateFr: dateFr, copierTexte: copierTexte, fete: fete, tempsGagne: tempsGagne, verifieVersion: verifieVersion, rendre: rendre, texteACopier: texteACopier, brancher: brancher,
-           secondMenu: secondMenu, aLaLigne: aLaLigne, afficheNote: afficheNote, calculs: calculs };
+           envoieScanner: envoieScanner, secondMenu: secondMenu, aLaLigne: aLaLigne, afficheNote: afficheNote, calculs: calculs };
 })();

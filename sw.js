@@ -9,8 +9,12 @@
      recharger une page (voir verifieVersion).
    Les polices sont des fichiers du site comme les autres : rien n'est demandé à un tiers.
 
+   Les bibliothèques de lecture des documents (vendor/, environ 7 Mo) ne sont pas
+   préchargées : elles sont mises en cache au premier dépôt d'un document, comme tout
+   fichier du site demandé.
+
    Quand un outil est ajouté, ajouter sa page à FICHIERS et augmenter VERSION. */
-const VERSION = "mini-outils-v56";
+const VERSION = "mini-outils-v57";
 const FICHIERS = [
   "./",
   "index.html",
@@ -32,6 +36,7 @@ const FICHIERS = [
   "revalorisation-loyer.html",
   "extournes.html",
   "import-banque.html",
+  "mini-scanner.html",
   "controle-coherence.html",
   "dates-week-end.html",
   "analyse-achats.html",
@@ -52,6 +57,7 @@ const FICHIERS = [
   "consentement.css",
   "consentement.js",
   "pdf.js",
+  "lecteur.js",
   "manifest.webmanifest",
   "icones/icone-m-192.png",
   "icones/icone-m-512.png",

@@ -13,7 +13,7 @@ window.MiniOutils = (function () {
   // Mettre le MÊME numéro dans version.json : c'est ce petit fichier que les pages ouvertes
   // consultent pour savoir si une nouvelle version est publiée.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.30.2";
+  var VERSION = "1.30.3";
 
   // Type de chaque outil (champ « type ») : ce sur quoi il travaille, affiché en étiquette sur
   // sa page et sur sa carte de l'accueil (voir etiquettesType).
@@ -187,7 +187,7 @@ window.MiniOutils = (function () {
   // Le site et les outils sont en bêta : étiquette sur le logo du menu et dans la barre mobile.
   var BETA = '<span class="beta">Bêta</span>';
   // Raccourci de la recherche du menu, écrit comme sur le clavier du poste : ⌘K sur Mac, Ctrl+K ailleurs.
-  var RACCOURCI = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent) ? "⌘K" : "Ctrl+K";
+  var RACCOURCI = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent) ? "⌘F" : "Ctrl+F";
   function menu() {
     var nav = $("menu");
     if (!nav) return;
@@ -207,7 +207,7 @@ window.MiniOutils = (function () {
     nav.innerHTML =
       '<a class="logo" href="index.html" title="Accueil" aria-label="Mini-outils, version bêta, accueil"><span class="logo-mot">' + MOT_LOGO + BETA + '</span></a>' +
       '<div class="recherche-menu"><input id="recherche-menu" type="search" autocomplete="off" spellcheck="false" ' +
-      'placeholder="Chercher un outil en cliquant ' + RACCOURCI + '" aria-label="Rechercher un outil dans le menu" aria-keyshortcuts="Control+K Meta+K" title="Ctrl+K ou ⌘K">' +
+      'placeholder="Chercher un outil en cliquant ' + RACCOURCI + '" aria-label="Rechercher un outil dans le menu" aria-keyshortcuts="Control+F Meta+F" title="Ctrl+F ou ⌘F">' +
       '<button type="button" id="effacer-recherche" class="effacer-recherche" aria-label="Annuler la recherche" title="Annuler la recherche" hidden>' +
       ICONE_EFFACER + '</button></div>' +
       '<div class="defile">' +
@@ -342,16 +342,19 @@ window.MiniOutils = (function () {
     if (ouvrir) ouvrir.addEventListener("click", function () { bascule(!document.body.classList.contains("menu-ouvert")); });
     if (fond) fond.addEventListener("click", function () { bascule(false); });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") bascule(false); });
-    // Ctrl+K (Cmd+K sur Mac) place le curseur dans la recherche du menu, en ouvrant le
-    // menu sur petit écran ; le texte déjà tapé est sélectionné pour être remplacé.
+    // Ctrl+F (Cmd+F sur Mac) place le curseur dans la recherche du menu, en ouvrant le
+    // menu sur petit écran ; le texte déjà tapé est sélectionné pour être remplacé. Le
+    // raccourci remplace volontairement la recherche dans la page du navigateur : il est
+    // capté avant tout autre écouteur (phase de capture).
     document.addEventListener("keydown", function (e) {
-      if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "k") {
+      var touche = (e.key || "").toLowerCase();
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && (touche === "f" || e.code === "KeyF")) {
         e.preventDefault();
         bascule(true);
         champ.focus();
         champ.select();
       }
-    });
+    }, true);
   }
 
   // Montant saisi "1 234,56" -> centimes (entier). Vide -> 0. Invalide -> NaN.

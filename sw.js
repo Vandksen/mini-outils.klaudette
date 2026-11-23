@@ -14,7 +14,7 @@
    fichier du site demandé.
 
    Quand un outil est ajouté, ajouter sa page à FICHIERS et augmenter VERSION. */
-const VERSION = "mini-outils-v59";
+const VERSION = "mini-outils-v60";
 const FICHIERS = [
   "./",
   "index.html",

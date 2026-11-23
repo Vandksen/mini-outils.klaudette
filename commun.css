@@ -155,6 +155,11 @@ body { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 1
   font-family: var(--mono); font-size: 11px; line-height: 2;
 }
 #menu .pied span { display: block; white-space: nowrap; }
+/* Écritures empilées : le pied ne garde que le bouton d'installation, sans ses deux lignes de
+   texte (calcul dans le navigateur, version) ; il disparaît tout à fait si l'application est installée. */
+#menu:has(.pile-zone:not([hidden])) .pied > span:not(#installer-info) { display: none; }
+#menu:has(.pile-zone:not([hidden])) .pied #installer { margin-bottom: 0; }
+#menu:has(.pile-zone:not([hidden])) .pied:has(#installer[hidden]) { display: none; }
 /* Encart slogan en bas du menu, au-dessus du trait : carré à bords arrondis, de la largeur
    du bouton d'installation, sur l'image du bandeau d'accueil. */
 .encart-zone { padding: 0 26px 16px; }

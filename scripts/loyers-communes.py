@@ -25,6 +25,27 @@ import urllib.request
 
 JEU_PAR_DEFAUT = "693aa2feed1bf4da603faa49"   # édition 2025, publiée le 11/12/2025
 SORTIE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "loyers-communes.js")
+# Petit fichier chargé à l'ouverture de loyer-bureau.html : la source et la seule commune de
+# l'exemple prérempli, pour afficher le résultat sans attendre le gros fichier (environ 400 Ko
+# compressés), qui n'est chargé qu'au premier usage du champ commune.
+SORTIE_EXEMPLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "loyers-communes-exemple.js")
+COMMUNE_EXEMPLE = "44109"   # Nantes, commune préremplie dans loyer-bureau.html
+
+
+def ecrire(chemin, entete, communes, partiel):
+    with open(chemin, "w", encoding="utf-8") as f:
+        f.write("// Fichier produit par scripts/loyers-communes.py : ne pas le modifier à la main.\n")
+        f.write("// Loyers d'annonce au m2, charges comprises, par commune (« Carte des loyers », data.gouv.fr).\n")
+        f.write("// communes : une commune par ligne, « code INSEE|nom|département|loyer appartement en\n")
+        f.write("// centimes par m2|prudence (1 ou 0)|loyer maison en centimes par m2|prudence ».\n")
+        if partiel:
+            f.write("// Version réduite à la commune de l'exemple ; loyers-communes.js contient toutes les communes.\n")
+        f.write("window.LOYERS_COMMUNES = {\n")
+        for k, v in entete.items():
+            f.write("  %s: %s,\n" % (k, json.dumps(v, ensure_ascii=False)))
+        if partiel:
+            f.write("  partiel: true,\n")
+        f.write("  communes: %s\n};\n" % json.dumps("\n".join(communes), ensure_ascii=False))
 
 
 def lire(url):
@@ -78,16 +99,12 @@ def main():
         "misAJour": (meta.get("last_update") or "")[:10],
         "verifieLe": datetime.date.today().isoformat(),
     }
-    with open(SORTIE, "w", encoding="utf-8") as f:
-        f.write("// Fichier produit par scripts/loyers-communes.py : ne pas le modifier à la main.\n")
-        f.write("// Loyers d'annonce au m2, charges comprises, par commune (« Carte des loyers », data.gouv.fr).\n")
-        f.write("// communes : une commune par ligne, « code INSEE|nom|département|loyer appartement en\n")
-        f.write("// centimes par m2|prudence (1 ou 0)|loyer maison en centimes par m2|prudence ».\n")
-        f.write("window.LOYERS_COMMUNES = {\n")
-        for k, v in entete.items():
-            f.write("  %s: %s,\n" % (k, json.dumps(v, ensure_ascii=False)))
-        f.write("  communes: %s\n};\n" % json.dumps("\n".join(communes), ensure_ascii=False))
-    print("%d communes écrites dans %s" % (len(communes), os.path.normpath(SORTIE)))
+    ecrire(SORTIE, entete, communes, False)
+    exemple = [c for c in communes if c.startswith(COMMUNE_EXEMPLE + "|")]
+    if not exemple:
+        sys.exit("Commune de l'exemple %s absente du jeu %s" % (COMMUNE_EXEMPLE, jeu))
+    ecrire(SORTIE_EXEMPLE, entete, exemple, True)
+    print("%d communes écrites dans %s, et l'exemple dans %s" % (len(communes), os.path.normpath(SORTIE), os.path.normpath(SORTIE_EXEMPLE)))
 
 
 if __name__ == "__main__":

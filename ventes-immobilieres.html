@@ -230,15 +230,31 @@
     }).replace(/([\s\-])D'([A-ZÀ-Ý])/g, "$1d'$2");
   }
 
-  // Métadonnées et liste des communes : chargées dès l'ouverture, petites.
+  // Métadonnées : petites, chargées dès l'ouverture.
   fetch("dvf/meta.json").then(function (r) { return r.json(); }).then(function (m) { META = m; source(); }).catch(function () {});
-  fetch("dvf/communes.txt").then(function (r) { return r.text(); }).then(function (t) {
-    COMMUNES = t.trim().split("\n").map(function (l) {
-      var p = l.split("|");
-      return { code: p[0], nom: p[1], dep: p[2], nb: Number(p[3]), cle: sansZero(simple(p[1])) };
+  // Liste des communes (environ 280 Ko compressés) : chargée une seule fois, dès qu'on touche
+  // au champ commune, pour ne pas la télécharger à chaque visite.
+  var chargement = null;
+  function chargeCommunes() {
+    if (COMMUNES || chargement) return;
+    chargement = fetch("dvf/communes.txt").then(function (r) {
+      if (!r.ok) throw new Error();
+      return r.text();
+    }).then(function (t) {
+      COMMUNES = t.trim().split("\n").map(function (l) {
+        var p = l.split("|");
+        return { code: p[0], nom: p[1], dep: p[2], nb: Number(p[3]), cle: sansZero(simple(p[1])) };
+      });
+      if ($("etatDvf").textContent === ATTENTE) $("etatDvf").textContent = INVITE;
+      if ($("commune").value && document.activeElement === $("commune")) $("commune").dispatchEvent(new Event("input"));
+    }).catch(function () {
+      chargement = null;
+      $("etatDvf").textContent = "La liste des communes n'a pas pu être chargée. Vérifiez la connexion, puis cliquez de nouveau dans le champ commune.";
     });
-    if ($("commune").value) $("commune").dispatchEvent(new Event("input"));
-  }).catch(function () { $("etatDvf").textContent = "La liste des communes n'a pas pu être chargée."; });
+  }
+  var ATTENTE = "Chargement de la liste des communes…", INVITE = $("etatDvf").textContent;
+  ["focus", "pointerdown", "input"].forEach(function (ev) { $("commune").addEventListener(ev, chargeCommunes); });
+  if ($("commune").value) chargeCommunes();   // champ rempli par le navigateur au retour sur la page
 
   function source() {
     var s = $("source");
@@ -285,6 +301,8 @@
     $("commune").setAttribute("aria-expanded", String(!!proposees.length));
   }
   $("commune").addEventListener("input", function () {
+    // Texte tapé avant la fin du chargement : on le signale, la liste suivra.
+    if (!COMMUNES && chargement && !communeActive) $("etatDvf").textContent = ATTENTE;
     proposees = cherche($("commune").value);
     active = proposees.length ? 0 : -1;
     afficheChoix();

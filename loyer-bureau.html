@@ -203,8 +203,10 @@
 
 <script src="commun.js"></script>
 <script src="pdf.js"></script>
-<!-- Loyers au m2 des 34 900 communes (environ 400 Ko compressés) : chargés sans retenir la page. -->
-<script src="loyers-communes.js" async id="scriptLoyers"></script>
+<!-- Source des loyers et seule commune de l'exemple (Nantes) : de quoi calculer dès l'ouverture.
+     Les loyers des 34 900 communes (loyers-communes.js, environ 400 Ko compressés) ne sont
+     chargés qu'au premier usage du champ commune. -->
+<script src="loyers-communes-exemple.js"></script>
 <script>
 (function () {
   "use strict";
@@ -216,20 +218,36 @@
 
   // ---------- Communes ----------
   var COMMUNES = null;           // [{ code, nom, dep, app, appPrudence, mai, maiPrudence, cle }]
+  var COMPLETES = false;         // faux tant que seule la commune de l'exemple est connue
+  var chargement = null, echec = false;
   function simple(s) { return String(s).toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Z0-9]+/g, " ").trim(); }
   function libelleCommune(c) { return c.nom + " (" + c.dep + ")"; }
-  function chargeCommunes() {
+  function lisCommunes() {
     var L = window.LOYERS_COMMUNES;
-    if (!L || COMMUNES) return;
+    if (!L) return;
     COMMUNES = L.communes.split("\n").map(function (l) {
       var p = l.split("|");
       return { code: p[0], nom: p[1], dep: p[2], app: Number(p[3]), appPrudence: p[4] === "1", mai: Number(p[5]), maiPrudence: p[6] === "1",
                cle: simple(p[1]) };
     });
-    calcule();
+    COMPLETES = !L.partiel;
   }
-  if (window.LOYERS_COMMUNES) chargeCommunes();
-  else $("scriptLoyers").addEventListener("load", chargeCommunes);
+  lisCommunes();
+  // Toutes les communes, chargées une seule fois, dès qu'on touche au champ commune.
+  function chargeToutes() {
+    if (COMPLETES || chargement) return;
+    echec = false;
+    chargement = document.createElement("script");
+    chargement.src = "loyers-communes.js";
+    chargement.onload = function () {
+      lisCommunes();
+      if (document.activeElement === $("commune")) $("commune").dispatchEvent(new Event("input"));
+      calcule();
+    };
+    chargement.onerror = function () { chargement.remove(); chargement = null; echec = true; calcule(); };
+    document.body.appendChild(chargement);
+  }
+  ["focus", "pointerdown", "input"].forEach(function (ev) { $("commune").addEventListener(ev, chargeToutes); });
   // La commune choisie : celle dont « nom (département) » correspond exactement au champ.
   function communeChoisie() {
     if (!COMMUNES) return null;
@@ -311,13 +329,14 @@
     $("surface").classList.toggle("erreur", isNaN(surface) || surface <= 0);
     $("charges").classList.toggle("erreur", isNaN(taux) || taux < 0);
     $("m2Force").classList.toggle("erreur", m2Force !== null && (isNaN(m2Force) || m2Force <= 0));
-    $("commune").classList.toggle("erreur", !!COMMUNES && !commune && !m2Force);
+    $("commune").classList.toggle("erreur", (COMPLETES || echec) && !commune && !m2Force);
     $("date").classList.toggle("erreur", !d);
     $("mois").classList.toggle("erreur", !moisValide);
     $("aideM2").textContent = m2Commune ? "Vide : " + nombre(m2Commune) + " €/m2 à " + commune.nom : "Vide : loyer de la commune";
 
     var m2 = m2Force || m2Commune;
-    if (!COMMUNES && !m2Force) blocage = "Chargement des loyers des communes…";
+    if (echec && !commune && !m2Force) blocage = "Les loyers des communes n'ont pas pu être chargés. Vérifiez la connexion, puis cliquez de nouveau dans le champ commune.";
+    else if (!COMPLETES && !commune && !m2Force) blocage = "Chargement des loyers des communes…";
     else if (!m2) blocage = "Choisissez la commune du logement dans la liste, ou saisissez un loyer au m2 forcé.";
     else if (isNaN(m2) || m2 <= 0) blocage = "Le loyer au m2 forcé n'est pas un montant valide.";
     else if (isNaN(surface) || surface <= 0) blocage = "Indiquez la surface du bureau en m2.";

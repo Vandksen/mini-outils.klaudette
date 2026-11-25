@@ -1,9 +1,14 @@
 /* Mini-outils — service worker : rend l'application installable et utilisable hors ligne.
 
    Stratégie :
-   - fichiers de l'application : le réseau d'abord, en revalidant auprès du serveur
+   - pages HTML et version.json : le réseau d'abord, en revalidant auprès du serveur
      (cache: "no-cache") pour ne pas resservir la copie que le navigateur garde
      10 minutes ; la copie en cache si le réseau ne répond pas.
+   - styles, scripts, polices, images et données : le cache d'abord, la copie gardée est
+     servie aussitôt et le serveur consulté en arrière-plan (la page suivante a la
+     nouvelle). Juste après une publication, une page peut donc avoir un ancien style :
+     verifieVersion (commun.js) la recharge alors avec tous les fichiers redemandés
+     au serveur (rechargeFrais, en cache: "reload", qui passe par le réseau ici).
      Ajouter un paramètre à l'adresse ne contourne pas le réseau de diffusion de GitHub
      Pages, qui l'ignore : c'est commun.js qui attend la fin d'un déploiement avant de
      recharger une page (voir verifieVersion).
@@ -14,7 +19,7 @@
    fichier du site demandé.
 
    Quand un outil est ajouté, ajouter sa page à FICHIERS et augmenter VERSION. */
-const VERSION = "mini-outils-v63";
+const VERSION = "mini-outils-v64";
 const FICHIERS = [
   "./",
   "index.html",
@@ -94,24 +99,46 @@ self.addEventListener("fetch", (e) => {
 
   if (url.origin !== self.location.origin) return;
 
+  // Réseau d'abord : les pages, version.json (qui annonce les mises à jour) et toute demande
+  // qui exige le serveur (cache "reload", "no-store" ou "no-cache" : rechargeFrais de commun.js).
+  const reseauDabord = req.mode === "navigate" || url.pathname.endsWith(".html") || url.pathname.endsWith("/version.json") ||
+                       req.cache === "reload" || req.cache === "no-store" || req.cache === "no-cache";
+  if (reseauDabord) { e.respondWith(reseau(req, url)); return; }
+
+  // Cache d'abord pour le reste (styles, scripts, polices, images, données) : la copie gardée
+  // est servie aussitôt, et le serveur est consulté en arrière-plan pour la page suivante.
+  // Sans copie exacte (fichier jamais vu, ou « ?v=… » d'une nouvelle version) : le réseau.
   e.respondWith(
-    fetch(req.url, { cache: "no-cache" })
-      .then((rep) => {
-        if (rep.ok) {
-          const copie = rep.clone(), sansParametre = url.search ? rep.clone() : null;
-          caches.open(VERSION).then((c) => {
-            c.put(req, copie);
-            // Un fichier demandé avec « ?v=… » remplace aussi sa copie sans paramètre,
-            // pour que le hors-ligne ne ressorte pas un exemplaire plus ancien.
-            if (sansParametre) c.put(url.origin + url.pathname, sansParametre);
-          });
-        }
-        return rep;
-      })
-      // Hors ligne : la copie exacte d'abord, sinon celle du même fichier sans paramètre.
-      .catch(() => caches.match(req)
-        .then((exacte) => exacte || caches.match(url.origin + url.pathname))
-        .then((enCache) => enCache || caches.match(req, { ignoreSearch: true }))
-        .then((enCache) => enCache || (req.mode === "navigate" ? caches.match("fnp.html") : Response.error())))
+    caches.match(req).then((enCache) => {
+      if (!enCache) return reseau(req, url);
+      e.waitUntil(telecharge(req, url).catch(() => {}));
+      return enCache;
+    })
   );
 });
+
+// Télécharge le fichier en revalidant auprès du serveur (cache: "no-cache"), pour ne pas
+// reprendre la copie que le navigateur garde 10 minutes, et range une copie dans le cache.
+// La réponse n'est rendue qu'une fois la copie rangée : après rechargeFrais, la page
+// rechargée trouve ainsi les nouveaux fichiers dans le cache, et non les anciens.
+function telecharge(req, url) {
+  return fetch(req.url, { cache: "no-cache" }).then((rep) => {
+    if (!rep.ok) return rep;
+    const copie = rep.clone(), sansParametre = url.search ? rep.clone() : null;
+    return caches.open(VERSION).then((c) => Promise.all([
+      c.put(req, copie),
+      // Un fichier demandé avec « ?v=… » remplace aussi sa copie sans paramètre,
+      // pour que le hors-ligne ne ressorte pas un exemplaire plus ancien.
+      sansParametre ? c.put(url.origin + url.pathname, sansParametre) : null
+    ])).then(() => rep, () => rep);
+  });
+}
+
+// Réseau, puis hors ligne : la copie exacte d'abord, sinon celle du même fichier sans paramètre.
+function reseau(req, url) {
+  return telecharge(req, url)
+    .catch(() => caches.match(req)
+      .then((exacte) => exacte || caches.match(url.origin + url.pathname))
+      .then((enCache) => enCache || caches.match(req, { ignoreSearch: true }))
+      .then((enCache) => enCache || (req.mode === "navigate" ? caches.match("fnp.html") : Response.error())));
+}

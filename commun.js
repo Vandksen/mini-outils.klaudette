@@ -13,7 +13,7 @@ window.MiniOutils = (function () {
   // Mettre le MÊME numéro dans version.json : c'est ce petit fichier que les pages ouvertes
   // consultent pour savoir si une nouvelle version est publiée.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.30.6";
+  var VERSION = "1.30.7";
 
   // Type de chaque outil (champ « type ») : ce sur quoi il travaille, affiché en étiquette sur
   // sa page et sur sa carte de l'accueil (voir etiquettesType).
@@ -1250,13 +1250,32 @@ window.MiniOutils = (function () {
     // La page, le manifeste, puis tous les scripts et feuilles de style que la page charge
     // depuis le site : une page comme le plan de comptes a aussi son fichier de données.
     var fichiers = [location.href.split("#")[0], "manifest.webmanifest"];
-    Array.prototype.forEach.call(document.querySelectorAll('script[src], link[rel="stylesheet"][href]'), function (e) {
-      var adresse = e.src || e.href;
+    var ajoute = function (adresse) {
       if (adresse.indexOf(location.origin + "/") === 0 && fichiers.indexOf(adresse) === -1) fichiers.push(adresse);
+    };
+    Array.prototype.forEach.call(document.querySelectorAll('script[src], link[rel="stylesheet"][href]'), function (e) {
+      ajoute(e.src || e.href);
     });
-    Promise.all(fichiers.map(function (f) {
-      return fetch(f, { cache: "reload" }).catch(function () {});
-    })).then(function () { location.reload(); });
+    // Le service worker sert styles et scripts depuis son cache d'abord : on y redemande aussi
+    // ceux des autres pages, pour qu'aucune ne s'ouvre ensuite avec un ancien fichier. Restent
+    // à l'écart les gros fichiers (bibliothèques de vendor/, loyers des communes), qui se
+    // mettent à jour seuls en arrière-plan à leur prochain usage.
+    var enCache = window.caches ? caches.keys().then(function (noms) {
+      return Promise.all(noms.map(function (n) { return caches.open(n).then(function (c) { return c.keys(); }); }));
+    }).then(function (listes) {
+      listes.forEach(function (l) {
+        l.forEach(function (r) {
+          if (/\.(css|js)(\?|$)/.test(r.url) && !/\/vendor\/|loyers-communes\.js/.test(r.url)) ajoute(r.url);
+        });
+      });
+    }).catch(function () {}) : Promise.resolve();
+    // Délai maximal : un réseau qui traîne ne doit pas bloquer la mise à jour.
+    var plafond = new Promise(function (ok) { setTimeout(ok, 8000); });
+    enCache.then(function () {
+      return Promise.race([plafond, Promise.all(fichiers.map(function (f) {
+        return fetch(f, { cache: "reload" }).catch(function () {});
+      }))]);
+    }).then(function () { location.reload(); });
   }
   var DELAI_MAJ = 60000, majPrevue = null;   // une minute entre la détection et le rechargement
   function verifieVersion() {

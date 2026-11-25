@@ -13,7 +13,7 @@ window.MiniOutils = (function () {
   // Mettre le MÊME numéro dans version.json : c'est ce petit fichier que les pages ouvertes
   // consultent pour savoir si une nouvelle version est publiée.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.30.4";
+  var VERSION = "1.30.5";
 
   // Type de chaque outil (champ « type ») : ce sur quoi il travaille, affiché en étiquette sur
   // sa page et sur sa carte de l'accueil (voir etiquettesType).
@@ -197,7 +197,9 @@ window.MiniOutils = (function () {
     // Chaque catégorie du menu est un accordéon : son titre est un bouton qui déplie ses
     // entrées. À chaque chargement, seule la catégorie de la page affichée est dépliée ;
     // toutes les autres sont repliées (toutes, si la page n'appartient à aucune catégorie).
-    // Un clic sur un titre replie ou déplie sa seule catégorie.
+    // Un clic sur un titre déplie sa catégorie et replie les autres (une seule ouverte à la
+    // fois), ou la replie si elle était ouverte. Pendant une recherche, les autres catégories
+    // restent comme la recherche les a mises, pour ne pas masquer ses résultats.
     var rubrique = function (cle, titre, contenu, classe) {
       var ouverte = contenu.indexOf('aria-current="page"') !== -1;
       return '<h2' + (classe ? ' class="' + classe + '"' : '') + '><button type="button" class="rubrique" data-cle="' + cle +
@@ -270,6 +272,13 @@ window.MiniOutils = (function () {
       var b = e.target.closest(".rubrique");
       if (!b) return;
       var ouvrir = b.getAttribute("aria-expanded") !== "true";
+      if (ouvrir && !$("recherche-menu").value.trim()) {
+        Array.prototype.forEach.call(nav.querySelectorAll(".rubrique"), function (autre) {
+          if (autre === b) return;
+          autre.setAttribute("aria-expanded", "false");
+          $("rubrique-" + autre.getAttribute("data-cle")).hidden = true;
+        });
+      }
       b.setAttribute("aria-expanded", String(ouvrir));
       $("rubrique-" + b.getAttribute("data-cle")).hidden = !ouvrir;
     });
@@ -647,8 +656,8 @@ window.MiniOutils = (function () {
       li.append(nom, nb);
       ul.appendChild(li);
     });
-    bloc.querySelector(".pile-total").textContent = lignes.length + " lignes · " +
-      (totD === totC ? "équilibre OK" : "écart de " + affiche(Math.abs(totD - totC)));
+    // Pas de ligne de bilan sous les lots : seul un déséquilibre est signalé.
+    bloc.querySelector(".pile-total").textContent = totD === totC ? "" : "Écart de " + affiche(Math.abs(totD - totC));
     bloc.querySelector(".pile-copier").addEventListener("click", function () {
       copiePile(this, bloc.querySelector(".pile-etat"));
     });

@@ -13,13 +13,15 @@
      Pages, qui l'ignore : c'est commun.js qui attend la fin d'un déploiement avant de
      recharger une page (voir verifieVersion).
    Les polices sont des fichiers du site comme les autres : rien n'est demandé à un tiers.
+   Seules leurs versions « latin » sont préchargées : les « latin-ext » (lettres d'Europe
+   centrale, Ł, ő…) ne servent presque jamais et se mettent en cache si une page en a besoin.
 
    Les bibliothèques de lecture des documents (vendor/, environ 7 Mo) ne sont pas
    préchargées : elles sont mises en cache au premier dépôt d'un document, comme tout
    fichier du site demandé.
 
    Quand un outil est ajouté, ajouter sa page à FICHIERS et augmenter VERSION. */
-const VERSION = "mini-outils-v64";
+const VERSION = "mini-outils-v65";
 const FICHIERS = [
   "./",
   "index.html",
@@ -69,15 +71,10 @@ const FICHIERS = [
   "icones/icone-m-512.png",
   "icones/structurre.svg",
   "images/fond-tempete.webp",
-  "polices/instrument-serif-italique-latin-ext.woff2",
   "polices/instrument-serif-italique-latin.woff2",
-  "polices/instrument-serif-latin-ext.woff2",
   "polices/instrument-serif-latin.woff2",
-  "polices/inter-tight-latin-ext.woff2",
   "polices/inter-tight-latin.woff2",
-  "polices/jetbrains-mono-latin-ext.woff2",
   "polices/jetbrains-mono-latin.woff2",
-  "polices/space-mono-italique-latin-ext.woff2",
   "polices/space-mono-italique-latin.woff2"
 ];
 self.addEventListener("install", (e) => {

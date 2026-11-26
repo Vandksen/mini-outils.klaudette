@@ -13,7 +13,7 @@ window.MiniOutils = (function () {
   // Mettre le MÊME numéro dans version.json : c'est ce petit fichier que les pages ouvertes
   // consultent pour savoir si une nouvelle version est publiée.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.31.1";
+  var VERSION = "1.32.0";
 
   // Type de chaque outil (champ « type ») : ce sur quoi il travaille, affiché en étiquette sur
   // sa page et sur sa carte de l'accueil (voir etiquettesType).
@@ -254,7 +254,7 @@ window.MiniOutils = (function () {
       // inutile sur l'accueil lui-même, qui porte déjà ce bandeau.
       (page === "index.html" ? '' :
         '<div class="encart-zone"><a class="encart" href="index.html"><strong>Quand la période fiscale se déchaîne, <em>gardez le cap.</em></strong>' +
-        '<small>Laissez les écritures répétitives à Mini-outils-compta.fr</small></a></div>') +
+        '<small>Laissez les écritures répétitives à mini-outils.fr</small></a></div>') +
       // Écritures empilées depuis les outils : bloc au-dessus du bouton d'installation (voir majPile).
       '<div class="pile-zone" id="pile-zone" hidden></div>' +
       '<div class="pied"><button id="installer" type="button">Installer l’application</button>' +
@@ -1452,7 +1452,25 @@ window.MiniOutils = (function () {
       var boutons = Array.prototype.map.call(liste.options, function (option) {
         var b = document.createElement("button");
         b.type = "button";
-        b.textContent = option.textContent;
+        // Icône facultative : « data-icone » sur le choix donne l'identifiant d'un symbole SVG
+        // défini dans la page ; elle se place devant le libellé et prend la couleur du texte.
+        var icone = option.getAttribute("data-icone");
+        if (icone) {
+          var NS = "http://www.w3.org/2000/svg";
+          var dessin = document.createElementNS(NS, "svg");
+          dessin.setAttribute("viewBox", "0 0 24 24");
+          dessin.setAttribute("aria-hidden", "true");
+          var renvoi = document.createElementNS(NS, "use");
+          renvoi.setAttribute("href", "#" + icone);
+          dessin.appendChild(renvoi);
+          b.className = "avec-icone";
+          b.appendChild(dessin);
+          var texte = document.createElement("span");
+          texte.textContent = option.textContent;
+          b.appendChild(texte);
+        } else {
+          b.textContent = option.textContent;
+        }
         b.addEventListener("click", function () {
           if (liste.value === option.value) return;
           liste.value = option.value;
@@ -1548,6 +1566,45 @@ window.MiniOutils = (function () {
     });
   });
 
+  // Champ en erreur (classe « erreur » posée par chaque outil) : un court message rouge sous
+  // le champ dit ce qui est attendu. Le message suit la classe et la saisie, sans que les
+  // outils aient à l'écrire.
+  function messagesErreur() {
+    var texte = function (c) {
+      if (c.value.trim() === "") return "Champ à renseigner.";
+      if (c.type === "date" || c.placeholder === "jj/mm/aaaa") return "Date non reconnue : écrivez-la au format jj/mm/aaaa.";
+      if (c.type === "number" && c.min !== "" && c.max !== "") return "Valeur attendue entre " + c.min + " et " + c.max + ".";
+      if (c.inputMode === "decimal") return "Nombre non reconnu : écrivez-le comme 1234,56.";
+      return "Valeur à corriger.";
+    };
+    var maj = function (c) {
+      var champ = c.closest ? c.closest(".champ") : null;
+      if (!champ || c.type === "checkbox") return;
+      var msg = champ.querySelector(".msg-erreur"), enErreur = c.classList.contains("erreur");
+      if (!enErreur) {
+        if (msg) msg.remove();
+        c.removeAttribute("aria-invalid");
+        return;
+      }
+      if (!msg) {
+        msg = document.createElement("span");
+        msg.className = "msg-erreur";
+        champ.appendChild(msg);
+      }
+      var t = texte(c);
+      if (msg.textContent !== t) msg.textContent = t;
+      c.setAttribute("aria-invalid", "true");
+    };
+    var tous = function () { Array.prototype.forEach.call(document.querySelectorAll(".champ input"), maj); };
+    if (!window.MutationObserver) return;
+    new MutationObserver(function (liste) {
+      liste.forEach(function (m) { if (m.target.tagName === "INPUT") maj(m.target); });
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"], subtree: true });
+    document.addEventListener("input", function (e) { if (e.target.tagName === "INPUT") maj(e.target); });
+    document.addEventListener("DOMContentLoaded", tous);
+    tous();
+  }
+
   segments();
   selectionCollage();
   calendrier();
@@ -1560,6 +1617,7 @@ window.MiniOutils = (function () {
   reinitialisation();
   croixRecherche();
   etiquettesType();
+  messagesErreur();
   lienPage();
   // Après la réinitialisation (qui relève les données de départ au même moment).
   document.addEventListener("DOMContentLoaded", recoitScanner);

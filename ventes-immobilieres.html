@@ -104,12 +104,20 @@
       <div class="large">
         <label for="nature">Nature du bien</label>
         <select id="nature" class="segments">
-          <option value="">Tous</option>
-          <option value="M">Maison</option>
-          <option value="A">Appartement</option>
-          <option value="L">Local</option>
-          <option value="T">Terrain</option>
+          <option value="" data-icone="nature-tous">Tous</option>
+          <option value="M" data-icone="nature-maison">Maison</option>
+          <option value="A" data-icone="nature-appartement">Appartement</option>
+          <option value="L" data-icone="nature-local">Local</option>
+          <option value="T" data-icone="nature-terrain">Terrain</option>
         </select>
+        <!-- Icônes des natures de bien, reprises par le sélecteur à segments (commun.js). -->
+        <svg width="0" height="0" aria-hidden="true" style="position:absolute">
+          <symbol id="nature-tous" viewBox="0 0 24 24"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></symbol>
+          <symbol id="nature-maison" viewBox="0 0 24 24"><path d="M2.5 11.5L12 3.5L21.5 11.5"/><path d="M5 9.8V20.5H19V9.8"/><path d="M9.5 20.5V14.5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V20.5"/></symbol>
+          <symbol id="nature-appartement" viewBox="0 0 24 24"><rect x="4" y="3" width="10" height="18" rx="1.5"/><path d="M14 9h4.5a1.5 1.5 0 0 1 1.5 1.5V19.5a1.5 1.5 0 0 1-1.5 1.5H14"/><path d="M7.5 21V17h3v4"/><g fill="currentColor" stroke="none"><circle cx="7.5" cy="7" r=".95"/><circle cx="10.5" cy="7" r=".95"/><circle cx="7.5" cy="10.5" r=".95"/><circle cx="10.5" cy="10.5" r=".95"/><circle cx="7.5" cy="14" r=".95"/><circle cx="10.5" cy="14" r=".95"/><circle cx="17" cy="13" r=".95"/><circle cx="17" cy="16.5" r=".95"/></g></symbol>
+          <symbol id="nature-local" viewBox="0 0 24 24"><path d="M3.5 9.5L5 4.5H19L20.5 9.5"/><path d="M3.5 9.5a2.83 2.83 0 0 0 5.67 0a2.83 2.83 0 0 0 5.66 0a2.83 2.83 0 0 0 5.67 0"/><path d="M5 12.5V20.5H19V12.5"/><path d="M13 20.5V15.5h3.5v5"/><rect x="7.5" y="15.5" width="3" height="2.5" rx=".5"/></symbol>
+          <symbol id="nature-terrain" viewBox="0 0 24 24"><path d="M4.5 8L16.5 4.5L20 15.5L7 19.5Z"/><g fill="currentColor" stroke="none"><circle cx="4.5" cy="8" r="1.7"/><circle cx="16.5" cy="4.5" r="1.7"/><circle cx="20" cy="15.5" r="1.7"/><circle cx="7" cy="19.5" r="1.7"/></g></symbol>
+        </svg>
       </div>
       <div><label for="surfaceMin">Surface bâtie min. (m2)</label><input id="surfaceMin" type="text" inputmode="numeric"></div>
       <div><label for="surfaceMax">Surface bâtie max. (m2)</label><input id="surfaceMax" type="text" inputmode="numeric"></div>

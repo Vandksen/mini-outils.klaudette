@@ -21,7 +21,7 @@
     trait: [0.82, 0.80, 0.74], fond: [0.957, 0.937, 0.890], blanc: [1, 1, 1],
     ombre: [0.490, 0.576, 0.941]
   };
-  var SITE = "https://mini-outils-compta.fr/";
+  var SITE = "https://mini-outils.fr/";
 
   // Icône du site : le « M » en pixels avec son ombre dure, recopié de PIXELS dans commun.js
   // (cadré sur les 20 cases utiles). "1" = bleu, "3" = ombre, "." = vide.

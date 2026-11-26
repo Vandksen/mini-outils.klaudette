@@ -13,7 +13,7 @@ window.MiniOutils = (function () {
   // Mettre le MÊME numéro dans version.json : c'est ce petit fichier que les pages ouvertes
   // consultent pour savoir si une nouvelle version est publiée.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.32.0";
+  var VERSION = "1.33.0";
 
   // Type de chaque outil (champ « type ») : ce sur quoi il travaille, affiché en étiquette sur
   // sa page et sur sa carte de l'accueil (voir etiquettesType).
@@ -50,7 +50,9 @@ window.MiniOutils = (function () {
     { fichier: "plafond-vehicule.html", nom: "Plafond véhicule", type: "calcul" },
     { fichier: "medecins-secteur1.html", nom: "Médecins secteur 1", type: "calcul" },
     { fichier: "revenu-brut-social.html", nom: "Revenu brut social", type: "calcul" },
-    { fichier: "revalorisation-loyer.html", nom: "Revalorisation de loyer", type: "detail" }
+    { fichier: "revalorisation-loyer.html", nom: "Revalorisation de loyer", type: "detail" },
+    { fichier: "combinaisons.html", nom: "Chercheur de combinaisons", type: "detail" },
+    { fichier: "affectation-resultat.html", nom: "Affectation du résultat", type: "calcul" }
   ];
   var OUTILS = PRODUCTION.concat(REVISION);
   // Catégorie « Analyse » du menu : contrôles et revues à partir de données collées.
@@ -336,7 +338,11 @@ window.MiniOutils = (function () {
     champ.addEventListener("input", function () { filtre(); croix(); });
     effacer.addEventListener("click", function () { vide(); champ.focus(); });
     champ.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && champ.value) { vide(); e.stopPropagation(); }
+      // Échap vide d'abord le champ ; champ déjà vide, il le quitte (le curseur en sort).
+      if (e.key === "Escape") {
+        if (champ.value) { vide(); e.stopPropagation(); }
+        else champ.blur();
+      }
       if (e.key === "Enter") {
         var premier = nav.querySelector(".defile .entree:not([hidden])");
         if (premier && champ.value.trim()) location.href = premier.getAttribute("href");

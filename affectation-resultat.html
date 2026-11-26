@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1136DB">
+<meta name="description" content="Écritures d'affectation du résultat et de paiement des dividendes, réserve légale, prélèvements de la déclaration 2777 et part soumise aux cotisations du gérant majoritaire.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/icone-m-180.png">
+<title>Affectation du résultat et dividendes — Mini-outils</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mini-outils">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Affectation du résultat et dividendes — Mini-outils">
+<meta property="og:description" content="Écritures d'affectation du résultat et de paiement des dividendes, réserve légale, prélèvements de la déclaration 2777 et part soumise aux cotisations du gérant majoritaire.">
+<meta property="og:url" content="https://mini-outils.fr/affectation-resultat.html">
+<link rel="canonical" href="https://mini-outils.fr/affectation-resultat.html">
+<meta property="og:image" content="https://mini-outils.fr/images/og-tempete.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Un navire dans la tempête, avec le slogan « Quand la période fiscale se déchaîne, gardez le cap. »">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="commun.css">
+<!-- Polices de tout écran, demandées dès l'en-tête plutôt qu'après la lecture du style. -->
+<link rel="preload" href="polices/inter-tight-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="polices/jetbrains-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="polices/instrument-serif-italique-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+/* Associés : deux lignes par associé (nom et part, puis qualité et compte courant moyen). */
+.associes { display: grid; grid-template-columns: minmax(0, 1fr) 112px; gap: 6px 8px; align-items: end; }
+.associes .tete { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.associes .tete:nth-child(3), .associes .tete:nth-child(4) { margin: -4px 0 4px; }
+.associes input, .associes select { width: 100%; min-width: 0; height: 38px; padding: 0 10px; font-family: var(--mono); font-size: 13px; color: var(--ink); background: var(--cream); border: 1px solid var(--line); border-radius: 8px; }
+.associes input.droite { text-align: right; }
+.associes input:focus-visible, .associes select:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; border-color: var(--blue); }
+.associes input.erreur { border-color: var(--rouge); background: rgba(198, 40, 40, .06); box-shadow: inset 3px 0 0 var(--rouge); }
+.associes input:disabled { opacity: .45; }
+.associes select, .associes input[id^="cca"] { margin-bottom: 12px; }
+.aide-bloc.bas { margin: 4px 0 0; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">Générateur d'écritures — comptes 12, 10, 11 et 457</p>
+    <h1>Affectation <em>du résultat.</em></h1>
+    <p class="lead"><strong>But de la page :</strong> passer l'écriture d'affectation du résultat votée par l'assemblée, avec la dotation à la réserve légale, puis l'écriture de paiement des dividendes. La page chiffre aussi les prélèvements à verser avec la déclaration 2777 et, pour un gérant majoritaire, la part des dividendes soumise aux cotisations sociales.</p>
+    <p class="lead">Renseignez la configuration et les associés. Les écritures sont générées aussitôt, prêtes à être copiées puis collées dans ACDCompta.</p>
+
+    <div class="grille">
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">01 — Configuration</p>
+          <div class="champ">
+            <label for="dossier">Dossier<span class="aide">Facultatif</span></label>
+            <input id="dossier" type="text" value="Restaurant MIRABELLE">
+          </div>
+          <div class="champ">
+            <label for="dateAG">Date de l'assemblée</label>
+            <input id="dateAG" type="date" value="2026-06-30">
+          </div>
+          <div class="champ">
+            <label for="resultat">Résultat de l'exercice<span class="aide">Négatif pour une perte</span></label>
+            <input id="resultat" class="droite" type="text" inputmode="decimal" value="45000,00">
+          </div>
+          <div class="champ">
+            <label for="ran">Report à nouveau antérieur<span class="aide">Négatif s'il est débiteur</span></label>
+            <input id="ran" class="droite" type="text" inputmode="decimal" value="2500,00">
+          </div>
+          <div class="champ">
+            <label for="capital">Capital social</label>
+            <input id="capital" class="droite" type="text" inputmode="decimal" value="10000,00">
+          </div>
+          <div class="champ">
+            <label for="primes">Primes d'émission<span class="aide">Pour le seuil de 10 %</span></label>
+            <input id="primes" class="droite" type="text" inputmode="decimal" placeholder="0,00" value="">
+          </div>
+          <div class="champ">
+            <label for="legale">Réserve légale obligatoire<span class="aide">SARL, EURL, SAS, SA</span></label>
+            <input id="legale" type="checkbox" class="bascule" role="switch" checked>
+          </div>
+          <div class="champ leg">
+            <label for="reserve">Réserve légale déjà constituée</label>
+            <input id="reserve" class="droite" type="text" inputmode="decimal" placeholder="0,00" value="400,00">
+          </div>
+          <div class="champ">
+            <label for="dividende">Dividende voté<span class="aide">0 si vide</span></label>
+            <input id="dividende" class="droite" type="text" inputmode="decimal" placeholder="0,00" value="30000,00">
+          </div>
+          <div class="champ pleine">
+            <label for="solde">Solde non distribué</label>
+            <select id="solde" class="segments">
+              <option value="ran">Report à nouveau</option>
+              <option value="reserves">Autres réserves</option>
+            </select>
+          </div>
+          <div class="champ div">
+            <label for="datePaiement">Date de paiement</label>
+            <input id="datePaiement" type="date" value="2026-07-15">
+          </div>
+          <div class="champ pleine div">
+            <label for="versement">Paiement du net</label>
+            <select id="versement" class="segments">
+              <option value="cca">En compte courant</option>
+              <option value="banque">Par la banque</option>
+            </select>
+          </div>
+          <div class="champ div">
+            <label for="cptVersement">Compte du paiement<span class="aide" id="aideVersement"></span></label>
+            <input id="cptVersement" type="text" inputmode="numeric">
+          </div>
+          <div class="champ div">
+            <label for="cptPrelev">Compte des prélèvements<span class="aide">442500 si vide</span></label>
+            <input id="cptPrelev" type="text" inputmode="numeric" placeholder="442500">
+          </div>
+          <div class="champ">
+            <label for="piece">Pièce<span class="aide">Vide : code automatique de 6 caractères</span></label>
+            <input id="piece" type="text">
+          </div>
+          <ul class="alertes" id="alertes"></ul>
+        </section>
+
+        <section class="panel div">
+          <p class="eyebrow">02 — Associés</p>
+          <p class="aide-bloc">Part du capital en %, qualité et, pour un gérant majoritaire, solde moyen annuel de son compte courant. Le conjoint, le partenaire de Pacs et les enfants mineurs du gérant majoritaire suivent la même règle que lui.</p>
+          <div class="associes">
+            <span class="tete">Nom</span><span class="tete">Part %</span><span class="tete">Qualité</span><span class="tete">Compte courant moyen</span>
+            <input id="nom1" type="text" aria-label="Nom de l'associé 1" value="Henri MARCHAL">
+            <input id="part1" class="droite" type="text" inputmode="decimal" aria-label="Part de l'associé 1 en %" value="60">
+            <select id="qual1" aria-label="Qualité de l'associé 1"><option value="tns" selected>Gérant majoritaire</option><option value="pp">Personne physique</option><option value="dispense">Pers. physique dispensée</option><option value="pm">Personne morale</option></select>
+            <input id="cca1" class="droite" type="text" inputmode="decimal" aria-label="Compte courant moyen de l'associé 1" value="8000,00">
+            <input id="nom2" type="text" aria-label="Nom de l'associé 2" value="Catherine MAITRE">
+            <input id="part2" class="droite" type="text" inputmode="decimal" aria-label="Part de l'associé 2 en %" value="40">
+            <select id="qual2" aria-label="Qualité de l'associé 2"><option value="tns">Gérant majoritaire</option><option value="pp" selected>Personne physique</option><option value="dispense">Pers. physique dispensée</option><option value="pm">Personne morale</option></select>
+            <input id="cca2" class="droite" type="text" inputmode="decimal" aria-label="Compte courant moyen de l'associé 2">
+            <input id="nom3" type="text" aria-label="Nom de l'associé 3">
+            <input id="part3" class="droite" type="text" inputmode="decimal" aria-label="Part de l'associé 3 en %">
+            <select id="qual3" aria-label="Qualité de l'associé 3"><option value="tns">Gérant majoritaire</option><option value="pp" selected>Personne physique</option><option value="dispense">Pers. physique dispensée</option><option value="pm">Personne morale</option></select>
+            <input id="cca3" class="droite" type="text" inputmode="decimal" aria-label="Compte courant moyen de l'associé 3">
+            <input id="nom4" type="text" aria-label="Nom de l'associé 4">
+            <input id="part4" class="droite" type="text" inputmode="decimal" aria-label="Part de l'associé 4 en %">
+            <select id="qual4" aria-label="Qualité de l'associé 4"><option value="tns">Gérant majoritaire</option><option value="pp" selected>Personne physique</option><option value="dispense">Pers. physique dispensée</option><option value="pm">Personne morale</option></select>
+            <input id="cca4" class="droite" type="text" inputmode="decimal" aria-label="Compte courant moyen de l'associé 4">
+          </div>
+          <p class="aide-bloc bas">« Dispensée » : personne physique qui a demandé à ne pas subir le prélèvement de 12,8 % (revenu fiscal de référence sous le seuil) ; les prélèvements sociaux restent dus.</p>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">03 — Vérification</p>
+          <div class="champ"><span class="etiquette">Dotation à la réserve légale</span><span class="valeur droite" id="vDotation"></span></div>
+          <div class="champ"><span class="etiquette">Bénéfice distribuable</span><span class="valeur droite" id="vDistribuable"></span></div>
+          <div class="champ"><span class="etiquette">Solde non distribué</span><span class="valeur droite" id="vSolde"></span></div>
+          <div class="champ"><span class="etiquette">Report à nouveau après affectation</span><span class="valeur droite" id="vRan"></span></div>
+          <div class="champ"><span class="etiquette">Total débit</span><span class="valeur droite" id="totDebit"></span></div>
+          <div class="champ"><span class="etiquette">Total crédit</span><span class="valeur droite" id="totCredit"></span></div>
+          <div class="champ"><span class="etiquette">Équilibre</span><span class="valeur droite"><span id="equilibre"></span></span></div>
+          <div class="champ"><span class="etiquette">Lignes générées</span><span class="valeur droite" id="nbLignes"></span></div>
+        </section>
+      </div>
+
+      <div class="colonne">
+        <section class="panel div">
+          <p class="eyebrow">04 — Déclaration 2777 et cotisations</p>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr><th>Associé</th><th class="droite">Dividende brut</th><th class="droite">Seuil de 10 %</th><th class="droite">Soumis à cotisations</th>
+                    <th class="droite">Impôt 12,8 %</th><th class="droite">Prél. sociaux</th><th class="droite">Net versé</th></tr>
+              </thead>
+              <tbody id="associes"></tbody>
+            </table>
+          </div>
+          <div class="champ"><span class="etiquette">Base du prélèvement de 12,8 %</span><span class="valeur droite" id="vBaseIR"></span></div>
+          <div class="champ"><span class="etiquette" id="eBasePS">Base des prélèvements sociaux</span><span class="valeur droite" id="vBasePS"></span></div>
+          <div class="champ total"><span class="etiquette">À verser avec la 2777</span><span class="valeur" id="v2777"></span></div>
+          <div class="champ"><span class="etiquette">Date limite de la 2777</span><span class="valeur droite" id="vLimite"></span></div>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">05 — Note de calcul</p>
+            <div class="actions">
+              <span class="etat" id="etatNote" role="status"></span>
+              <button class="btn ghost" id="copierNote" type="button">Copier la note</button>
+              <button class="btn ghost" id="pdf" type="button">Télécharger le justificatif PDF</button>
+            </div>
+          </div>
+          <p class="note" id="note"></p>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">06 — Écritures</p>
+            <div class="actions">
+              <span class="etat" id="etat" role="status"></span>
+              <button class="btn" id="copier" type="button">Copier pour ACDCompta</button>
+            </div>
+          </div>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>N°</th><th>Date</th><th>Pièce</th><th>Compte</th><th>Libellé</th>
+                  <th class="droite">Débit</th><th class="droite">Crédit</th>
+                </tr>
+              </thead>
+              <tbody id="lignes"></tbody>
+            </table>
+          </div>
+          <div class="vide" id="vide" hidden></div>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Colonnes copiées : date · pièce · compte · libellé · débit · crédit</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script src="pdf.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var NB_ASSOCIES = 4;
+  var ids = ["dossier", "dateAG", "resultat", "ran", "capital", "primes", "legale", "reserve", "dividende", "solde",
+             "datePaiement", "versement", "cptVersement", "cptPrelev", "piece"];
+  for (var n = 1; n <= NB_ASSOCIES; n++) ids.push("nom" + n, "part" + n, "qual" + n, "cca" + n);
+  var note = "", dernier = null;
+
+  // Comptes utilisés (plan comptable général).
+  var CPT = { benefice: "120000", perte: "129000", ranCrediteur: "110000", ranDebiteur: "119000", reserveLegale: "106110",
+              autresReserves: "106800", dividendes: "457000", prelevements: "442500", compteCourant: "455000", banque: "512000" };
+
+  // Taux en centièmes de pour cent.
+  // Prélèvement forfaitaire non libératoire de l'impôt sur le revenu : 12,8 % (CGI, art. 117 quater).
+  var TAUX_IR = 1280;
+  // Prélèvements sociaux sur les dividendes : 17,2 %, portés à 18,6 % pour les dividendes payés à
+  // compter du 1er janvier 2026 (loi de financement de la sécurité sociale pour 2026, CSG à 10,6 %).
+  function tauxPS(paiement) { return paiement.a >= 2026 ? 1860 : 1720; }
+  // Réserve légale : 5 % du bénéfice, diminué des pertes antérieures, jusqu'à 10 % du capital
+  // (code de commerce, art. L. 232-10).
+  // Gérant majoritaire (travailleur indépendant) : la part des dividendes qui dépasse 10 % du
+  // capital, des primes d'émission et du compte courant qu'il détient est soumise aux cotisations
+  // sociales (code de la sécurité sociale, art. L. 131-6) et non aux prélèvements sociaux.
+  var SEUIL_TNS = 1000;
+
+  var QUALITES = { tns: "gérant majoritaire", pp: "personne physique", dispense: "personne physique dispensée du prélèvement de 12,8 %", pm: "personne morale" };
+  function pct(c) { return (c / 100).toString().replace(".", ",") + " %"; }
+  function euro(c) { return M.affiche(c) + " €"; }
+  // Prélèvement arrondi à l'euro le plus proche, comme sur la déclaration.
+  function arrondiEuro(c) { return Math.round(c / 100) * 100; }
+  function montantOuZero(id) { var t = $(id).value.trim(); return t === "" ? 0 : M.centimes(t); }
+  function cellule(tr, texte, classe) {
+    var td = document.createElement("td");
+    td.textContent = texte;
+    if (classe) td.className = classe;
+    tr.appendChild(td);
+  }
+
+  function calcule() {
+    var v = {};
+    ids.forEach(function (id) { v[id] = $(id).value.trim(); });
+    var alertes = [], ecritures = [], blocage = "";
+    var legale = $("legale").checked;
+    var resultat = M.centimes(v.resultat), ran = montantOuZero("ran"), capital = M.centimes(v.capital), primes = montantOuZero("primes");
+    var reserve = montantOuZero("reserve"), dividende = montantOuZero("dividende");
+    var dAG = M.lireDate(v.dateAG), dPaie = M.lireDate(v.datePaiement);
+    var distribue = !isNaN(dividende) && dividende > 0;
+
+    // Les réglages du paiement et des associés ne servent que si un dividende est voté.
+    Array.prototype.forEach.call(document.querySelectorAll(".champ.leg"), function (c) { c.hidden = !legale; });
+    Array.prototype.forEach.call(document.querySelectorAll(".div"), function (c) { c.hidden = !distribue; });
+    var parBanque = v.versement === "banque";
+    $("aideVersement").textContent = (parBanque ? CPT.banque : CPT.compteCourant) + " si vide";
+    $("cptVersement").placeholder = parBanque ? CPT.banque : CPT.compteCourant;
+    var cptVersement = v.cptVersement || (parBanque ? CPT.banque : CPT.compteCourant), cptPrelev = v.cptPrelev || CPT.prelevements;
+
+    $("resultat").classList.toggle("erreur", isNaN(resultat));
+    $("ran").classList.toggle("erreur", isNaN(ran));
+    $("capital").classList.toggle("erreur", isNaN(capital) || capital < 0);
+    $("primes").classList.toggle("erreur", isNaN(primes) || primes < 0);
+    $("reserve").classList.toggle("erreur", legale && (isNaN(reserve) || reserve < 0));
+    $("dividende").classList.toggle("erreur", isNaN(dividende) || dividende < 0);
+    $("dateAG").classList.toggle("erreur", !dAG);
+    $("datePaiement").classList.toggle("erreur", distribue && !dPaie);
+
+    if (!dAG) blocage = "Renseignez la date de l'assemblée.";
+    else if (isNaN(resultat) || isNaN(ran) || isNaN(capital) || capital < 0 || isNaN(primes) || primes < 0 || (legale && (isNaN(reserve) || reserve < 0)) || isNaN(dividende) || dividende < 0)
+      blocage = "Un montant de la configuration n'est pas un nombre valide.";
+    else if (resultat === 0) blocage = "Renseignez le résultat de l'exercice.";
+    else if (distribue && !dPaie) blocage = "Renseignez la date de paiement des dividendes.";
+
+    // ---- Affectation ----
+    var dotation = 0, distribuable = 0, solde = 0, ranApres = 0, versReserves = 0;
+    if (!blocage) {
+      if (resultat > 0) {
+        // Assiette de la réserve légale : le bénéfice diminué des pertes antérieures.
+        var assiette = Math.max(0, resultat + Math.min(ran, 0));
+        if (legale) dotation = Math.min(Math.round(assiette * 5 / 100), Math.max(0, Math.round(capital / 10) - reserve));
+        distribuable = resultat + ran - dotation;
+        if (distribuable < 0) {
+          // Le bénéfice n'apure pas tout le report débiteur : rien à distribuer.
+          if (distribue) blocage = "Le bénéfice ne couvre pas le report à nouveau débiteur : aucun dividende ne peut être distribué.";
+          ranApres = distribuable; distribuable = 0;
+        } else if (dividende > distribuable) {
+          blocage = "Le dividende voté (" + euro(dividende) + ") dépasse le bénéfice distribuable (" + euro(distribuable) + "). La distribution de réserves n'est pas traitée par cet outil.";
+        } else {
+          solde = distribuable - dividende;
+          if (v.solde === "reserves") versReserves = solde; else ranApres = solde;
+        }
+      } else {
+        // Perte : elle est portée en report à nouveau.
+        if (distribue) blocage = "L'exercice est déficitaire : la distribution de réserves n'est pas traitée par cet outil.";
+        ranApres = ran + resultat;
+      }
+    }
+
+    // ---- Associés ----
+    var associes = [], totalParts = 0;
+    for (var k = 1; k <= NB_ASSOCIES; k++) {
+      var nom = v["nom" + k], partTexte = v["part" + k], part = partTexte === "" ? 0 : M.centimes(partTexte), cca = montantOuZero("cca" + k);
+      var qual = v["qual" + k], vide = nom === "" && partTexte === "";
+      $("part" + k).classList.toggle("erreur", distribue && !vide && (isNaN(part) || part <= 0 || part > 10000));
+      $("cca" + k).classList.toggle("erreur", distribue && qual === "tns" && (isNaN(cca) || cca < 0));
+      $("cca" + k).disabled = qual !== "tns";
+      if (vide) continue;
+      associes.push({ nom: nom || "Associé " + k, part: part, qual: qual, cca: qual === "tns" ? cca : 0 });
+      totalParts += part;
+    }
+    if (!blocage && distribue) {
+      if (!associes.length) blocage = "Renseignez au moins un associé pour répartir le dividende.";
+      else if (associes.some(function (a) { return isNaN(a.part) || a.part <= 0 || isNaN(a.cca) || a.cca < 0; })) blocage = "Une part ou un compte courant d'associé n'est pas un nombre valide.";
+      else if (totalParts !== 10000) blocage = "Les parts des associés font " + pct(totalParts) + " : elles doivent faire 100 %.";
+    }
+
+    // ---- Dividende, prélèvements et part soumise aux cotisations, par associé ----
+    var tPS = dPaie ? tauxPS(dPaie) : 1860, tot = { brut: 0, soumis: 0, ir: 0, ps: 0, net: 0, baseIR: 0, basePS: 0 };
+    if (!blocage && distribue) {
+      var restant = dividende;
+      associes.forEach(function (a, i) {
+        // Le dernier associé prend le reste, pour que le total tombe au centime.
+        a.brut = i === associes.length - 1 ? restant : Math.round(dividende * a.part / 10000);
+        restant -= a.brut;
+        a.seuil = null; a.soumis = 0;
+        if (a.qual === "tns") {
+          a.seuil = Math.round((Math.round(capital * a.part / 10000) + Math.round(primes * a.part / 10000) + a.cca) * SEUIL_TNS / 10000);
+          a.soumis = Math.max(0, a.brut - a.seuil);
+        }
+        a.baseIR = a.qual === "pp" || a.qual === "tns" ? a.brut : 0;
+        a.basePS = a.qual === "pm" ? 0 : a.brut - a.soumis;
+        a.ir = arrondiEuro(a.baseIR * TAUX_IR / 10000);
+        a.ps = arrondiEuro(a.basePS * tPS / 10000);
+        a.net = a.brut - a.ir - a.ps;
+        ["brut", "soumis", "ir", "ps", "net", "baseIR", "basePS"].forEach(function (c) { tot[c] += a[c]; });
+      });
+    }
+
+    // ---- Écritures ----
+    var piece = "";
+    if (!blocage) {
+      piece = v.piece || M.code6(["affectation", v.dateAG, resultat, ran, dividende, v.solde, v.dossier].join("|"));
+      var dateAG = M.dateFr(dAG), premiere = true;
+      var ligne = function (date, compte, libelle, montant, debit) {
+        if (!montant) return;
+        ecritures.push({ date: date, piece: piece, compte: compte, libelle: libelle, debit: debit ? montant : null, credit: debit ? null : montant, debut: premiere });
+        premiere = false;
+      };
+      var lib = "Affectation du résultat - AG du " + dateAG;
+      // Mouvements du report à nouveau : créditeur (110) et débiteur (119), chacun pour sa variation.
+      var var110 = Math.max(ranApres, 0) - Math.max(ran, 0), var119 = Math.max(-ranApres, 0) - Math.max(-ran, 0);
+      if (resultat > 0) ligne(dateAG, CPT.benefice, lib, resultat, true);
+      if (var110 < 0) ligne(dateAG, CPT.ranCrediteur, lib + " - report à nouveau", -var110, true);
+      if (var119 > 0) ligne(dateAG, CPT.ranDebiteur, lib + " - report à nouveau", var119, true);
+      if (resultat < 0) ligne(dateAG, CPT.perte, lib, -resultat, false);
+      if (var119 < 0) ligne(dateAG, CPT.ranDebiteur, lib + " - report à nouveau", -var119, false);
+      ligne(dateAG, CPT.reserveLegale, lib + " - réserve légale", dotation, false);
+      ligne(dateAG, CPT.autresReserves, lib + " - autres réserves", versReserves, false);
+      if (distribue) associes.forEach(function (a) { ligne(dateAG, CPT.dividendes, "Dividendes " + a.nom + " - AG du " + dateAG, a.brut, false); });
+      if (var110 > 0) ligne(dateAG, CPT.ranCrediteur, lib + " - report à nouveau", var110, false);
+
+      if (distribue) {
+        var datePaie = M.dateFr(dPaie);
+        premiere = true;
+        associes.forEach(function (a) {
+          ligne(datePaie, CPT.dividendes, "Paiement dividendes " + a.nom, a.brut, true);
+          ligne(datePaie, cptPrelev, "Prélèvements 2777 " + a.nom, a.ir + a.ps, false);
+          ligne(datePaie, cptVersement, "Dividendes nets " + a.nom, a.net, false);
+        });
+      }
+      if (!ecritures.length) blocage = "Aucune écriture à générer.";
+    }
+
+    // ---- Affichage ----
+    var ok = !blocage;
+    $("vDotation").textContent = ok && resultat > 0 ? (legale ? euro(dotation) : "Sans objet") : "—";
+    $("vDistribuable").textContent = ok && resultat > 0 ? euro(distribuable) : "—";
+    $("vSolde").textContent = ok && resultat > 0 ? euro(solde) + (solde ? (versReserves ? " en réserves" : " en report") : "") : "—";
+    $("vRan").textContent = ok ? euro(Math.abs(ranApres)) + (ranApres < 0 ? " débiteur" : (ranApres > 0 ? " créditeur" : "")) : "—";
+
+    var corps = $("associes");
+    corps.textContent = "";
+    var limite = null;
+    if (ok && distribue) {
+      associes.forEach(function (a) {
+        var tr = document.createElement("tr");
+        cellule(tr, a.nom + " · " + pct(a.part), "lib");
+        cellule(tr, M.affiche(a.brut), "droite");
+        cellule(tr, a.seuil === null ? "" : M.affiche(a.seuil), "droite");
+        cellule(tr, a.seuil === null ? "" : M.affiche(a.soumis), "droite");
+        cellule(tr, a.baseIR ? M.affiche(a.ir) : "", "droite");
+        cellule(tr, a.basePS ? M.affiche(a.ps) : "", "droite");
+        cellule(tr, M.affiche(a.net), "droite");
+        corps.appendChild(tr);
+      });
+      // La 2777 est déposée et payée au plus tard le 15 du mois qui suit le paiement des dividendes.
+      limite = { j: 15, m: dPaie.m === 12 ? 1 : dPaie.m + 1, a: dPaie.m === 12 ? dPaie.a + 1 : dPaie.a };
+    }
+    $("eBasePS").textContent = "Base des prélèvements sociaux (" + pct(tPS) + ")";
+    $("vBaseIR").textContent = ok && distribue ? euro(tot.baseIR) : "—";
+    $("vBasePS").textContent = ok && distribue ? euro(tot.basePS) : "—";
+    $("v2777").textContent = ok && distribue ? euro(tot.ir + tot.ps) : "—";
+    $("vLimite").textContent = limite ? M.dateFr(limite) : "—";
+
+    if (ok && distribue) {
+      if (tot.soumis) alertes.push("Part soumise aux cotisations sociales : " + euro(tot.soumis) + ". Elle est à déclarer avec les revenus du gérant ; les cotisations sont appelées par l'Urssaf et ne figurent pas dans ces écritures.");
+      if (dPaie.a >= 2026) alertes.push("Prélèvements sociaux au taux de 18,6 % pour un paiement à compter du 1er janvier 2026 : taux à contrôler à la date du paiement.");
+      if (M.dateFr(dPaie).split("/").reverse().join("") < M.dateFr(dAG).split("/").reverse().join("")) alertes.push("La date de paiement est antérieure à l'assemblée.");
+      if (associes.some(function (a) { return a.qual === "pm"; })) alertes.push("Personne morale : aucun prélèvement n'est retenu sur son dividende.");
+    }
+    if (ok && resultat > 0 && legale && dotation === 0 && reserve >= Math.round(capital / 10)) alertes.push("La réserve légale atteint déjà 10 % du capital : aucune dotation.");
+    if (ok && ranApres < 0) alertes.push("Le report à nouveau reste débiteur après l'affectation.");
+
+    // ---- Note de calcul et texte de la résolution ----
+    note = ""; dernier = null;
+    if (ok) {
+      var ph = [];
+      ph.push((v.dossier ? v.dossier + " - " : "") + "Affectation du résultat, assemblée du " + M.dateFr(dAG) + ".");
+      if (resultat > 0) {
+        ph.push("Bénéfice de l'exercice : " + M.affiche(resultat) + " Euros." + (ran ? " Report à nouveau antérieur : " + M.affiche(Math.abs(ran)) + " Euros " + (ran < 0 ? "débiteur" : "créditeur") + "." : ""));
+        if (legale) ph.push("Réserve légale : 5 % de " + M.affiche(Math.max(0, resultat + Math.min(ran, 0))) + " Euros, dans la limite de 10 % du capital (" + M.affiche(Math.round(capital / 10)) + " Euros, dont " + M.affiche(reserve) + " Euros déjà constitués), soit une dotation de " + M.affiche(dotation) + " Euros.");
+        ph.push("Bénéfice distribuable : " + M.affiche(distribuable) + " Euros.");
+        if (distribue) ph.push("Dividende voté : " + M.affiche(dividende) + " Euros, payé le " + M.dateFr(dPaie) + ".");
+        if (solde) ph.push("Solde de " + M.affiche(solde) + " Euros affecté " + (versReserves ? "aux autres réserves." : "au report à nouveau."));
+      } else {
+        ph.push("Perte de l'exercice : " + M.affiche(-resultat) + " Euros, portée en report à nouveau.");
+      }
+      ph.push("Report à nouveau après affectation : " + M.affiche(Math.abs(ranApres)) + " Euros" + (ranApres < 0 ? " débiteur" : "") + ".");
+      if (distribue) {
+        associes.forEach(function (a) {
+          var t = a.nom + " (" + pct(a.part) + ", " + QUALITES[a.qual] + ") : dividende brut " + M.affiche(a.brut) + " Euros";
+          if (a.qual === "tns") t += " ; seuil de 10 % du capital, des primes et du compte courant détenus : " + M.affiche(a.seuil) + " Euros ; part soumise aux cotisations sociales : " + M.affiche(a.soumis) + " Euros";
+          if (a.baseIR) t += " ; prélèvement de 12,8 % : " + M.affiche(a.ir) + " Euros";
+          if (a.qual !== "pm") t += " ; prélèvements sociaux de " + pct(tPS) + " sur " + M.affiche(a.basePS) + " Euros : " + M.affiche(a.ps) + " Euros";
+          ph.push(t + " ; net versé : " + M.affiche(a.net) + " Euros.");
+        });
+        ph.push("Déclaration 2777 : " + M.affiche(tot.ir + tot.ps) + " Euros à verser au plus tard le " + M.dateFr(limite) + " (prélèvements arrondis à l'euro).");
+      }
+      // Texte de la résolution, à adapter aux statuts.
+      var res = "Résolution proposée : l'assemblée générale décide d'affecter " + (resultat > 0 ? "le bénéfice" : "la perte") + " de l'exercice, s'élevant à " + M.affiche(Math.abs(resultat)) + " Euros, de la manière suivante : ";
+      var postes = [];
+      if (dotation) postes.push("à la réserve légale, " + M.affiche(dotation) + " Euros");
+      if (distribue) postes.push("aux associés à titre de dividende, " + M.affiche(dividende) + " Euros");
+      if (versReserves) postes.push("aux autres réserves, " + M.affiche(versReserves) + " Euros");
+      if (resultat > 0) postes.push("le solde au report à nouveau, qui s'établit à " + M.affiche(Math.abs(ranApres)) + " Euros" + (ranApres < 0 ? " débiteur" : ""));
+      else postes.push("en totalité au report à nouveau, qui s'établit à " + M.affiche(Math.abs(ranApres)) + " Euros" + (ranApres < 0 ? " débiteur" : ""));
+      ph.push(res + postes.join(" ; ") + ".");
+      note = ph.join(" ");
+      dernier = { dossier: v.dossier, dateAG: M.dateFr(dAG), datePaie: dPaie ? M.dateFr(dPaie) : "", resultat: resultat, ran: ran, capital: capital, reserve: reserve,
+                  legale: legale, dotation: dotation, distribuable: distribuable, dividende: dividende, distribue: distribue, solde: solde, versReserves: versReserves,
+                  ranApres: ranApres, associes: associes, tot: tot, tPS: tPS, limite: limite ? M.dateFr(limite) : "", ecritures: ecritures, resolution: ph[ph.length - 1] };
+    }
+    note = M.aLaLigne(note);
+    M.afficheNote($("note"), note || "La note s'affichera une fois la configuration complète.");
+    $("copierNote").disabled = !note;
+    $("pdf").disabled = !dernier;
+    $("etatNote").textContent = "";
+    M.rendre(blocage ? [] : ecritures, blocage, alertes);
+  }
+
+  // Justificatif PDF : affectation, répartition entre associés, 2777, écritures et résolution.
+  function justificatif(d) {
+    var f = window.MiniPdf.fiche("Affectation du résultat");
+    var sens = function (c) { return M.affiche(Math.abs(c)) + " €" + (c < 0 ? " débiteur" : ""); };
+    f.section("Identification");
+    f.ligne("Dossier", d.dossier).ligne("Date de l'assemblée", d.dateAG);
+    if (d.distribue) f.ligne("Date de paiement des dividendes", d.datePaie);
+    f.section("Affectation");
+    f.ligne(d.resultat > 0 ? "Bénéfice de l'exercice" : "Perte de l'exercice", M.affiche(Math.abs(d.resultat)) + " €").ligne("Report à nouveau antérieur", sens(d.ran));
+    if (d.resultat > 0) {
+      if (d.legale) f.ligne("Dotation à la réserve légale (5 %, limite 10 % du capital)", M.affiche(d.dotation) + " €");
+      f.ligne("Bénéfice distribuable", M.affiche(d.distribuable) + " €").ligne("Dividende voté", M.affiche(d.dividende) + " €");
+      if (d.versReserves) f.ligne("Autres réserves", M.affiche(d.versReserves) + " €");
+    }
+    f.total("Report à nouveau après affectation", sens(d.ranApres));
+    if (d.distribue) {
+      f.section("Dividendes, déclaration 2777 et cotisations");
+      f.tableau([{ nom: "Associé", largeur: 139 }, { nom: "Brut", largeur: 68, droite: true }, { nom: "Soumis cotis.", largeur: 68, droite: true },
+                 { nom: "Impôt 12,8 %", largeur: 72, droite: true }, { nom: "Prél. sociaux", largeur: 76, droite: true }, { nom: "Net versé", largeur: 76, droite: true }],
+                d.associes.map(function (a) {
+                  return [a.nom + " " + pct(a.part), M.affiche(a.brut), a.seuil === null ? "" : M.affiche(a.soumis), a.baseIR ? M.affiche(a.ir) : "", a.basePS ? M.affiche(a.ps) : "", M.affiche(a.net)];
+                }));
+      f.ligne("Base du prélèvement de 12,8 %", M.affiche(d.tot.baseIR) + " €").ligne("Base des prélèvements sociaux (" + pct(d.tPS) + ")", M.affiche(d.tot.basePS) + " €");
+      f.total("À verser avec la 2777, au plus tard le " + d.limite, M.affiche(d.tot.ir + d.tot.ps) + " €");
+      if (d.tot.soumis) f.texte("Part des dividendes soumise aux cotisations sociales du gérant majoritaire : " + M.affiche(d.tot.soumis) + " € (fraction supérieure à 10 % du capital, des primes d'émission et du compte courant détenus, art. L. 131-6 du code de la sécurité sociale).");
+    }
+    f.section("Écritures");
+    f.tableau([{ nom: "Date", largeur: 58 }, { nom: "Compte", largeur: 50 }, { nom: "Libellé", largeur: 251 }, { nom: "Débit", largeur: 70, droite: true }, { nom: "Crédit", largeur: 70, droite: true }],
+              d.ecritures.map(function (e) { return [e.date, e.compte, e.libelle, e.debit === null ? "" : M.affiche(e.debit), e.credit === null ? "" : M.affiche(e.credit)]; }));
+    f.texte(d.resolution);
+    return f;
+  }
+
+  $("copierNote").addEventListener("click", function () {
+    var fait = function () { $("etatNote").textContent = "Note copiée"; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(note).then(fait, function () { $("etatNote").textContent = "Copie impossible dans ce navigateur"; });
+    } else $("etatNote").textContent = "Copie impossible dans ce navigateur";
+  });
+  $("pdf").addEventListener("click", function () {
+    if (!dernier) return;
+    var nom = window.MiniPdf.nomFichier(["Affectation resultat", dernier.dossier].filter(Boolean).join(" "));
+    justificatif(dernier).telecharger(nom + ".pdf");
+    $("etatNote").textContent = "Justificatif téléchargé";
+  });
+  window.justificatifPdf = function () { return dernier ? justificatif(dernier) : null; };   // pour les contrôles
+  M.brancher(ids, calcule);
+})();
+</script>
+</body>
+</html>

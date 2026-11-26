@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1136DB">
+<meta name="description" content="Aide au lettrage : retrouve dans le détail collé d'un compte de tiers les factures et avoirs dont le total correspond à un règlement.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/icone-m-180.png">
+<title>Chercheur de combinaisons — Mini-outils</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mini-outils">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Chercheur de combinaisons — Mini-outils">
+<meta property="og:description" content="Aide au lettrage : retrouve dans le détail collé d'un compte de tiers les factures et avoirs dont le total correspond à un règlement.">
+<meta property="og:url" content="https://mini-outils.fr/combinaisons.html">
+<link rel="canonical" href="https://mini-outils.fr/combinaisons.html">
+<meta property="og:image" content="https://mini-outils.fr/images/og-tempete.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Un navire dans la tempête, avec le slogan « Quand la période fiscale se déchaîne, gardez le cap. »">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="commun.css">
+<!-- Polices de tout écran, demandées dès l'en-tête plutôt qu'après la lecture du style. -->
+<link rel="preload" href="polices/inter-tight-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="polices/jetbrains-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="polices/instrument-serif-italique-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+/* Titre de chaque combinaison : un bouton sur toute la ligne, qui la retient pour la copie et la note. */
+tbody tr.combinaison td { padding: 14px 0 4px; border-top: 1px solid var(--line); }
+tbody tr.combinaison:first-child td { border-top: 0; padding-top: 4px; }
+tr.combinaison button { font-family: var(--mono); font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: var(--blue);
+                        padding: 4px 10px; border: 1px solid rgba(17, 54, 219, .35); border-radius: 9999px; background: transparent; cursor: pointer; }
+tr.combinaison button:hover { background: rgba(17, 54, 219, .08); }
+tr.combinaison button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+tr.combinaison.retenue button { background: var(--blue); border-color: var(--blue); color: var(--on-blue); }
+</style>
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">Contenu d'un compte — aide au lettrage</p>
+    <h1>Chercheur de <em>combinaisons.</em></h1>
+    <p class="lead"><strong>But de la page :</strong> retrouver quelles lignes d'un compte de tiers composent un règlement. Vous collez le compte, vous indiquez le montant du règlement, et la page cherche les factures et avoirs dont le total donne ce montant, pour les lettrer ensemble.</p>
+    <p class="lead">Collez le contenu du compte et saisissez le montant. Les combinaisons sont cherchées aussitôt, des plus courtes aux plus longues.</p>
+
+    <div class="grille">
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">01 — Configuration</p>
+          <div class="champ">
+            <label for="tiers">Compte ou tiers<span class="aide">Facultatif, pour la note</span></label>
+            <input id="tiers" type="text" value="411 Restaurant MIRABELLE">
+          </div>
+          <div class="champ">
+            <label for="cible">Montant du règlement</label>
+            <input id="cible" class="droite" type="text" inputmode="decimal" value="4318,22">
+          </div>
+          <div class="champ">
+            <label for="tolerance">Écart toléré<span class="aide">0 si vide : montant exact</span></label>
+            <input id="tolerance" class="droite" type="text" inputmode="decimal" placeholder="0,00" value="">
+          </div>
+          <div class="champ">
+            <label for="maxLignes">Lignes par combinaison<span class="aide">Entre 1 et 12</span></label>
+            <input id="maxLignes" type="number" min="1" max="12" step="1" value="6">
+          </div>
+          <div class="champ">
+            <label for="nonLettrees">Ignorer les lignes déjà lettrées</label>
+            <input id="nonLettrees" type="checkbox" class="bascule" role="switch" checked>
+          </div>
+          <ul class="alertes" id="alertes"></ul>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">02 — Contenu du compte</p>
+          <p class="aide-bloc">Dans ACDCompta, ouvrez le détail du compte en mode grand livre, copiez son contenu avec Ctrl+C puis collez-le ici avec Ctrl+V (la ligne de titres peut être copiée ou non). Depuis Excel : colonnes date, journal, pièce, libellé, débit, crédit.</p>
+          <textarea id="source" class="saisie" spellcheck="false" wrap="off" aria-label="Contenu du compte à coller"></textarea>
+        </section>
+      </div>
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">03 — Résultat</p>
+          <p class="resultat" id="resultat"></p>
+          <div class="champ"><span class="etiquette">Règlement repéré dans le compte</span><span class="valeur droite" id="reglement"></span></div>
+          <div class="champ"><span class="etiquette">Lignes examinées</span><span class="valeur droite" id="nbExaminees"></span></div>
+          <div class="champ"><span class="etiquette">Lignes lettrées ignorées</span><span class="valeur droite" id="nbLettrees"></span></div>
+          <div class="champ"><span class="etiquette">Solde des lignes examinées</span><span class="valeur droite" id="solde"></span></div>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">04 — Combinaisons trouvées</p>
+            <div class="actions">
+              <span class="etat" id="etat" role="status"></span>
+              <button class="btn" id="copier" type="button">Copier la combinaison retenue</button>
+            </div>
+          </div>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr><th>Date</th><th>Jnl</th><th>Pièce</th><th>Libellé</th><th class="droite">Débit</th><th class="droite">Crédit</th></tr>
+              </thead>
+              <tbody id="lignes"></tbody>
+            </table>
+          </div>
+          <div class="vide" id="vide" hidden></div>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">05 — Note</p>
+            <div class="actions">
+              <span class="etat" id="etatNote" role="status"></span>
+              <button class="btn ghost" id="copierNote" type="button">Copier la note</button>
+            </div>
+          </div>
+          <p class="note" id="note"></p>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Colonnes copiées : date · journal · pièce · libellé · débit · crédit</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var TAB = String.fromCharCode(9), SAUT = String.fromCharCode(10);
+  var MAX_SOLUTIONS = 20;        // combinaisons affichées au plus
+  var MAX_ESSAIS = 20000000;      // essais au plus par recherche : au-delà, la recherche s'arrête et le dit
+  var note = "", solutions = [], choisie = 0, contexte = null;
+
+  // Exemple fictif de départ : une consultation de compte ACD, ligne de titres comprise.
+  // Le virement du 30/06 règle trois factures ; deux lignes plus anciennes sont déjà lettrées.
+  var TITRES_ACD = ["Date>", "Jnl", "Pièce", "Facture", "Libellé", "Débit ", "Lettrage", "Crédit ", "Solde cumulé"];
+  var cumul = 0;
+  $("source").value = [TITRES_ACD].concat([
+    ["05/03/2026", "VE", "30112", "F-2026-031", "Facture mars", "760,00", "A", ""],
+    ["28/03/2026", "BQ", "40051", "", "Virement MIRABELLE", "", "A", "760,00"],
+    ["06/04/2026", "VE", "30140", "F-2026-044", "Facture avril", "1250,40", "", ""],
+    ["20/04/2026", "VE", "30152", "F-2026-049", "Facture complémentaire", "640,15", "", ""],
+    ["05/05/2026", "VE", "30177", "F-2026-058", "Facture mai", "980,00", "", ""],
+    ["19/05/2026", "VE", "30185", "F-2026-063", "Facture traiteur", "1530,00", "", ""],
+    ["04/06/2026", "VE", "30201", "F-2026-071", "Facture juin", "2087,82", "", ""],
+    ["11/06/2026", "VE", "30209", "A-2026-004", "Avoir sur facture traiteur", "", "", "415,60"],
+    ["18/06/2026", "VE", "30214", "F-2026-077", "Facture séminaire", "2310,00", "", ""],
+    ["30/06/2026", "BQ", "40118", "", "Virement MIRABELLE", "", "", "4318,22"]
+  ].map(function (l) {
+    cumul += (M.centimes(l[5]) || 0) - (M.centimes(l[7]) || 0);
+    return l.concat([M.affiche(cumul).replace(/\s/g, "")]);
+  })).map(function (l) { return l.join(TAB); }).join(SAUT);
+
+  // Place des colonnes (à partir de 0) ; -1 : colonne absente.
+  // Format court : date, journal, pièce, libellé, débit, crédit (une colonne « compte » en plus : sept colonnes).
+  var SIX_COLONNES = { date: 0, journal: 1, piece: 2, libelle: 3, debit: 4, credit: 5, lettrage: -1 };
+  var SEPT_COLONNES = { date: 0, journal: 1, piece: 3, libelle: 4, debit: 5, credit: 6, lettrage: -1 };
+  // Consultation de compte ACD : Date>, Jnl, Pièce, Facture, Libellé, Débit, Lettrage, Crédit, Solde cumulé…
+  var CONSULTATION_ACD = { date: 0, journal: 1, piece: 2, libelle: 4, debit: 5, credit: 7, lettrage: 6 };
+
+  // Lit une ligne de titres et repère chaque colonne par son nom, quel que soit l'ordre.
+  function lireTitres(c) {
+    var p = { date: -1, journal: -1, piece: -1, libelle: -1, debit: -1, credit: -1, lettrage: -1 };
+    c.forEach(function (t, k) {
+      var n = t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z ]/g, "").trim();
+      if (p.date === -1 && /^date/.test(n)) p.date = k;
+      else if (p.journal === -1 && /^(jnl|journal|code journal|jal)$/.test(n)) p.journal = k;
+      else if (p.piece === -1 && /^(piece|n piece|numero de piece)$/.test(n)) p.piece = k;
+      else if (p.libelle === -1 && /^libelle/.test(n)) p.libelle = k;
+      else if (p.debit === -1 && n === "debit") p.debit = k;
+      else if (p.credit === -1 && n === "credit") p.credit = k;
+      else if (p.lettrage === -1 && /^(lettrage|lettre|let)$/.test(n)) p.lettrage = k;
+    });
+    return p;
+  }
+  function rang(d) { return d.a * 10000 + d.m * 100 + d.j; }
+  function pluriel(n, mot) { return n + " " + mot + (n > 1 ? "s" : ""); }
+  function cellule(tr, texte, classe) {
+    var td = document.createElement("td");
+    td.textContent = texte;
+    if (classe) td.className = classe;
+    tr.appendChild(td);
+    return td;
+  }
+
+  // Cherche les ensembles de lignes dont la somme (débit moins crédit) vaut l'une des cibles, à la
+  // tolérance près. Les lignes sont triées par montant décroissant : pour « r lignes encore à
+  // prendre », la plus grande somme possible est celle des r suivantes et la plus petite celle
+  // des r dernières, ce qui écarte tôt les branches sans issue. Les combinaisons les plus
+  // courtes sont cherchées d'abord.
+  function cherche(lignes, cibles, tolerance, maxK) {
+    var t = lignes.slice().sort(function (a, b) { return b.v - a.v; });
+    var n = t.length, cumulV = [0];
+    t.forEach(function (l, i) { cumulV.push(cumulV[i] + l.v); });
+    var trouvees = [], essais = 0, arret = false, pris = [];
+    var bas = Math.min.apply(null, cibles) - tolerance, haut = Math.max.apply(null, cibles) + tolerance;
+    var bonne = function (s) { return cibles.some(function (c) { return Math.abs(s - c) <= tolerance; }); };
+    var descend = function (i, r, s) {
+      if (arret) return;
+      if (r === 0) {
+        if (bonne(s)) {
+          trouvees.push({ lignes: pris.slice(), somme: s });
+          if (trouvees.length >= MAX_SOLUTIONS) arret = "solutions";
+        }
+        return;
+      }
+      if (r === 1) {
+        // Dernière ligne : les montants sont triés, elle se trouve par dichotomie, sans tout essayer.
+        var g = i, d = n;
+        while (g < d) { var m = (g + d) >> 1; if (t[m].v > haut - s) g = m + 1; else d = m; }
+        for (; g < n && t[g].v >= bas - s; g++) {
+          if (++essais > MAX_ESSAIS) { arret = "essais"; return; }
+          if (!bonne(s + t[g].v)) continue;
+          trouvees.push({ lignes: pris.concat([t[g]]), somme: s + t[g].v });
+          if (trouvees.length >= MAX_SOLUTIONS) { arret = "solutions"; return; }
+        }
+        return;
+      }
+      for (var k = i; k <= n - r; k++) {
+        if (++essais > MAX_ESSAIS) { arret = "essais"; return; }
+        // Avec la ligne k et les r - 1 suivantes (les plus grandes) on reste sous la cible : les suivantes, plus petites, aussi.
+        if (s + cumulV[k + r] - cumulV[k] < bas) return;
+        // Avec la ligne k et les r - 1 dernières (les plus petites) on dépasse encore : essayer une ligne plus petite.
+        if (s + t[k].v + cumulV[n] - cumulV[n - r + 1] > haut) continue;
+        pris.push(t[k]);
+        descend(k + 1, r - 1, s + t[k].v);
+        pris.pop();
+        if (arret) return;
+      }
+    };
+    for (var taille = 1; taille <= Math.min(maxK, n) && !arret; taille++) descend(0, taille, 0);
+    return { trouvees: trouvees, arret: arret };
+  }
+
+  function calcule() {
+    var tiers = $("tiers").value.trim();
+    var cible = M.centimes($("cible").value.trim());
+    var tolTexte = $("tolerance").value.trim(), tolerance = tolTexte === "" ? 0 : M.centimes(tolTexte);
+    var maxTexte = $("maxLignes").value.trim(), maxK = parseInt(maxTexte, 10);
+    var maxValide = /^\d+$/.test(maxTexte) && maxK >= 1 && maxK <= 12;
+    var sansLettrees = $("nonLettrees").checked;
+    var cibleValide = !isNaN(cible) && cible > 0, tolValide = !isNaN(tolerance) && tolerance >= 0;
+    $("cible").classList.toggle("erreur", $("cible").value.trim() !== "" && !cibleValide);
+    $("tolerance").classList.toggle("erreur", !tolValide);
+    $("maxLignes").classList.toggle("erreur", !maxValide);
+
+    var alertes = [], lues = 0, ignorees = 0, lettrees = 0, lignes = [], titres = null;
+    $("source").value.split(/\r?\n/).forEach(function (ligne, i) {
+      if (!ligne.trim()) return;
+      var c = ligne.split(TAB).map(function (x) { return x.trim(); });
+      if (/^date\b/i.test(c[0])) { titres = lireTitres(c); return; }
+      if (/^(total|report|solde|cumul)/i.test(c[0])) return;
+      lues++;
+      var p = titres || (c.length >= 8 ? CONSULTATION_ACD : (c.length === 7 ? SEPT_COLONNES : SIX_COLONNES));
+      var date = M.lireDate(c[p.date] || "");
+      var debit = p.debit === -1 || !c[p.debit] ? 0 : M.centimes(c[p.debit]);
+      var credit = p.credit === -1 || !c[p.credit] ? 0 : M.centimes(c[p.credit]);
+      var refus = !date ? "date illisible (« " + (c[p.date] || "") + " »)" : (isNaN(debit) || isNaN(credit) ? "le débit ou le crédit n'est pas un nombre" : "");
+      if (refus) {
+        ignorees++;
+        if (ignorees <= 5) alertes.push("Ligne " + (i + 1) + " ignorée : " + refus + ".");
+        return;
+      }
+      if (debit - credit === 0) return;   // ligne sans montant : rien à lettrer
+      var lettre = p.lettrage === -1 ? "" : (c[p.lettrage] || "");
+      if (lettre && sansLettrees) { lettrees++; return; }
+      lignes.push({ date: date, journal: p.journal === -1 ? "" : (c[p.journal] || "").toUpperCase(), piece: p.piece === -1 ? "" : (c[p.piece] || ""),
+                    libelle: p.libelle === -1 ? "" : (c[p.libelle] || ""), debit: debit, credit: credit, v: debit - credit, ordre: lignes.length });
+    });
+    if (ignorees > 5) alertes.push((ignorees - 5) + " autres lignes ignorées.");
+
+    var solde = 0;
+    lignes.forEach(function (l) { solde += l.v; });
+
+    var blocage = "";
+    if (!lues) blocage = "Collez le contenu du compte dans le cadre « Contenu du compte ».";
+    else if (!lignes.length) blocage = lettrees ? "Toutes les lignes lues sont déjà lettrées." : "Aucune ligne reconnue. Il faut des colonnes séparées par des tabulations (copie depuis ACDCompta ou Excel), avec une date jj/mm/aaaa et un montant au débit ou au crédit.";
+    else if ($("cible").value.trim() === "") blocage = "Saisissez le montant du règlement à retrouver.";
+    else if (!cibleValide) blocage = "Le montant du règlement doit être un nombre positif, par exemple 4318,22.";
+    else if (!tolValide || !maxValide) blocage = "Corrigez l'écart toléré ou le nombre de lignes par combinaison (entre 1 et 12).";
+
+    // Le règlement lui-même figure souvent dans le compte : la ligne la plus récente de ce montant
+    // est mise à part, et les combinaisons cherchées sont celles qui la soldent. Sinon, la
+    // recherche porte sur les deux sens (total débiteur ou créditeur du montant).
+    var reglement = null, candidates = [], cibles = [], recherche = { trouvees: [], arret: false };
+    solutions = []; contexte = null;
+    if (!blocage) {
+      lignes.forEach(function (l) {
+        if (Math.abs(l.v) === cible && (!reglement || rang(l.date) >= rang(reglement.date))) reglement = l;
+      });
+      candidates = lignes.filter(function (l) { return l !== reglement; });
+      cibles = reglement ? [-reglement.v] : [cible, -cible];
+      recherche = cherche(candidates, cibles, tolerance, maxK);
+      solutions = recherche.trouvees.map(function (s) {
+        var proche = cibles.reduce(function (a, b) { return Math.abs(s.somme - a) <= Math.abs(s.somme - b) ? a : b; });
+        return { lignes: s.lignes.slice().sort(function (a, b) { return rang(a.date) - rang(b.date) || a.ordre - b.ordre; }), somme: s.somme, ecart: s.somme - proche };
+      });
+      // Les plus courtes d'abord, puis les plus exactes.
+      solutions.sort(function (a, b) { return a.lignes.length - b.lignes.length || Math.abs(a.ecart) - Math.abs(b.ecart); });
+      if (recherche.arret === "solutions") alertes.push("Seules les " + MAX_SOLUTIONS + " premières combinaisons sont affichées : réduisez l'écart toléré ou le nombre de lignes par combinaison.");
+      if (recherche.arret === "essais") alertes.push("Recherche interrompue : le compte compte trop de lignes pour tout essayer. Les combinaisons affichées sont justes, mais d'autres peuvent exister. Réduisez le nombre de lignes par combinaison ou ne collez que la période utile.");
+      if (reglement && lignes.filter(function (l) { return Math.abs(l.v) === cible; }).length > 1)
+        alertes.push("Plusieurs lignes du compte portent ce montant : la plus récente est prise pour le règlement.");
+      if (!solutions.length) blocage = "Aucune combinaison de " + (maxK > 1 ? "1 à " + maxK + " lignes" : "1 ligne") + " ne donne " + M.affiche(cible) +
+                                       (tolerance ? " à " + M.affiche(tolerance) + " près" : "") + ". Augmentez le nombre de lignes par combinaison ou l'écart toléré.";
+      contexte = { cible: cible, reglement: reglement, nbCandidates: candidates.length, solde: solde };
+    }
+    if (choisie >= solutions.length) choisie = 0;
+
+    affiche(blocage);
+    $("resultat").textContent = solutions.length ? pluriel(solutions.length, "combinaison") : "—";
+    $("reglement").textContent = contexte ? (reglement ? M.dateFr(reglement.date) + " · " + M.affiche(Math.abs(reglement.v)) + (reglement.v < 0 ? " au crédit" : " au débit") : "Non") : "—";
+    $("nbExaminees").textContent = lignes.length ? String(lignes.length) : "—";
+    $("nbLettrees").textContent = lues ? String(lettrees) : "—";
+    $("solde").textContent = lignes.length ? M.affiche(Math.abs(solde)) + (solde < 0 ? " créditeur" : (solde > 0 ? " débiteur" : "")) : "—";
+    var ul = $("alertes");
+    ul.textContent = "";
+    alertes.forEach(function (a) {
+      var li = document.createElement("li");
+      li.textContent = a;
+      ul.appendChild(li);
+    });
+  }
+
+  // Tableau des combinaisons et note de la combinaison retenue (la première par défaut).
+  function affiche(blocage) {
+    var corps = $("lignes");
+    corps.textContent = "";
+    solutions.forEach(function (s, k) {
+      var tete = document.createElement("tr");
+      tete.className = "combinaison" + (k === choisie ? " retenue" : "");
+      var td = cellule(tete, "", "");
+      td.colSpan = 6;
+      var bouton = document.createElement("button");
+      bouton.type = "button";
+      bouton.setAttribute("aria-pressed", k === choisie ? "true" : "false");
+      bouton.textContent = "Combinaison " + (k + 1) + " · " + pluriel(s.lignes.length, "ligne") + " · total " + M.affiche(Math.abs(s.somme)) +
+                           (s.ecart ? " · écart " + M.affiche(Math.abs(s.ecart)) : " · exacte") + (k === choisie ? " · retenue" : "");
+      bouton.title = "Retenir cette combinaison pour la copie et la note";
+      bouton.addEventListener("click", function () { choisie = k; affiche(blocage); });
+      td.appendChild(bouton);
+      corps.appendChild(tete);
+      s.lignes.forEach(function (l) {
+        var tr = document.createElement("tr");
+        cellule(tr, M.dateFr(l.date));
+        cellule(tr, l.journal, "compte");
+        cellule(tr, l.piece);
+        cellule(tr, l.libelle, "lib");
+        cellule(tr, l.debit ? M.affiche(l.debit) : "", "droite");
+        cellule(tr, l.credit ? M.affiche(l.credit) : "", "droite");
+        corps.appendChild(tr);
+      });
+    });
+    $("vide").hidden = !blocage;
+    $("vide").textContent = blocage || "";
+
+    note = "";
+    var s = solutions[choisie];
+    if (s && contexte) {
+      var r = contexte.reglement, montant = function (l) { return M.affiche(l.debit || l.credit) + " Euros au " + (l.debit ? "débit" : "crédit"); };
+      var reste = contexte.solde - s.somme - (r ? r.v : 0), nbReste = contexte.nbCandidates - s.lignes.length;
+      note = (tiers() ? "Compte " + tiers() + " : " : "") + "le règlement de " + M.affiche(contexte.cible) + " Euros" +
+             (r ? " du " + M.dateFr(r.date) + (r.piece ? " (pièce " + r.piece + ")" : "") : "") + " correspond à " + pluriel(s.lignes.length, "ligne") + " : " +
+             s.lignes.map(function (l) { return M.dateFr(l.date) + (l.piece ? " pièce " + l.piece : "") + (l.libelle ? " " + l.libelle : "") + " " + montant(l); }).join(" ; ") + ". " +
+             "Total de ces lignes : " + M.affiche(Math.abs(s.somme)) + " Euros" + (s.ecart ? ", soit un écart de " + M.affiche(Math.abs(s.ecart)) + " Euros avec le règlement" : ", sans écart") + ". " +
+             (solutions.length > 1 ? pluriel(solutions.length - 1, "autre combinaison") + " possible" + (solutions.length > 2 ? "s" : "") + " : à confirmer avec le client ou l'avis de paiement. " : "") +
+             (nbReste > 0 ? "Reste non lettré après ce rapprochement : " + pluriel(nbReste, "ligne") + ", solde " + M.affiche(Math.abs(reste)) + " Euros" + (reste < 0 ? " créditeur" : (reste > 0 ? " débiteur" : "")) + "."
+                          : "Le compte est soldé après ce rapprochement" + (reste ? ", à " + M.affiche(Math.abs(reste)) + " Euros près" : "") + ".");
+    }
+    note = M.aLaLigne(note);
+    M.afficheNote($("note"), note || "La note s'affichera une fois une combinaison trouvée.");
+    $("copier").disabled = !s;
+    $("copierNote").disabled = !note;
+    $("etat").textContent = "";
+    $("etatNote").textContent = "";
+  }
+  function tiers() { return $("tiers").value.trim(); }
+
+  $("copier").addEventListener("click", function () {
+    var s = solutions[choisie];
+    if (!s) return;
+    var lignes = s.lignes.slice();
+    if (contexte && contexte.reglement) lignes.push(contexte.reglement);
+    var texte = [["Date", "Journal", "Pièce", "Libellé", "Débit", "Crédit"].join(TAB)].concat(lignes.map(function (l) {
+      return [M.dateFr(l.date), l.journal, l.piece, l.libelle.replace(/[\t\r\n]+/g, " "),
+              l.debit ? M.affiche(l.debit).replace(/\s/g, "") : "", l.credit ? M.affiche(l.credit).replace(/\s/g, "") : ""].join(TAB);
+    })).join("\r\n");
+    M.copierTexte(texte, lignes.length + " lignes copiées");
+  });
+  $("copierNote").addEventListener("click", function () {
+    var fait = function () { $("etatNote").textContent = "Note copiée"; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(note).then(fait, function () { $("etatNote").textContent = "Copie impossible dans ce navigateur"; });
+    } else $("etatNote").textContent = "Copie impossible dans ce navigateur";
+  });
+  window.chercheCombinaisons = cherche;   // pour les contrôles
+  ["tiers", "cible", "tolerance", "maxLignes", "nonLettrees", "source"].forEach(function (id) {
+    $(id).addEventListener("input", calcule);
+    $(id).addEventListener("change", calcule);
+  });
+  calcule();
+})();
+</script>
+</body>
+</html>

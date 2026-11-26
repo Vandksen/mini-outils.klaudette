@@ -45,40 +45,15 @@
       });
   }
 
-  // Bandeau flottant en bas d'écran s'il ne recouvre aucun contenu visible ; sinon, bande en haut
-  // de la zone de contenu, qui pousse le contenu. Testé à l'affichage et quand la fenêtre change
-  // de taille. Le bandeau flottant s'aligne sur la zone de contenu, à droite du menu.
-  var CONTENU = "h1, h2, h3, p, li, label, input, select, textarea, table, button, .carte, .final";
+  // Hauteur du bandeau reportée dans --bandeau (0 une fois masqué) : le menu, collé en haut,
+  // se place juste en dessous au lieu d'être recouvert.
   function placer(b) {
-    if (b.hidden) { decalerCopier(b); return; }
-    b.classList.remove("flottant");
-    b.style.left = "";
-    if (innerWidth < 900) return;
-    var zone = document.getElementById("contenu");
-    b.classList.add("flottant");
-    if (zone) b.style.left = (zone.getBoundingClientRect().left + 16) + "px";
-    var r = b.getBoundingClientRect();
-    var recouvre = Array.prototype.some.call(document.querySelectorAll(CONTENU), function (e) {
-      if (b.contains(e) || e.closest("footer, nav")) return false;
-      var q = e.getBoundingClientRect();
-      return q.height > 0 && q.top < r.bottom + 8 && q.bottom > r.top - 8 && q.left < r.right && q.right > r.left;
-    });
-    if (recouvre) { b.classList.remove("flottant"); b.style.left = ""; }
-    decalerCopier(b);
+    var h = b.hidden ? 0 : b.getBoundingClientRect().height;
+    document.documentElement.style.setProperty("--bandeau", h + "px");
   }
 
-  // Le bouton « Copier le lien » est posé en haut de la zone de contenu : quand le bandeau
-  // y occupe une bande, il descend d'autant pour ne pas le recouvrir.
-  function decalerCopier(b) {
-    var bouton = document.getElementById("copier-lien");
-    if (!bouton) return;
-    var enBande = !b.hidden && !b.classList.contains("flottant");
-    bouton.style.top = enBande ? (b.offsetHeight + 24) + "px" : "";
-  }
-
-  // Rouvert depuis « Gérer les cookies » : quand le bandeau est en haut de page, on y remonte
+  // Rouvert depuis « Gérer les cookies » : le bandeau reste en haut de l'écran, il suffit d'y donner le focus
   function montrer(b) {
-    if (getComputedStyle(b).position !== "fixed") window.scrollTo({ top: 0 });
     b.querySelector("button").focus({ preventScroll: true });
   }
 
@@ -105,12 +80,12 @@
       var avant = lire();
       ecrire(accord ? "accord" : "refus");
       b.hidden = true;
-      decalerCopier(b);
+      placer(b);
       if (accord) chargerMesure();
       else if (avant === "accord" || window.__miniOutilsMesure) { effacerCookiesMesure(); location.reload(); }
     });
-    // En tête de la zone de contenu : sur petit écran, il pousse le contenu au lieu de le recouvrir
-    (document.getElementById("contenu") || document.body).prepend(b);
+    // Premier élément de la page, au-dessus du menu et du contenu
+    document.body.prepend(b);
     placer(b);
     addEventListener("resize", function () { placer(b); });
     if (rouvert) montrer(b);

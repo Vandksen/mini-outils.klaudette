@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1136DB">
+<meta name="description" content="Comparatif rémunération ou dividendes pour le dirigeant : gérant majoritaire de SARL et président de SAS, cotisations, impôt sur les sociétés, prélèvements sociaux et impôt sur le revenu.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/icone-m-180.png">
+<title>Rémunération ou dividendes — Mini-outils</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mini-outils">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Rémunération ou dividendes — Mini-outils">
+<meta property="og:description" content="Comparatif rémunération ou dividendes pour le dirigeant : gérant majoritaire de SARL et président de SAS, cotisations, impôt sur les sociétés, prélèvements sociaux et impôt sur le revenu.">
+<meta property="og:url" content="https://mini-outils.fr/remuneration-dividendes.html">
+<link rel="canonical" href="https://mini-outils.fr/remuneration-dividendes.html">
+<meta property="og:image" content="https://mini-outils.fr/images/og-tempete.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Un navire dans la tempête, avec le slogan « Quand la période fiscale se déchaîne, gardez le cap. »">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="commun.css">
+<!-- Polices de tout écran, demandées dès l'en-tête plutôt qu'après la lecture du style. -->
+<link rel="preload" href="polices/inter-tight-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="polices/jetbrains-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="polices/instrument-serif-italique-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+/* Répartition la plus favorable de chaque forme. */
+tbody tr.meilleur td { color: var(--blue); font-weight: 700; background: rgba(17, 54, 219, .06); }
+</style>
+</head>
+<body>
+
+<nav id="menu" aria-label="Outils"></nav>
+<div id="fond"></div>
+<div id="contenu">
+<div id="barre-mobile">
+  <button id="ouvrir" type="button" aria-label="Ouvrir le menu" aria-controls="menu" aria-expanded="false">&#9776;</button>
+  <span>MINI-OUTILS</span>
+</div>
+
+<main>
+  <div class="conteneur">
+    <p class="eyebrow">Simulation — dirigeant de SARL ou de SAS</p>
+    <h1>Rémunération <em>ou dividendes.</em></h1>
+    <p class="lead"><strong>But de la page :</strong> comparer ce qu'il reste au dirigeant selon qu'il se verse une rémunération, des dividendes ou un mélange des deux, en gérant majoritaire de SARL et en président de SAS. La page part de ce que la société peut consacrer à son dirigeant, retire les cotisations, l'impôt sur les sociétés, les prélèvements sociaux et l'impôt sur le revenu, et désigne la répartition qui laisse le plus.</p>
+    <p class="lead">Renseignez la configuration. La comparaison est calculée aussitôt. C'est une estimation : les taux de cotisations sont des moyennes que vous pouvez ajuster.</p>
+
+    <div class="grille">
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">01 — Configuration</p>
+          <div class="champ">
+            <label for="dossier">Dossier<span class="aide">Facultatif</span></label>
+            <input id="dossier" type="text" value="Restaurant MIRABELLE">
+          </div>
+          <div class="champ">
+            <label for="enveloppe">Somme disponible<span class="aide">Résultat avant rémunération du dirigeant et avant impôt sur les sociétés</span></label>
+            <input id="enveloppe" class="droite" type="text" inputmode="decimal" value="80000,00">
+          </div>
+          <div class="champ">
+            <label for="base">Capital, primes et compte courant<span class="aide">Détenus par le gérant : seuil de 10 % en SARL</span></label>
+            <input id="base" class="droite" type="text" inputmode="decimal" placeholder="0,00" value="10000,00">
+          </div>
+          <div class="champ">
+            <label for="parts">Parts du foyer fiscal<span class="aide">Quotient familial, 1 si vide</span></label>
+            <input id="parts" class="droite" type="text" inputmode="decimal" placeholder="1" value="1">
+          </div>
+          <div class="champ">
+            <label for="autres">Autres revenus imposables du foyer<span class="aide">Nets imposables, 0 si vide</span></label>
+            <input id="autres" class="droite" type="text" inputmode="decimal" placeholder="0,00" value="">
+          </div>
+          <div class="champ pleine">
+            <label for="imposition">Imposition des dividendes</label>
+            <select id="imposition" class="segments">
+              <option value="pfu">Prélèvement forfaitaire</option>
+              <option value="bareme">Barème progressif</option>
+            </select>
+          </div>
+          <div class="champ">
+            <label for="isReduit">Taux réduit d'impôt sur les sociétés<span class="aide">15 % jusqu'à 42 500 €</span></label>
+            <input id="isReduit" type="checkbox" class="bascule" role="switch" checked>
+          </div>
+          <ul class="alertes" id="alertes"></ul>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">02 — Taux de cotisations retenus</p>
+          <p class="aide-bloc">Moyennes courantes, à ajuster au dossier (niveau de revenu, caisse, prévoyance).</p>
+          <div class="champ">
+            <label for="tauxTNS">SARL : cotisations du gérant<span class="aide">En % de la rémunération nette</span></label>
+            <input id="tauxTNS" class="droite" type="text" inputmode="decimal" value="45">
+          </div>
+          <div class="champ">
+            <label for="tauxPat">SAS : charges patronales<span class="aide">En % du salaire brut</span></label>
+            <input id="tauxPat" class="droite" type="text" inputmode="decimal" value="42">
+          </div>
+          <div class="champ">
+            <label for="tauxSal">SAS : charges salariales<span class="aide">En % du salaire brut</span></label>
+            <input id="tauxSal" class="droite" type="text" inputmode="decimal" value="22">
+          </div>
+        </section>
+      </div>
+
+      <div class="colonne">
+        <section class="panel">
+          <p class="eyebrow">03 — Meilleur net pour le dirigeant</p>
+          <p class="resultat" id="resultat"></p>
+          <div class="champ"><span class="etiquette">Répartition la plus favorable</span><span class="valeur droite" id="vMeilleure"></span></div>
+          <div class="champ"><span class="etiquette">Meilleur net en SARL</span><span class="valeur droite" id="vSarl"></span></div>
+          <div class="champ"><span class="etiquette">Meilleur net en SAS</span><span class="valeur droite" id="vSas"></span></div>
+          <div class="champ"><span class="etiquette">Écart entre les deux formes</span><span class="valeur droite" id="vEcart"></span></div>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">04 — SARL, gérant majoritaire</p>
+            <div class="actions">
+              <span class="etat" id="etat" role="status"></span>
+              <button class="btn" id="copier" type="button">Copier les deux tableaux</button>
+            </div>
+          </div>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr><th>Part en rémunération</th><th class="droite">Rémunération nette</th><th class="droite">Dividende brut</th><th class="droite">Cotisations</th><th class="droite">Impôt sociétés</th>
+                    <th class="droite">Prél. sociaux</th><th class="droite">Impôt revenu</th><th class="droite">Net disponible</th><th class="droite">Prélevé</th></tr>
+              </thead>
+              <tbody id="tSarl"></tbody>
+            </table>
+          </div>
+          <div class="vide" id="vide" hidden></div>
+        </section>
+
+        <section class="panel">
+          <p class="eyebrow">05 — SAS, président</p>
+          <div class="cadre-table">
+            <table>
+              <thead>
+                <tr><th>Part en rémunération</th><th class="droite">Rémunération nette</th><th class="droite">Dividende brut</th><th class="droite">Cotisations</th><th class="droite">Impôt sociétés</th>
+                    <th class="droite">Prél. sociaux</th><th class="droite">Impôt revenu</th><th class="droite">Net disponible</th><th class="droite">Prélevé</th></tr>
+              </thead>
+              <tbody id="tSas"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="barre">
+            <p class="eyebrow">06 — Note</p>
+            <div class="actions">
+              <span class="etat" id="etatNote" role="status"></span>
+              <button class="btn ghost" id="copierNote" type="button">Copier la note</button>
+              <button class="btn ghost" id="pdf" type="button">Télécharger le justificatif PDF</button>
+            </div>
+          </div>
+          <p class="note" id="note"></p>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="conteneur">
+    <span>Estimation : taux moyens de cotisations, hors réserve légale et hors droits sociaux</span>
+    <span>Calcul effectué dans votre navigateur, rien n'est envoyé.</span>
+  </div>
+</footer>
+</div>
+
+<script src="commun.js"></script>
+<script src="pdf.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.MiniOutils, $ = M.$;
+  var TAB = String.fromCharCode(9);
+  var ids = ["dossier", "enveloppe", "base", "parts", "autres", "imposition", "isReduit", "tauxTNS", "tauxPat", "tauxSal"];
+  var note = "", copie = "", dernier = null;
+
+  // ---------- Barèmes et taux (montants en centimes, taux en centièmes de pour cent) ----------
+  // Barème de l'impôt sur le revenu 2026, revenus 2025 (loi de finances pour 2026, service-public.gouv.fr F1419) :
+  // par part de quotient familial. Ni décote, ni plafonnement du quotient familial, ni contribution
+  // sur les hauts revenus ne sont calculés.
+  var BAREME_IR = [[1160000, 0], [2957900, 1100], [8457700, 3000], [18191700, 4100], [Infinity, 4500]];
+  // Déduction forfaitaire de 10 % sur la rémunération : minimum 509 €, maximum 14 555 € (revenus 2025, à contrôler).
+  var ABATTEMENT_MIN = 50900, ABATTEMENT_MAX = 1455500;
+  // Impôt sur les sociétés : 25 % ; 15 % jusqu'à 42 500 € de bénéfice pour les PME qui y ont droit (CGI, art. 219).
+  var IS_NORMAL = 2500, IS_REDUIT = 1500, IS_PLAFOND_REDUIT = 4250000;
+  // Dividendes : prélèvement forfaitaire de 12,8 % et prélèvements sociaux de 18,6 % depuis le
+  // 1er janvier 2026 (17,2 % auparavant). Au barème : abattement de 40 % et CSG déductible de 6,8 %.
+  var PFU_IR = 1280, PS = 1860, ABATTEMENT_DIVIDENDES = 4000, CSG_DEDUCTIBLE = 680;
+  // Gérant majoritaire de SARL : la part des dividendes au-delà de 10 % du capital, des primes d'émission
+  // et du compte courant qu'il détient est soumise aux cotisations sociales, et non aux prélèvements
+  // sociaux (code de la sécurité sociale, art. L. 131-6).
+  var SEUIL_TNS = 1000;
+  var PARTS_TESTEES = [0, 25, 50, 75, 100];   // lignes du tableau, en % de la somme disponible ; la meilleure au pas de 1 % s'y ajoute
+
+  function taux(montant, t) { return Math.round(montant * t / 10000); }
+  function euro(c) { return M.affiche(c) + " €"; }
+  function pct(c) { return (Math.round(c) / 100).toString().replace(".", ",") + " %"; }
+  function montantOuZero(id) { var t = $(id).value.trim(); return t === "" ? 0 : M.centimes(t); }
+
+  // Impôt sur le revenu du foyer pour un revenu net imposable (centimes) et un nombre de parts (centièmes).
+  function impot(revenu, parts) {
+    var q = Math.max(0, revenu) * 100 / parts, total = 0, bas = 0;
+    BAREME_IR.forEach(function (t) {
+      if (q > bas) total += (Math.min(q, t[0]) - bas) * t[1] / 10000;
+      bas = t[0];
+    });
+    return Math.round(total * parts / 100);
+  }
+  function impotSocietes(benefice, reduit) {
+    if (benefice <= 0) return 0;
+    var tranche = reduit ? Math.min(benefice, IS_PLAFOND_REDUIT) : 0;
+    return taux(tranche, IS_REDUIT) + taux(benefice - tranche, IS_NORMAL);
+  }
+
+  // Une répartition : « part » % de la somme disponible part en rémunération (cotisations comprises),
+  // le reste est imposé à l'impôt sur les sociétés puis distribué en totalité.
+  function scenario(forme, part, p) {
+    var s = { forme: forme, part: part };
+    s.cout = Math.round(p.enveloppe * part / 100);
+    if (forme === "sarl") {
+      s.remuneration = Math.round(s.cout * 10000 / (10000 + p.tauxTNS));
+    } else {
+      var brut = Math.round(s.cout * 10000 / (10000 + p.tauxPat));
+      s.remuneration = brut - taux(brut, p.tauxSal);
+    }
+    s.cotisations = s.cout - s.remuneration;
+    s.is = impotSocietes(p.enveloppe - s.cout, p.isReduit);
+    s.dividende = p.enveloppe - s.cout - s.is;
+    // Dividendes du gérant majoritaire au-delà du seuil : cotisations au lieu des prélèvements sociaux.
+    s.soumis = forme === "sarl" ? Math.max(0, s.dividende - taux(p.base, SEUIL_TNS)) : 0;
+    s.cotisationsDividendes = taux(s.soumis, p.tauxTNS);
+    s.cotisations += s.cotisationsDividendes;
+    var basePS = s.dividende - s.soumis;
+    s.ps = taux(basePS, PS);
+    var abattement = Math.min(s.remuneration, Math.max(ABATTEMENT_MIN, Math.min(ABATTEMENT_MAX, taux(s.remuneration, 1000))));
+    var imposable = p.autres + s.remuneration - abattement;
+    if (p.bareme) {
+      imposable += Math.max(0, s.dividende - taux(s.dividende, ABATTEMENT_DIVIDENDES) - taux(basePS, CSG_DEDUCTIBLE));
+      s.ir = impot(imposable, p.parts) - p.irAutres;
+    } else {
+      s.ir = impot(imposable, p.parts) - p.irAutres + taux(s.dividende, PFU_IR);
+    }
+    s.net = s.remuneration + s.dividende - s.cotisationsDividendes - s.ps - s.ir;
+    s.preleve = p.enveloppe ? (p.enveloppe - s.net) * 10000 / p.enveloppe : 0;
+    return s;
+  }
+  // Les lignes du tableau d'une forme, la meilleure répartition (au pas de 1 %) comprise.
+  function etude(forme, p) {
+    var meilleur = null;
+    for (var part = 0; part <= 100; part++) {
+      var s = scenario(forme, part, p);
+      if (!meilleur || s.net > meilleur.net) meilleur = s;
+    }
+    var parts = PARTS_TESTEES.slice();
+    if (parts.indexOf(meilleur.part) === -1) parts.push(meilleur.part);
+    parts.sort(function (a, b) { return a - b; });
+    return { meilleur: meilleur, lignes: parts.map(function (x) { return x === meilleur.part ? meilleur : scenario(forme, x, p); }) };
+  }
+
+  function cellule(tr, texte, classe) {
+    var td = document.createElement("td");
+    td.textContent = texte;
+    if (classe) td.className = classe;
+    tr.appendChild(td);
+  }
+  function ligneTexte(s) {
+    return [s.part + " %", M.affiche(s.remuneration), M.affiche(s.dividende), M.affiche(s.cotisations), M.affiche(s.is),
+            M.affiche(s.ps), M.affiche(s.ir), M.affiche(s.net), pct(s.preleve)];
+  }
+  function remplit(corps, e) {
+    corps.textContent = "";
+    if (!e) return;
+    e.lignes.forEach(function (s) {
+      var tr = document.createElement("tr");
+      if (s === e.meilleur) { tr.className = "meilleur"; tr.title = "Répartition la plus favorable pour cette forme"; }
+      ligneTexte(s).forEach(function (t, k) { cellule(tr, t, k ? "droite" : ""); });
+      corps.appendChild(tr);
+    });
+  }
+  function decrit(s) {
+    return s.part === 0 ? "tout en dividendes" : (s.part === 100 ? "tout en rémunération" : s.part + " % en rémunération, le reste en dividendes");
+  }
+
+  function calcule() {
+    var v = {};
+    ids.forEach(function (id) { v[id] = $(id).value.trim(); });
+    var p = { enveloppe: M.centimes(v.enveloppe), base: montantOuZero("base"), autres: montantOuZero("autres"),
+              parts: v.parts === "" ? 100 : M.centimes(v.parts), bareme: v.imposition === "bareme", isReduit: $("isReduit").checked,
+              tauxTNS: M.centimes(v.tauxTNS), tauxPat: M.centimes(v.tauxPat), tauxSal: M.centimes(v.tauxSal) };
+    var bon = {
+      enveloppe: !isNaN(p.enveloppe) && p.enveloppe > 0, base: !isNaN(p.base) && p.base >= 0, autres: !isNaN(p.autres) && p.autres >= 0,
+      parts: !isNaN(p.parts) && p.parts >= 100 && p.parts <= 2000, tauxTNS: !isNaN(p.tauxTNS) && p.tauxTNS >= 0 && v.tauxTNS !== "",
+      tauxPat: !isNaN(p.tauxPat) && p.tauxPat >= 0 && v.tauxPat !== "", tauxSal: !isNaN(p.tauxSal) && p.tauxSal >= 0 && p.tauxSal < 10000 && v.tauxSal !== ""
+    };
+    Object.keys(bon).forEach(function (id) { $(id).classList.toggle("erreur", !bon[id] && !(id === "enveloppe" && v.enveloppe === "")); });
+
+    var alertes = [], blocage = "";
+    if (v.enveloppe === "") blocage = "Renseignez la somme disponible pour le dirigeant.";
+    else if (!bon.enveloppe) blocage = "La somme disponible doit être un nombre positif, par exemple 80000,00.";
+    else if (!bon.parts) blocage = "Le nombre de parts du foyer doit être compris entre 1 et 20.";
+    else if (!bon.base || !bon.autres) blocage = "Un montant de la configuration n'est pas un nombre valide.";
+    else if (!bon.tauxTNS || !bon.tauxPat || !bon.tauxSal) blocage = "Renseignez les trois taux de cotisations.";
+
+    var sarl = null, sas = null;
+    note = ""; copie = ""; dernier = null;
+    if (!blocage) {
+      p.irAutres = impot(p.autres, p.parts);
+      sarl = etude("sarl", p);
+      sas = etude("sas", p);
+      var mieux = sas.meilleur.net > sarl.meilleur.net ? sas.meilleur : sarl.meilleur;
+      var nomForme = function (s) { return s.forme === "sarl" ? "SARL" : "SAS"; };
+      var ecart = Math.abs(sarl.meilleur.net - sas.meilleur.net);
+
+      $("resultat").textContent = euro(mieux.net);
+      $("vMeilleure").textContent = nomForme(mieux) + " · " + decrit(mieux);
+      $("vSarl").textContent = euro(sarl.meilleur.net) + " · " + sarl.meilleur.part + " % en rémunération";
+      $("vSas").textContent = euro(sas.meilleur.net) + " · " + sas.meilleur.part + " % en rémunération";
+      $("vEcart").textContent = ecart ? euro(ecart) + " en faveur de la " + nomForme(mieux) : "Aucun";
+
+      if (sas.meilleur.part === 0) alertes.push("SAS tout en dividendes : sans rémunération, le président ne valide aucun trimestre de retraite et n'a pas de couverture sociale par son mandat.");
+      if (sarl.meilleur.part === 0) alertes.push("SARL tout en dividendes : sans rémunération, le gérant reste redevable de cotisations minimales, non calculées ici.");
+      alertes.push("Estimation à affiner : les cotisations réelles dépendent du niveau de revenu et les droits acquis (retraite, prévoyance, indemnités journalières) diffèrent d'une forme à l'autre.");
+      if (p.parts > 100) alertes.push("Le plafonnement du quotient familial n'est pas calculé : l'impôt sur le revenu peut être sous-estimé.");
+
+      var detail = function (s) {
+        return nomForme(s) + ", " + decrit(s) + " : rémunération nette " + M.affiche(s.remuneration) + " Euros ; dividende brut " + M.affiche(s.dividende) + " Euros ; cotisations sociales " +
+               M.affiche(s.cotisations) + " Euros" + (s.cotisationsDividendes ? " (dont " + M.affiche(s.cotisationsDividendes) + " Euros sur la part des dividendes au-delà du seuil de 10 %)" : "") +
+               " ; impôt sur les sociétés " + M.affiche(s.is) + " Euros ; prélèvements sociaux " + M.affiche(s.ps) + " Euros ; impôt sur le revenu " + M.affiche(s.ir) +
+               " Euros ; net disponible " + M.affiche(s.net) + " Euros, soit " + pct(s.preleve) + " de prélèvements.";
+      };
+      note = (v.dossier ? v.dossier + " - " : "") + "Comparaison rémunération ou dividendes pour " + M.affiche(p.enveloppe) + " Euros disponibles avant rémunération du dirigeant et impôt sur les sociétés. " +
+             "Hypothèses : " + pct(p.parts) .replace(" %", "") + " part" + (p.parts > 100 ? "s" : "") + " de quotient familial" + (p.autres ? ", " + M.affiche(p.autres) + " Euros d'autres revenus imposables" : "") +
+             ", dividendes imposés " + (p.bareme ? "au barème progressif" : "au prélèvement forfaitaire de 12,8 %") + ", prélèvements sociaux de " + pct(PS) +
+             ", impôt sur les sociétés à " + (p.isReduit ? "15 % jusqu'à 42.500 Euros puis 25 %" : "25 %") + ", cotisations du gérant de SARL à " + pct(p.tauxTNS) + " du net, charges du président de SAS à " +
+             pct(p.tauxPat) + " (patronales) et " + pct(p.tauxSal) + " (salariales) du brut. " +
+             "Meilleure répartition en " + detail(sarl.meilleur) + " Meilleure répartition en " + detail(sas.meilleur) + " " +
+             (ecart ? "La " + nomForme(mieux) + " laisse " + M.affiche(ecart) + " Euros de plus au dirigeant. " : "Les deux formes laissent le même net. ") +
+             "Estimation : les droits sociaux acquis (retraite, prévoyance) ne sont pas valorisés et diffèrent selon la forme.";
+      var titres = ["Part en rémunération", "Rémunération nette", "Dividende brut", "Cotisations", "Impôt sociétés", "Prél. sociaux", "Impôt revenu", "Net disponible", "Prélevé"];
+      var bloc = function (titre, e) {
+        return [titre, titres.join(TAB)].concat(e.lignes.map(function (s) {
+          return ligneTexte(s).map(function (t) { return t.replace(/\s/g, ""); }).join(TAB);
+        })).join("\r\n");
+      };
+      copie = bloc("SARL, gérant majoritaire", sarl) + "\r\n\r\n" + bloc("SAS, président", sas);
+      dernier = { dossier: v.dossier, p: p, sarl: sarl, sas: sas, mieux: mieux, ecart: ecart };
+    } else {
+      ["resultat", "vMeilleure", "vSarl", "vSas", "vEcart"].forEach(function (id) { $(id).textContent = "—"; });
+    }
+    remplit($("tSarl"), sarl);
+    remplit($("tSas"), sas);
+    $("vide").hidden = !blocage;
+    $("vide").textContent = blocage;
+    note = M.aLaLigne(note);
+    M.afficheNote($("note"), note || "La note s'affichera une fois la configuration complète.");
+    $("copier").disabled = !copie;
+    $("copierNote").disabled = !note;
+    $("pdf").disabled = !dernier;
+    $("etat").textContent = "";
+    $("etatNote").textContent = "";
+    var ul = $("alertes");
+    ul.textContent = "";
+    alertes.forEach(function (a) {
+      var li = document.createElement("li");
+      li.textContent = a;
+      ul.appendChild(li);
+    });
+  }
+
+  // Justificatif PDF : hypothèses, les deux tableaux et la conclusion.
+  function justificatif(d) {
+    var f = window.MiniPdf.fiche("Rémunération ou dividendes");
+    var p = d.p, forme = function (s) { return s.forme === "sarl" ? "SARL" : "SAS"; };
+    var colonnes = [{ nom: "Rémun.", largeur: 45 }, { nom: "Rém. nette", largeur: 58, droite: true }, { nom: "Dividende", largeur: 58, droite: true },
+                    { nom: "Cotisations", largeur: 58, droite: true }, { nom: "IS", largeur: 50, droite: true }, { nom: "Prél. soc.", largeur: 55, droite: true },
+                    { nom: "Impôt rev.", largeur: 58, droite: true }, { nom: "Net", largeur: 62, droite: true }, { nom: "Prélevé", largeur: 55, droite: true }];
+    var lignes = function (e) { return e.lignes.map(function (s) { var l = ligneTexte(s); l.gras = s === e.meilleur; return l; }); };
+    f.section("Hypothèses");
+    f.ligne("Dossier", d.dossier).ligne("Somme disponible avant rémunération et impôt sur les sociétés", euro(p.enveloppe))
+     .ligne("Capital, primes et compte courant du gérant", euro(p.base)).ligne("Parts du foyer fiscal", pct(p.parts).replace(" %", ""))
+     .ligne("Autres revenus imposables du foyer", euro(p.autres)).ligne("Imposition des dividendes", p.bareme ? "Barème progressif" : "Prélèvement forfaitaire de 12,8 %")
+     .ligne("Impôt sur les sociétés", p.isReduit ? "15 % jusqu'à 42 500 €, puis 25 %" : "25 %")
+     .ligne("Cotisations du gérant de SARL", pct(p.tauxTNS) + " du net").ligne("Charges du président de SAS", pct(p.tauxPat) + " et " + pct(p.tauxSal) + " du brut");
+    f.section("SARL, gérant majoritaire");
+    f.tableau(colonnes, lignes(d.sarl));
+    f.section("SAS, président");
+    f.tableau(colonnes, lignes(d.sas));
+    f.total("Meilleur net : " + forme(d.mieux) + ", " + d.mieux.part + " % en rémunération", euro(d.mieux.net));
+    f.texte("Estimation établie avec des taux moyens de cotisations. La ligne en gras est la répartition la plus favorable de chaque forme. La réserve légale, les cotisations minimales, " +
+            "le plafonnement du quotient familial et les droits sociaux acquis (retraite, prévoyance) ne sont pas pris en compte.");
+    return f;
+  }
+
+  $("copier").addEventListener("click", function () { if (copie) M.copierTexte(copie, "Tableaux copiés"); });
+  $("copierNote").addEventListener("click", function () {
+    var fait = function () { $("etatNote").textContent = "Note copiée"; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(note).then(fait, function () { $("etatNote").textContent = "Copie impossible dans ce navigateur"; });
+    } else $("etatNote").textContent = "Copie impossible dans ce navigateur";
+  });
+  $("pdf").addEventListener("click", function () {
+    if (!dernier) return;
+    var nom = window.MiniPdf.nomFichier(["Remuneration ou dividendes", dernier.dossier].filter(Boolean).join(" "));
+    justificatif(dernier).telecharger(nom + ".pdf");
+    $("etatNote").textContent = "Justificatif téléchargé";
+  });
+  window.justificatifPdf = function () { return dernier ? justificatif(dernier) : null; };   // pour les contrôles
+  window.scenarioRemDiv = scenario;                                                            // pour les contrôles
+  ids.forEach(function (id) {
+    $(id).addEventListener("input", calcule);
+    $(id).addEventListener("change", calcule);
+  });
+  calcule();
+})();
+</script>
+</body>
+</html>

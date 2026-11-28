@@ -13,7 +13,7 @@ window.MiniOutils = (function () {
   // Mettre le MÊME numéro dans version.json : c'est ce petit fichier que les pages ouvertes
   // consultent pour savoir si une nouvelle version est publiée.
   // Ajouter aussi un bloc en tête de versions.html pour décrire ce qui change.
-  var VERSION = "1.33.0";
+  var VERSION = "1.34.0";
 
   // Type de chaque outil (champ « type ») : ce sur quoi il travaille, affiché en étiquette sur
   // sa page et sur sa carte de l'accueil (voir etiquettesType).
@@ -52,7 +52,7 @@ window.MiniOutils = (function () {
     { fichier: "revenu-brut-social.html", nom: "Revenu brut social", type: "calcul" },
     { fichier: "revalorisation-loyer.html", nom: "Revalorisation de loyer", type: "detail" },
     { fichier: "combinaisons.html", nom: "Chercheur de combinaisons", type: "detail" },
-    { fichier: "affectation-resultat.html", nom: "Affectation du résultat", type: "calcul" }
+    { fichier: "remuneration-dividendes.html", nom: "Rémunération ou dividendes", type: "calcul" }
   ];
   var OUTILS = PRODUCTION.concat(REVISION);
   // Catégorie « Analyse » du menu : contrôles et revues à partir de données collées.

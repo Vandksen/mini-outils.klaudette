@@ -21,7 +21,7 @@
    fichier du site demandé.
 
    Quand un outil est ajouté, ajouter sa page à FICHIERS et augmenter VERSION. */
-const VERSION = "mini-outils-v69";
+const VERSION = "mini-outils-v70";
 const FICHIERS = [
   "./",
   "index.html",
@@ -32,7 +32,7 @@ const FICHIERS = [
   "loyers-communes-exemple.js",
   "rem-gerance.html",
   "combinaisons.html",
-  "affectation-resultat.html",
+  "remuneration-dividendes.html",
   "indemnites-km.html",
   "avantage-nature.html",
   "tva-avantages-nature.html",
